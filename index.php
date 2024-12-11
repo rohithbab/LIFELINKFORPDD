@@ -11,13 +11,17 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.php" class="logo">Life<span style="color: var(--light-green);">Link</span></a>
+            <a href="index.php" class="logo">
+                <span class="logo-life">LifeLink</span>
+            </a>
             <div class="nav-links">
+                <a href="#home">Home</a>
                 <a href="#about">About</a>
                 <a href="#features">Features</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#contact">Contact</a>
-                <a href="pages/login.php" class="btn btn-outline">Login</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#community">Join Community</a>
+                <a href="pages/hospital-hub.php" class="btn btn-outline">Hospital Hub</a>
+                <a href="pages/admin-login.php" class="btn btn-primary">Admin Login</a>
             </div>
         </div>
     </nav>
@@ -43,6 +47,33 @@
                 <a href="pages/donor-registration.php" class="btn btn-primary">Register as Donor</a>
                 <a href="pages/recipient-registration.php" class="btn btn-outline" style="border-color: var(--white); color: var(--white);">Register as Recipient</a>
             </div>
+            <div style="margin-top: 1.5rem; color: var(--white);">
+                <p style="font-size: 1.1rem;">Already registered? 
+                    <a href="pages/donor-login.php" style="
+                        color: var(--white);
+                        text-decoration: none;
+                        margin: 0 0.5rem;
+                        padding: 0.2rem 0.8rem;
+                        border-radius: 20px;
+                        background: rgba(76, 175, 80, 0.3);
+                        transition: all 0.3s ease;
+                        font-weight: 500;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        display: inline-block;
+                    " onmouseover="this.style.background='rgba(76, 175, 80, 0.6)'" onmouseout="this.style.background='rgba(76, 175, 80, 0.3)'">Donor</a> or 
+                    <a href="pages/recipient-login.php" style="
+                        color: var(--white);
+                        text-decoration: none;
+                        padding: 0.2rem 0.8rem;
+                        border-radius: 20px;
+                        background: rgba(33, 150, 243, 0.3);
+                        transition: all 0.3s ease;
+                        font-weight: 500;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        display: inline-block;
+                    " onmouseover="this.style.background='rgba(33, 150, 243, 0.6)'" onmouseout="this.style.background='rgba(33, 150, 243, 0.3)'">Recipient</a>
+                </p>
+            </div>
         </div>
     </section>
 
@@ -67,6 +98,34 @@
                     <p>Your data is protected with the highest security standards</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section" style="background: var(--light-blue);">
+        <div class="container">
+            <h2 class="text-center mb-3">What People Say</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="card">
+                    <div style="font-size: 4rem; color: var(--primary-blue); text-align: center;">❝</div>
+                    <p style="font-style: italic;">"LifeLink made it possible for me to help others. The process was smooth and well-organized."</p>
+                    <p style="text-align: right; font-weight: bold;">- John Doe, Donor</p>
+                </div>
+                <div class="card">
+                    <div style="font-size: 4rem; color: var(--primary-green); text-align: center;">❝</div>
+                    <p style="font-style: italic;">"Thanks to LifeLink, we found a matching donor quickly. Forever grateful!"</p>
+                    <p style="text-align: right; font-weight: bold;">- Jane Smith, Recipient</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Join Community Section -->
+    <section id="community" class="section">
+        <div class="container text-center">
+            <h2 class="mb-3">Join Our Community</h2>
+            <p style="max-width: 600px; margin: 0 auto 2rem;">Be part of something bigger. Join our community of donors, recipients, and healthcare professionals making a difference.</p>
+            <a href="pages/register.php" class="btn btn-primary">Join Now</a>
         </div>
     </section>
 
