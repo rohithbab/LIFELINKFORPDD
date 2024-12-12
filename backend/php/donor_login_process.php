@@ -18,41 +18,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             throw new Exception("Invalid email format.");
         }
 
-        // Check if hospital exists with the given email and ODM ID
-        $stmt = $conn->prepare("SELECT id, password, hospital_name, odm_id, is_verified FROM hospitals WHERE email = ? AND odm_id = ?");
+        // Check if donor exists with the given email and ODM ID
+        $stmt = $conn->prepare("SELECT id, password, full_name, odm_id, is_verified FROM donors WHERE email = ? AND odm_id = ?");
         $stmt->execute([$email, $odmId]);
-        $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
+        $donor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$hospital) {
+        if (!$donor) {
             throw new Exception("Invalid email, ODM ID, or password.");
         }
 
-        // Check if hospital is verified
-        if (!$hospital['is_verified']) {
-            throw new Exception("Your hospital account is pending verification. Please contact the admin.");
+        // Check if donor is verified
+        if (!$donor['is_verified']) {
+            throw new Exception("Your account is pending verification. Please contact the admin.");
         }
 
         // Verify password
-        if (!password_verify($password, $hospital['password'])) {
+        if (!password_verify($password, $donor['password'])) {
             throw new Exception("Invalid email, ODM ID, or password.");
         }
 
         // Set session variables
-        $_SESSION['hospital_id'] = $hospital['id'];
-        $_SESSION['hospital_name'] = $hospital['hospital_name'];
-        $_SESSION['is_hospital'] = true;
+        $_SESSION['donor_id'] = $donor['id'];
+        $_SESSION['donor_name'] = $donor['full_name'];
+        $_SESSION['is_donor'] = true;
 
-        // Redirect to hospital dashboard
-        header("Location: ../../pages/hospital_dashboard.php");
+        // Redirect to donor dashboard
+        header("Location: ../../pages/donor_dashboard.php");
         exit();
 
     } catch(Exception $e) {
         $_SESSION['error'] = $e->getMessage();
-        header("Location: ../../pages/hospital_login.php");
+        header("Location: ../../pages/donor_login.php");
         exit();
     }
 } else {
-    header("Location: ../../pages/hospital_login.php");
+    header("Location: ../../pages/donor_login.php");
     exit();
 }
 ?>

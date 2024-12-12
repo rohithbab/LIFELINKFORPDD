@@ -110,6 +110,13 @@ session_start();
         .register-link a:hover {
             color: var(--primary-green);
         }
+
+        .odm-id-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -119,6 +126,20 @@ session_start();
             <a href="../index.php" class="logo">
                 <span class="logo-life">LifeLink</span>
             </a>
+            <div class="nav-links">
+                <a href="../index.php" class="btn" style="
+                    background: var(--primary-blue);
+                    color: var(--white);
+                    transition: all 0.3s ease;
+                    border: 2px solid var(--primary-blue);
+                " onmouseover="
+                    this.style.background='transparent';
+                    this.style.color='var(--primary-blue)';
+                " onmouseout="
+                    this.style.background='var(--primary-blue)';
+                    this.style.color='var(--white)';
+                "><i class="fas fa-home"></i> Back to Home</a>
+            </div>
         </div>
     </nav>
 
@@ -141,49 +162,57 @@ session_start();
                 <input type="email" id="email" name="email" required>
                 <div class="error-message" id="emailError">Please enter a valid email address</div>
             </div>
+
+            <div class="form-group">
+                <label for="odmId">ODM ID *</label>
+                <input type="text" id="odmId" name="odmId" required>
+                <div class="odm-id-info">This ID is provided by the admin after verification</div>
+            </div>
+
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
                 <div class="error-message" id="passwordError">Password is required</div>
             </div>
+
             <button type="submit" class="login-button">
                 <i class="fas fa-sign-in-alt"></i> Login
             </button>
+
+            <div class="register-link">
+                Not registered yet? <a href="hospital_registration.php">Register your hospital</a>
+            </div>
         </form>
 
-        <div class="register-link">
-            Not registered yet? <a href="hospital_registration.php">Register your hospital</a>
-        </div>
+        <script>
+            document.getElementById('hospitalLoginForm').addEventListener('submit', function(e) {
+                let isValid = true;
+                const email = document.getElementById('email');
+                const password = document.getElementById('password');
+                const emailError = document.getElementById('emailError');
+                const passwordError = document.getElementById('passwordError');
+
+                // Reset error messages
+                emailError.style.display = 'none';
+                passwordError.style.display = 'none';
+
+                // Email validation
+                if (!email.value || !email.value.match(/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/)) {
+                    emailError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // Password validation
+                if (!password.value) {
+                    passwordError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        </script>
     </div>
-
-    <script>
-        document.getElementById('hospitalLoginForm').addEventListener('submit', function(e) {
-            let isValid = true;
-            const email = document.getElementById('email');
-            const password = document.getElementById('password');
-            const emailError = document.getElementById('emailError');
-            const passwordError = document.getElementById('passwordError');
-
-            // Reset error messages
-            emailError.style.display = 'none';
-            passwordError.style.display = 'none';
-
-            // Email validation
-            if (!email.value || !email.value.match(/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/)) {
-                emailError.style.display = 'block';
-                isValid = false;
-            }
-
-            // Password validation
-            if (!password.value) {
-                passwordError.style.display = 'block';
-                isValid = false;
-            }
-
-            if (!isValid) {
-                e.preventDefault();
-            }
-        });
-    </script>
 </body>
 </html>

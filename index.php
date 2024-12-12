@@ -68,7 +68,7 @@
                 Join our mission to save lives by bridging the gap between donors and recipients
             </p>
             <div class="hero-buttons" style="display: flex; gap: 1rem; justify-content: center;">
-                <a href="pages/donor-registration.php" 
+                <a href="pages/donor_registration.php" 
                    class="btn btn-primary donor-btn" 
                    style="
                         background: var(--primary-blue);
@@ -83,7 +83,7 @@
                         this.style.background='var(--primary-blue)';
                         document.querySelector('.recipient-btn').style.background='transparent';
                    ">Register as Donor</a>
-                <a href="pages/recipient-registration.php" 
+                <a href="pages/recipient_registration.php" 
                    class="btn btn-outline recipient-btn" 
                    style="
                         border: 2px solid var(--white);
@@ -99,12 +99,11 @@
                    onmouseout="
                         this.style.background='transparent';
                         document.querySelector('.donor-btn').style.background='var(--primary-blue)';
-                        document.querySelector('.donor-btn').style.border='none';
                    ">Register as Recipient</a>
             </div>
             <div style="margin-top: 1.5rem; color: var(--white);">
                 <p style="font-size: 1.1rem;">Already registered? 
-                    <a href="pages/donor-login.php" style="
+                    <a href="pages/donor_login.php" style="
                         color: var(--white);
                         text-decoration: none;
                         margin: 0 0.5rem;
@@ -116,7 +115,7 @@
                         border: 1px solid rgba(255, 255, 255, 0.3);
                         display: inline-block;
                     " onmouseover="this.style.background='rgba(76, 175, 80, 0.6)'" onmouseout="this.style.background='rgba(76, 175, 80, 0.3)'">Donor</a> or 
-                    <a href="pages/recipient-login.php" style="
+                    <a href="pages/recipient_login.php" style="
                         color: var(--white);
                         text-decoration: none;
                         padding: 0.2rem 0.8rem;

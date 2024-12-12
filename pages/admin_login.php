@@ -103,6 +103,20 @@ session_start();
             <a href="../index.php" class="logo">
                 <span class="logo-life">LifeLink</span>
             </a>
+            <div class="nav-links">
+                <a href="../index.php" class="btn" style="
+                    background: var(--primary-blue);
+                    color: var(--white);
+                    transition: all 0.3s ease;
+                    border: 2px solid var(--primary-blue);
+                " onmouseover="
+                    this.style.background='transparent';
+                    this.style.color='var(--primary-blue)';
+                " onmouseout="
+                    this.style.background='var(--primary-blue)';
+                    this.style.color='var(--white)';
+                "><i class="fas fa-home"></i> Back to Home</a>
+            </div>
         </div>
     </nav>
 
