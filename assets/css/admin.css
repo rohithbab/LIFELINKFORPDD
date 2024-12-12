@@ -1,1 +1,143 @@
+/* Admin Dashboard Styles */
 
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+/* Statistics Cards */
+.stats-container {
+    grid-column: span 4;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.stat-card h3 {
+    color: var(--gray);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+/* Recent Activities */
+.recent-activities {
+    grid-column: span 2;
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--light-blue);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-type {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    font-size: var(--small-size);
+    margin-bottom: 0.5rem;
+}
+
+/* Urgent Cases */
+.urgent-cases {
+    grid-column: span 2;
+}
+
+.urgent-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.urgent-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--light-green);
+    background: var(--light-green);
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+.urgent-item h4 {
+    color: var(--primary-green);
+    margin-bottom: 0.5rem;
+}
+
+/* Pending Approvals */
+.pending-approvals {
+    grid-column: span 4;
+}
+
+.pending-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.pending-item {
+    padding: 1rem;
+    border: 1px solid var(--light-blue);
+    border-radius: 4px;
+}
+
+.approval-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.approve-btn {
+    background: var(--success);
+}
+
+.reject-btn {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .recent-activities,
+    .urgent-cases {
+        grid-column: span 4;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .pending-list {
+        grid-template-columns: 1fr;
+    }
+}

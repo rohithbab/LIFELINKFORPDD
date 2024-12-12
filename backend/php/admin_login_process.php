@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../config/db_connect.php';
+require_once 'connection.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         // Prepare SQL statement to prevent SQL injection
-        $stmt = $conn->prepare("SELECT * FROM admin WHERE email = ?");
+        $stmt = $conn->prepare("SELECT * FROM admins WHERE email = ?");
         $stmt->execute([$email]);
         
         if ($stmt->rowCount() == 1) {
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['admin_name'] = $admin['name'];
                 
                 // Redirect to admin dashboard
-                header("Location: ../../pages/admin_dashboard.php");
+                header("Location: ../../pages/admin/admin_dashboard.php");
                 exit();
             } else {
                 // Invalid password
