@@ -293,13 +293,21 @@ session_start();
 
                 <!-- Agreement Section -->
                 <div class="agreement-section">
-                    <div class="form-group">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <input type="checkbox" name="agreement" required id="agreement" style="margin-top: 0.3rem;">
-                            <label for="agreement" style="font-size: 0.9rem;">
-                                I agree to the <a href="#" style="color: var(--primary-blue);">Terms and Conditions</a> and confirm that all provided information is accurate.
-                            </label>
-                        </div>
+                    <div class="form-group" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin: 15px 0;
+                    ">
+                        <input type="checkbox" id="terms" name="terms" required style="
+                            margin: 0;
+                            width: auto;
+                        ">
+                        <label for="terms" style="
+                            margin: 0;
+                            font-size: 0.9rem;
+                            color: #666;
+                        ">I agree to the <a href="#" style="color: var(--primary-blue); text-decoration: none;">Terms and Conditions</a> and confirm that all provided information is accurate.</label>
                     </div>
                 </div>
 
