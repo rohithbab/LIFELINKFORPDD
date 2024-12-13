@@ -6,6 +6,33 @@
     <title>LifeLink - Connecting Lives Through Organ Donation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        .nav-links a:not(.btn) {
+            position: relative;
+            text-decoration: none;
+            color: var(--dark-gray);
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:not(.btn)::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:not(.btn):hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:not(.btn):hover {
+            color: var(--primary-blue);
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -26,6 +53,8 @@
                     transition: all 0.3s ease;
                     margin-left: 1rem;
                     border: 2px solid var(--primary-blue);
+                    padding: 0.5rem 1rem;
+                    font-size: 0.9rem;
                 " onmouseover="
                     this.style.background='transparent';
                     this.style.color='var(--primary-blue)';
@@ -39,6 +68,8 @@
                     transition: all 0.3s ease;
                     margin-left: 0.5rem;
                     border: 2px solid var(--primary-green);
+                    padding: 0.5rem 1rem;
+                    font-size: 0.9rem;
                 " onmouseover="
                     this.style.background='transparent';
                     this.style.color='var(--primary-green)';

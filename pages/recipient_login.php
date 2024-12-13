@@ -83,6 +83,8 @@ session_start();
                     color: var(--white);
                     transition: all 0.3s ease;
                     border: 2px solid var(--primary-blue);
+                    padding: 0.5rem 1rem;
+                    font-size: 0.9rem;
                 " onmouseover="
                     this.style.background='transparent';
                     this.style.color='var(--primary-blue)';

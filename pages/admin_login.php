@@ -10,6 +10,13 @@ session_start();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
     <style>
+        .logo-life {
+            background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
         .login-container {
             max-width: 400px;
             margin: 8rem auto;
@@ -109,6 +116,8 @@ session_start();
                     color: var(--white);
                     transition: all 0.3s ease;
                     border: 2px solid var(--primary-blue);
+                    padding: 0.5rem 1rem;
+                    font-size: 0.9rem;
                 " onmouseover="
                     this.style.background='transparent';
                     this.style.color='var(--primary-blue)';
