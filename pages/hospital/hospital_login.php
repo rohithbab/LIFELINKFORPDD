@@ -45,6 +45,14 @@ if (isset($_SESSION['hospital_id'])) {
                         <input type="email" id="email" name="email" required>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="odml_id">ODML ID</label>
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="odml_id" name="odml_id" required>
+                    </div>
+                </div>
                 
                 <div class="form-group">
                     <label for="password">Password</label>

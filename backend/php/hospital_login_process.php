@@ -7,63 +7,68 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     exit();
 }
 
-$odml_id = $_POST['odml_id'];
-$password = $_POST['password'];
+$email = $_POST['email'] ?? '';
+$odml_id = $_POST['odml_id'] ?? '';
+$password = $_POST['password'] ?? '';
 
 try {
+    // Validate all fields are present
+    if (empty($email) || empty($odml_id) || empty($password)) {
+        $_SESSION['error'] = "All fields are required";
+        header("Location: ../../pages/hospital_login.php");
+        exit();
+    }
+
     // First check if the hospital exists and get its status
     $stmt = $conn->prepare("
-        SELECT h.id, h.name, h.status, hl.password, hl.odml_id 
-        FROM hospitals h
-        JOIN hospital_login hl ON h.id = hl.hospital_id
-        WHERE hl.odml_id = ?
+        SELECT id, name, email, password, status, odml_id
+        FROM hospitals
+        WHERE email = ? AND odml_id = ?
     ");
-    $stmt->bind_param("s", $odml_id);
-    $stmt->execute();
+    
+    if (!$stmt) {
+        throw new Exception("Database error: " . $conn->error);
+    }
+    
+    $stmt->bind_param("ss", $email, $odml_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Database error: " . $stmt->error);
+    }
+    
     $result = $stmt->get_result();
     $hospital = $result->fetch_assoc();
 
     if (!$hospital) {
-        header("Location: ../../pages/hospital_login.php?error=invalid");
+        $_SESSION['error'] = "Invalid email, ODML ID, or password";
+        header("Location: ../../pages/hospital_login.php");
         exit();
     }
 
     // Check hospital status
     if ($hospital['status'] === 'pending') {
-        header("Location: ../../pages/hospital_login.php?error=pending");
+        $_SESSION['error'] = "Your registration is still pending approval";
+        header("Location: ../../pages/hospital_login.php");
         exit();
     }
 
     if ($hospital['status'] === 'rejected') {
-        header("Location: ../../pages/hospital_login.php?error=rejected");
+        $_SESSION['error'] = "Your registration has been rejected";
+        header("Location: ../../pages/hospital_login.php");
         exit();
     }
 
     // Verify password
     if (!password_verify($password, $hospital['password'])) {
-        header("Location: ../../pages/hospital_login.php?error=invalid");
+        $_SESSION['error'] = "Invalid email, ODML ID, or password";
+        header("Location: ../../pages/hospital_login.php");
         exit();
     }
-
-    // Update last login time
-    $stmt = $conn->prepare("
-        UPDATE hospital_login 
-        SET last_login = CURRENT_TIMESTAMP 
-        WHERE odml_id = ?
-    ");
-    $stmt->bind_param("s", $odml_id);
-    $stmt->execute();
 
     // Set session variables
     $_SESSION['hospital_id'] = $hospital['id'];
     $_SESSION['hospital_name'] = $hospital['name'];
+    $_SESSION['hospital_email'] = $hospital['email'];
     $_SESSION['odml_id'] = $hospital['odml_id'];
-
-    // Check if it's first login (using temporary password)
-    if (isset($_SESSION['temp_password']) && $_SESSION['temp_password']) {
-        header("Location: ../../pages/change_password.php?first=1");
-        exit();
-    }
 
     // Redirect to hospital dashboard
     header("Location: ../../pages/hospital/dashboard.php");
@@ -71,7 +76,8 @@ try {
 
 } catch (Exception $e) {
     error_log("Login error: " . $e->getMessage());
-    header("Location: ../../pages/hospital_login.php?error=system");
+    $_SESSION['error'] = "An error occurred. Please try again later.";
+    header("Location: ../../pages/hospital_login.php");
     exit();
 }
 ?>
