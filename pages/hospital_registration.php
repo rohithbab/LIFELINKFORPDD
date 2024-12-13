@@ -165,7 +165,7 @@ session_start();
                 -webkit-text-fill-color: transparent;
             ">Hospital Registration</h2>
 
-            <form action="process-hospital-registration.php" method="POST" enctype="multipart/form-data" id="hospitalRegistrationForm">
+            <form action="../backend/php/hospital_register_process.php" method="POST" enctype="multipart/form-data" id="hospitalRegistrationForm">
                 <!-- Hospital Details Section -->
                 <div class="form-section">
                     <h3><i class="fas fa-hospital"></i> Hospital Details</h3>
@@ -246,29 +246,21 @@ session_start();
                     <h3><i class="fas fa-certificate"></i> License Information</h3>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>License Name</label>
-                            <input type="text" name="license_name" value="ODML (Organ Donation Management License)" readonly>
-                        </div>
-                        <div class="form-group">
                             <label class="required">License Number</label>
                             <input type="text" name="license_number" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="required">License Issuing Authority</label>
-                            <input type="text" name="issuing_authority" required>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label class="required">License Document</label>
                         <div class="file-upload">
-                            <input type="file" name="license_document" accept=".pdf,.png,.jpg,.jpeg" required
+                            <input type="file" name="license_document" accept="image/jpeg,image/png,image/jpg" required
                                    style="display: none;" id="licenseFile">
                             <label for="licenseFile">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <span>Click to upload license document</span>
                                 <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
-                                    Supported formats: PDF, PNG, JPEG (Max size: 5MB)
+                                    Supported formats: JPG, PNG (Max size: 5MB)
                                 </div>
                             </label>
                         </div>

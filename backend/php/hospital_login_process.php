@@ -1,58 +1,77 @@
 <?php
 session_start();
-require_once '../config/db_connect.php';
+require_once '../../config/connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    try {
-        // Get and sanitize input
-        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-        $odmId = filter_var($_POST['odmId'], FILTER_SANITIZE_STRING);
-        $password = $_POST['password'];
+if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+    header("Location: ../../pages/hospital_login.php");
+    exit();
+}
 
-        // Validate input
-        if (empty($email) || empty($odmId) || empty($password)) {
-            throw new Exception("All fields are required.");
-        }
+$odml_id = $_POST['odml_id'];
+$password = $_POST['password'];
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("Invalid email format.");
-        }
+try {
+    // First check if the hospital exists and get its status
+    $stmt = $conn->prepare("
+        SELECT h.id, h.name, h.status, hl.password, hl.odml_id 
+        FROM hospitals h
+        JOIN hospital_login hl ON h.id = hl.hospital_id
+        WHERE hl.odml_id = ?
+    ");
+    $stmt->bind_param("s", $odml_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $hospital = $result->fetch_assoc();
 
-        // Check if hospital exists with the given email and ODM ID
-        $stmt = $conn->prepare("SELECT id, password, hospital_name, odm_id, is_verified FROM hospitals WHERE email = ? AND odm_id = ?");
-        $stmt->execute([$email, $odmId]);
-        $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$hospital) {
-            throw new Exception("Invalid email, ODM ID, or password.");
-        }
-
-        // Check if hospital is verified
-        if (!$hospital['is_verified']) {
-            throw new Exception("Your hospital account is pending verification. Please contact the admin.");
-        }
-
-        // Verify password
-        if (!password_verify($password, $hospital['password'])) {
-            throw new Exception("Invalid email, ODM ID, or password.");
-        }
-
-        // Set session variables
-        $_SESSION['hospital_id'] = $hospital['id'];
-        $_SESSION['hospital_name'] = $hospital['hospital_name'];
-        $_SESSION['is_hospital'] = true;
-
-        // Redirect to hospital dashboard
-        header("Location: ../../pages/hospital_dashboard.php");
-        exit();
-
-    } catch(Exception $e) {
-        $_SESSION['error'] = $e->getMessage();
-        header("Location: ../../pages/hospital_login.php");
+    if (!$hospital) {
+        header("Location: ../../pages/hospital_login.php?error=invalid");
         exit();
     }
-} else {
-    header("Location: ../../pages/hospital_login.php");
+
+    // Check hospital status
+    if ($hospital['status'] === 'pending') {
+        header("Location: ../../pages/hospital_login.php?error=pending");
+        exit();
+    }
+
+    if ($hospital['status'] === 'rejected') {
+        header("Location: ../../pages/hospital_login.php?error=rejected");
+        exit();
+    }
+
+    // Verify password
+    if (!password_verify($password, $hospital['password'])) {
+        header("Location: ../../pages/hospital_login.php?error=invalid");
+        exit();
+    }
+
+    // Update last login time
+    $stmt = $conn->prepare("
+        UPDATE hospital_login 
+        SET last_login = CURRENT_TIMESTAMP 
+        WHERE odml_id = ?
+    ");
+    $stmt->bind_param("s", $odml_id);
+    $stmt->execute();
+
+    // Set session variables
+    $_SESSION['hospital_id'] = $hospital['id'];
+    $_SESSION['hospital_name'] = $hospital['name'];
+    $_SESSION['odml_id'] = $hospital['odml_id'];
+
+    // Check if it's first login (using temporary password)
+    if (isset($_SESSION['temp_password']) && $_SESSION['temp_password']) {
+        header("Location: ../../pages/change_password.php?first=1");
+        exit();
+    }
+
+    // Redirect to hospital dashboard
+    header("Location: ../../pages/hospital/dashboard.php");
+    exit();
+
+} catch (Exception $e) {
+    error_log("Login error: " . $e->getMessage());
+    header("Location: ../../pages/hospital_login.php?error=system");
     exit();
 }
 ?>

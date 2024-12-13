@@ -1,0 +1,163 @@
+2024-12-13 08:15:40: Registration process started
+2024-12-13 08:15:40: POST data: Array
+(
+    [hospital_name] => 1234hospital
+    [hospital_email] => 123@34gmail.com
+    [hospital_phone] => 9876543210
+    [street] => no.40
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Hospital2
+    [confirm_password] => @Hospital2
+    [agreement] => on
+)
+
+2024-12-13 08:15:40: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 7.geometric progression.png
+            [full_path] => 7.geometric progression.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php51C3.tmp
+            [error] => 0
+            [size] => 84418
+        )
+
+)
+
+2024-12-13 08:15:40: Database connection successful
+2024-12-13 08:15:40: Sanitized inputs: hospital_name=1234hospital, email=123@34gmail.com, phone=9876543210
+2024-12-13 08:15:40: Combined address: no.40, andra, India 600081, India
+2024-12-13 08:15:40: Other inputs: license=1234567, contact=WAAjith, username=MNM, odml_id=
+2024-12-13 08:15:40: File MIME type: image/png
+2024-12-13 08:15:40: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734074140.png
+2024-12-13 08:15:40: File uploaded successfully
+2024-12-13 08:15:40: Transaction started
+2024-12-13 08:15:40: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, 
+        license_number, license_file,
+        contact_name, contact_email, contact_phone,
+        username, password, odml_id,
+        registration_date, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
+2024-12-13 08:15:40: Error in hospital registration: Unknown column 'license_file' in 'field list'
+2024-12-13 08:15:40: Transaction rolled back
+2024-12-13 08:15:40: Uploaded file deleted
+2024-12-13 08:15:40: Redirecting back to registration page with error
+2024-12-13 08:18:49: Registration process started
+2024-12-13 08:18:49: POST data: Array
+(
+    [hospital_name] => 1234hospital
+    [hospital_email] => 123@34gmail.com
+    [hospital_phone] => 9876543210
+    [street] => no.40
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Hospital2
+    [confirm_password] => @Hospital2
+    [agreement] => on
+)
+
+2024-12-13 08:18:49: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 6.m x n matrix.png
+            [full_path] => 6.m x n matrix.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php30D0.tmp
+            [error] => 0
+            [size] => 106163
+        )
+
+)
+
+2024-12-13 08:18:49: Database connection successful
+2024-12-13 08:18:49: Sanitized inputs: hospital_name=1234hospital, email=123@34gmail.com, phone=9876543210
+2024-12-13 08:18:49: Combined address: no.40, andra, India 600081, India
+2024-12-13 08:18:49: Other inputs: license=1234567, contact=WAAjith, username=MNM
+2024-12-13 08:18:49: File MIME type: image/png
+2024-12-13 08:18:49: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734074329.png
+2024-12-13 08:18:49: File uploaded successfully
+2024-12-13 08:18:49: Transaction started
+2024-12-13 08:18:49: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, 
+        license_number, license_file,
+        contact_name, contact_email, contact_phone,
+        username, password,
+        registration_date, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
+2024-12-13 08:18:49: Error in hospital registration: Unknown column 'contact_name' in 'field list'
+2024-12-13 08:18:49: Transaction rolled back
+2024-12-13 08:18:49: Uploaded file deleted
+2024-12-13 08:18:49: Redirecting back to registration page with error
+2024-12-13 08:22:52: Registration process started
+2024-12-13 08:22:52: POST data: Array
+(
+    [hospital_name] => 1234hospital
+    [hospital_email] => 123@34gmail.com
+    [hospital_phone] => 9876543210
+    [street] => no.40
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Hospital2
+    [confirm_password] => @Hospital2
+    [agreement] => on
+)
+
+2024-12-13 08:22:52: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 1.insert element hw.png
+            [full_path] => 1.insert element hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpE9B2.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2024-12-13 08:22:53: Database connection successful
+2024-12-13 08:22:53: Sanitized inputs: hospital_name=1234hospital, email=123@34gmail.com, phone=9876543210
+2024-12-13 08:22:53: Combined address: no.40, andra, India 600081, India
+2024-12-13 08:22:53: Other inputs: license=1234567, region=India
+2024-12-13 08:22:53: File MIME type: image/png
+2024-12-13 08:22:53: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734074573.png
+2024-12-13 08:22:53: File uploaded successfully
+2024-12-13 08:22:53: Transaction started
+2024-12-13 08:22:53: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, region,
+        license_number, license_file, password,
+        status, registration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2024-12-13 08:22:53: Binding parameters for hospital insert
+2024-12-13 08:22:53: Hospital inserted with ID: 6
+2024-12-13 08:22:53: Transaction committed successfully
+2024-12-13 08:22:53: Registration successful, redirecting to status page
