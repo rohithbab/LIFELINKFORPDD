@@ -1,0 +1,252 @@
+/* Hospital Dashboard Styles */
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--light-gray);
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background: var(--white);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: clamp(1rem, 3vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--light-blue);
+}
+
+.sidebar-header .logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.sidebar-header h2 {
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: var(--dark-gray);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li.active a {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+}
+
+.sidebar-nav li a i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Header Styles */
+.dashboard-header {
+    background: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-left h1 {
+    margin: 0;
+    font-size: var(--h2-size);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Notification Styles */
+.notifications-dropdown,
+.user-dropdown {
+    position: relative;
+}
+
+.notifications-btn,
+.user-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dark-gray);
+}
+
+.notification-badge {
+    background: var(--danger);
+    color: var(--white);
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    font-size: var(--small-size);
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+
+.notifications-content,
+.user-dropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--white);
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    min-width: 300px;
+    display: none;
+    z-index: 1000;
+}
+
+.notifications-content.active,
+.user-dropdown-content.active {
+    display: block;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+    padding: clamp(1rem, 3vw, 2rem);
+    flex: 1;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(1rem, 2vw, 1.5rem);
+    margin-bottom: clamp(1.5rem, 3vw, 2rem);
+}
+
+.metric-card {
+    background: var(--white);
+    padding: clamp(1rem, 3vw, 1.5rem);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.metric-card i {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    color: var(--primary-blue);
+    background: var(--light-blue);
+    padding: 1rem;
+    border-radius: 50%;
+}
+
+.metric-info h3 {
+    margin: 0;
+    font-size: var(--body-size);
+    color: var(--gray);
+}
+
+.metric-number {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+    gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* Content Sections */
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        height: 100vh;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-left h1 {
+        font-size: var(--h3-size);
+    }
+}
