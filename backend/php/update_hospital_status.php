@@ -13,56 +13,55 @@ if (!isset($_SESSION['admin_id'])) {
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($data['hospital_id']) || !isset($data['action'])) {
+if (!isset($data['hospital_id']) || !isset($data['status'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
     exit();
 }
 
 $hospital_id = $data['hospital_id'];
-$action = $data['action'];
+$status = $data['status'];
+
+// Validate status
+if (!in_array($status, ['approved', 'rejected'])) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid status']);
+    exit();
+}
 
 try {
-    // Begin transaction
-    $conn->beginTransaction();
-
     // Update hospital status
-    $status = ($action === 'approve') ? 'approved' : 'rejected';
-    $stmt = $conn->prepare("UPDATE hospitals SET status = :status WHERE id = :id");
-    $stmt->execute([':status' => $status, ':id' => $hospital_id]);
+    if (updateHospitalStatus($conn, $hospital_id, $status, $_SESSION['admin_id'])) {
+        // Get hospital details
+        $stmt = $conn->prepare("SELECT hospital_name, email FROM hospitals WHERE hospital_id = ?");
+        $stmt->bind_param("i", $hospital_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $hospital = $result->fetch_assoc();
 
-    // Get hospital details for email notification
-    $stmt = $conn->prepare("SELECT name, email FROM hospitals WHERE id = :id");
-    $stmt->execute([':id' => $hospital_id]);
-    $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Send email notification to hospital
+        $subject = $status === 'approved' 
+            ? "LifeLink: Your Hospital Registration has been Approved"
+            : "LifeLink: Your Hospital Registration Status Update";
+            
+        $message = $status === 'approved'
+            ? "Congratulations! Your hospital registration has been approved. You can now log in to your account."
+            : "Your hospital registration has been reviewed. Unfortunately, we cannot approve your registration at this time.";
 
-    // Add notification
-    $message = ($action === 'approve') 
-        ? "Hospital {$hospital['name']} has been approved"
-        : "Hospital {$hospital['name']} has been rejected";
-    
-    addNotification($conn, 'hospital_' . $action, $message);
+        // Send email (you'll need to implement your email sending function)
+        // mail($hospital['email'], $subject, $message);
 
-    // Send email notification
-    $emailTemplate = ($action === 'approve') ? 'approval-email.php' : 'rejection-email.php';
-    require_once "../emails/{$emailTemplate}";
-    
-    // Commit transaction
-    $conn->commit();
-
-    echo json_encode([
-        'success' => true,
-        'message' => "Hospital has been successfully " . ($action === 'approve' ? 'approved' : 'rejected')
-    ]);
-
+        echo json_encode([
+            'success' => true,
+            'message' => "Hospital has been " . $status . " successfully"
+        ]);
+    } else {
+        throw new Exception("Failed to update hospital status");
+    }
 } catch (Exception $e) {
-    // Rollback transaction on error
-    $conn->rollBack();
-    
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'An error occurred while processing your request'
+        'message' => 'An error occurred while updating hospital status: ' . $e->getMessage()
     ]);
 }
-?>

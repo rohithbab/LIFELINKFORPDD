@@ -26,8 +26,35 @@ function getDashboardStats($conn) {
 
 // Get pending hospital approvals
 function getPendingHospitals($conn) {
-    $stmt = $conn->query("SELECT * FROM hospitals WHERE status = 'pending' ORDER BY registration_date DESC");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $query = "SELECT h.*, 
+                  CASE 
+                    WHEN h.status = 'pending' AND h.created_at > NOW() - INTERVAL 24 HOUR 
+                    THEN 1 ELSE 0 
+                  END as is_new 
+                  FROM hospitals h 
+                  WHERE h.status = 'pending' 
+                  ORDER BY h.created_at DESC";
+        
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+    } catch (Exception $e) {
+        error_log("Error in getPendingHospitals: " . $e->getMessage());
+        return array();
+    }
+}
+
+function updateHospitalStatus($conn, $hospital_id, $status) {
+    try {
+        $stmt = $conn->prepare("UPDATE hospitals SET status = ?, updated_at = NOW() WHERE hospital_id = ?");
+        $stmt->execute([$status, $hospital_id]);
+        return true;
+    } catch (Exception $e) {
+        error_log("Error in updateHospitalStatus: " . $e->getMessage());
+        return false;
+    }
 }
 
 // Get all donors with filters
@@ -66,72 +93,58 @@ function findPotentialMatches($conn, $donor_id) {
         AND r.status = 'waiting'
         ORDER BY r.urgency_level DESC, r.registration_date ASC
     ");
-    $stmt->execute([':donor_id' => $donor_id]);
+    $stmt->execute(['donor_id' => $donor_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Add notification
 function addNotification($conn, $type, $message, $user_id = null) {
-    $stmt = $conn->prepare("
-        INSERT INTO notifications (type, message, user_id, created_at)
-        VALUES (:type, :message, :user_id, NOW())
-    ");
-    return $stmt->execute([
-        ':type' => $type,
-        ':message' => $message,
-        ':user_id' => $user_id
-    ]);
+    $stmt = $conn->prepare("INSERT INTO notifications (type, message, user_id) VALUES (?, ?, ?)");
+    return $stmt->execute([$type, $message, $user_id]);
 }
 
 // Get admin notifications
 function getAdminNotifications($conn, $limit = 10) {
     $stmt = $conn->prepare("
-        SELECT * FROM notifications
-        WHERE user_id IS NULL
-        ORDER BY created_at DESC
+        SELECT * FROM notifications 
+        WHERE user_id IS NULL 
+        ORDER BY created_at DESC 
         LIMIT :limit
     ");
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Analytics Functions
 function getMonthlyStats($conn) {
-    $stats = [];
+    $stats = [
+        'registrations' => [],
+        'matches' => [],
+        'completions' => []
+    ];
     
-    // Get average match time
+    // Get monthly hospital registrations
     $stmt = $conn->query("
-        SELECT AVG(DATEDIFF(match_date, registration_date)) as avg_time
+        SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
+        COUNT(*) as count
+        FROM hospitals
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY month
+        ORDER BY month
+    ");
+    $stats['registrations'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    // Get monthly matches
+    $stmt = $conn->query("
+        SELECT DATE_FORMAT(match_date, '%Y-%m') as month,
+        COUNT(*) as count
         FROM organ_matches
-        WHERE status = 'completed'
-        AND match_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        WHERE match_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        GROUP BY month
+        ORDER BY month
     ");
-    $stats['avg_match_time'] = round($stmt->fetchColumn(), 1);
-    
-    // Get success rate
-    $stmt = $conn->query("
-        SELECT 
-            (COUNT(CASE WHEN status = 'completed' THEN 1 END) * 100.0 / COUNT(*)) as success_rate
-        FROM organ_matches
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    ");
-    $stats['success_rate'] = round($stmt->fetchColumn(), 1);
-    
-    // Get active donors
-    $stmt = $conn->query("
-        SELECT COUNT(*) FROM donors
-        WHERE status = 'active'
-    ");
-    $stats['active_donors'] = $stmt->fetchColumn();
-    
-    // Get urgent cases
-    $stmt = $conn->query("
-        SELECT COUNT(*) FROM recipients
-        WHERE urgency_level = 'high'
-        AND status = 'waiting'
-    ");
-    $stats['urgent_cases'] = $stmt->fetchColumn();
+    $stats['matches'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
     
     return $stats;
 }
@@ -140,57 +153,47 @@ function getOrganTypeStats($conn) {
     $stmt = $conn->query("
         SELECT organ_type, COUNT(*) as count
         FROM donors
-        WHERE status = 'active'
         GROUP BY organ_type
-        ORDER BY count DESC
     ");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 }
 
 function getBloodTypeStats($conn) {
+    $stats = [];
+    
+    // Get donor blood type stats
     $stmt = $conn->query("
-        SELECT blood_type, 
-               COUNT(CASE WHEN type = 'donor' THEN 1 END) as donors,
-               COUNT(CASE WHEN type = 'recipient' THEN 1 END) as recipients
-        FROM (
-            SELECT blood_type, 'donor' as type FROM donors WHERE status = 'active'
-            UNION ALL
-            SELECT blood_type, 'recipient' as type FROM recipients WHERE status = 'waiting'
-        ) combined
+        SELECT blood_type, COUNT(*) as count
+        FROM donors
         GROUP BY blood_type
     ");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stats['donors'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    
+    return $stats;
 }
 
 function getSuccessfulMatches($conn) {
     $stmt = $conn->query("
-        SELECT 
-            DATE_FORMAT(match_date, '%Y-%m') as month,
-            COUNT(*) as matches,
-            COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful
+        SELECT COUNT(*) as total,
+        AVG(TIMESTAMPDIFF(DAY, match_date, completion_date)) as avg_days
         FROM organ_matches
-        WHERE match_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-        GROUP BY month
-        ORDER BY month
+        WHERE status = 'completed'
     ");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function getRegionalStats($conn) {
     $stmt = $conn->query("
         SELECT 
             h.region,
+            COUNT(DISTINCT h.hospital_id) as hospitals,
             COUNT(DISTINCT d.id) as donors,
-            COUNT(DISTINCT r.id) as recipients,
-            COUNT(DISTINCT CASE WHEN om.status = 'completed' THEN om.id END) as successful_matches
+            COUNT(DISTINCT r.id) as recipients
         FROM hospitals h
-        LEFT JOIN donors d ON d.hospital_id = h.id
-        LEFT JOIN recipients r ON r.hospital_id = h.id
-        LEFT JOIN organ_matches om ON om.hospital_id = h.id
-        WHERE h.status = 'approved'
+        LEFT JOIN donors d ON d.hospital_id = h.hospital_id
+        LEFT JOIN recipients r ON r.hospital_id = h.hospital_id
         GROUP BY h.region
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
 ?>

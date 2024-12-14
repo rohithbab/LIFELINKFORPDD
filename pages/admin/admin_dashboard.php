@@ -326,9 +326,190 @@ $urgentRecipients = getUrgentRecipients($conn);
                 </div>
             </div>
         </div>
+
+        <div class="dashboard-section">
+            <h2><i class="fas fa-hospital"></i> Pending Hospital Registrations</h2>
+            <div class="pending-hospitals">
+                <?php if (empty($pendingHospitals)): ?>
+                    <p>No pending hospital registrations.</p>
+                <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Hospital Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Registration Date</th>
+                                    <th>License</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pendingHospitals as $hospital): ?>
+                                    <tr class="<?php echo $hospital['is_new'] ? 'new-registration' : ''; ?>">
+                                        <td>
+                                            <?php echo htmlspecialchars($hospital['hospital_name']); ?>
+                                            <?php if ($hospital['is_new']): ?>
+                                                <span class="new-badge">New</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($hospital['phone']); ?></td>
+                                        <td><?php echo date('Y-m-d H:i', strtotime($hospital['created_at'])); ?></td>
+                                        <td>
+                                            <a href="../view_license.php?hospital_id=<?php echo $hospital['hospital_id']; ?>" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-file-medical"></i> View License
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <button onclick="approveHospital(<?php echo $hospital['hospital_id']; ?>)" 
+                                                    class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button onclick="rejectHospital(<?php echo $hospital['hospital_id']; ?>)" 
+                                                    class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="fas fa-hospital"></i> Hospital Management</h2>
+                <a href="manage_hospitals.php" class="btn btn-primary">View All</a>
+            </div>
+            
+            <?php
+            // Get pending hospitals count
+            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM hospitals WHERE status = 'pending'");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $pending_count = $result->fetch_assoc()['count'];
+            
+            // Get recent registrations
+            $stmt = $conn->prepare("
+                SELECT hospital_id, hospital_name, email, created_at, status,
+                CASE 
+                    WHEN created_at > NOW() - INTERVAL 24 HOUR THEN 1 
+                    ELSE 0 
+                END as is_new
+                FROM hospitals 
+                WHERE status = 'pending'
+                ORDER BY created_at DESC 
+                LIMIT 5
+            ");
+            $stmt->execute();
+            $recent_hospitals = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            ?>
+            
+            <div class="quick-stats">
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Pending Approvals</h3>
+                        <p class="stat-number"><?php echo $pending_count; ?></p>
+                    </div>
+                </div>
+            </div>
+            
+            <?php if (!empty($recent_hospitals)): ?>
+                <div class="recent-registrations">
+                    <h3>Recent Hospital Registrations</h3>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Hospital Name</th>
+                                    <th>Email</th>
+                                    <th>Registration Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recent_hospitals as $hospital): ?>
+                                    <tr class="<?php echo $hospital['is_new'] ? 'new-registration' : ''; ?>">
+                                        <td>
+                                            <?php echo htmlspecialchars($hospital['hospital_name']); ?>
+                                            <?php if ($hospital['is_new']): ?>
+                                                <span class="new-badge">New</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                                        <td><?php echo date('Y-m-d H:i', strtotime($hospital['created_at'])); ?></td>
+                                        <td>
+                                            <a href="../view_license.php?hospital_id=<?php echo $hospital['hospital_id']; ?>" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-file-medical"></i> View License
+                                            </a>
+                                            <a href="manage_hospitals.php" class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-external-link-alt"></i> Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p class="no-data">No pending hospital registrations</p>
+            <?php endif; ?>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../assets/js/admin.js"></script>
+    <script>
+    function approveHospital(hospitalId) {
+        if (confirm('Are you sure you want to approve this hospital?')) {
+            updateHospitalStatus(hospitalId, 'approved');
+        }
+    }
+
+    function rejectHospital(hospitalId) {
+        if (confirm('Are you sure you want to reject this hospital?')) {
+            updateHospitalStatus(hospitalId, 'rejected');
+        }
+    }
+
+    function updateHospitalStatus(hospitalId, status) {
+        fetch('../../backend/php/update_hospital_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                hospital_id: hospitalId,
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the hospital status');
+        });
+    }
+    </script>
 </body>
 </html>

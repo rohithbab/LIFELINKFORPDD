@@ -161,3 +161,682 @@
 2024-12-13 08:22:53: Hospital inserted with ID: 6
 2024-12-13 08:22:53: Transaction committed successfully
 2024-12-13 08:22:53: Registration successful, redirecting to status page
+2024-12-14 04:08:55: Registration process started
+2024-12-14 04:08:55: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 3216549870
+    [street] => no.40
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => xxxxx
+    [designation] => xxxxxx
+    [contact_phone] => 1233232121
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => 1234567
+    [username] => wecare
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:08:55: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 4.print duplicate elements hw.png
+            [full_path] => 4.print duplicate elements hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpC323.tmp
+            [error] => 0
+            [size] => 75597
+        )
+
+)
+
+2024-12-14 04:08:55: Database connection successful
+2024-12-14 04:08:55: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=3216549870
+2024-12-14 04:08:55: Combined address: no.40, chennai, India 600081, India
+2024-12-14 04:08:55: Other inputs: license=1234567, region=India
+2024-12-14 04:08:55: File MIME type: image/png
+2024-12-14 04:08:55: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734145735.png
+2024-12-14 04:08:55: File uploaded successfully
+2024-12-14 04:08:55: Transaction started
+2024-12-14 04:08:55: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, region,
+        license_number, license_file, password,
+        status, registration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2024-12-14 04:08:55: Binding parameters for hospital insert
+2024-12-14 04:08:55: Error in hospital registration: Duplicate entry '1234567' for key 'license_number'
+2024-12-14 04:08:55: Transaction rolled back
+2024-12-14 04:08:55: Uploaded file deleted
+2024-12-14 04:08:55: Redirecting back to registration page with error
+2024-12-14 04:10:32: Registration process started
+2024-12-14 04:10:32: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 3216549870
+    [street] => DMJSCJ
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [contact_name] => xxxxx
+    [designation] => xxxxxx
+    [contact_phone] => 1233232121
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => 1234567
+    [username] => wecare
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:10:32: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 4.print duplicate elements hw.png
+            [full_path] => 4.print duplicate elements hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php3FA2.tmp
+            [error] => 0
+            [size] => 75597
+        )
+
+)
+
+2024-12-14 04:10:32: Database connection successful
+2024-12-14 04:10:32: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=3216549870
+2024-12-14 04:10:32: Combined address: DMJSCJ, chennai, India 600081, India
+2024-12-14 04:10:32: Other inputs: license=1234567, region=India
+2024-12-14 04:10:32: File MIME type: image/png
+2024-12-14 04:10:32: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734145832.png
+2024-12-14 04:10:32: File uploaded successfully
+2024-12-14 04:10:32: Transaction started
+2024-12-14 04:10:32: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, region,
+        license_number, license_file, password,
+        status, registration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2024-12-14 04:10:32: Binding parameters for hospital insert
+2024-12-14 04:10:32: Error in hospital registration: Duplicate entry '1234567' for key 'license_number'
+2024-12-14 04:10:32: Transaction rolled back
+2024-12-14 04:10:32: Uploaded file deleted
+2024-12-14 04:10:32: Redirecting back to registration page with error
+2024-12-14 04:17:22: Registration process started
+2024-12-14 04:17:22: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 3216549870
+    [street] => no 40
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => xxxxx
+    [designation] => xxxxxx
+    [contact_phone] => 1233232121
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => 1234567
+    [username] => wecare
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:17:22: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => Screenshot (496).png
+            [full_path] => Screenshot (496).png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php7F4E.tmp
+            [error] => 0
+            [size] => 187234
+        )
+
+)
+
+2024-12-14 04:17:22: Database connection successful
+2024-12-14 04:17:22: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=3216549870
+2024-12-14 04:17:22: Combined address: no 40, chennai, India 600081, India
+2024-12-14 04:17:22: Other inputs: license=1234567, region=India
+2024-12-14 04:17:22: File MIME type: image/png
+2024-12-14 04:17:22: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734146242.png
+2024-12-14 04:17:22: File uploaded successfully
+2024-12-14 04:17:22: Transaction started
+2024-12-14 04:17:22: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, region,
+        license_number, license_file, password,
+        status, registration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2024-12-14 04:17:22: Binding parameters for hospital insert
+2024-12-14 04:17:22: Error in hospital registration: Duplicate entry '1234567' for key 'license_number'
+2024-12-14 04:17:22: Transaction rolled back
+2024-12-14 04:17:22: Uploaded file deleted
+2024-12-14 04:17:22: Redirecting back to registration page with error
+2024-12-14 04:19:21: Registration process started
+2024-12-14 04:19:21: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => no 22
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:19:21: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 7.geometric progression.png
+            [full_path] => 7.geometric progression.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5335.tmp
+            [error] => 0
+            [size] => 84418
+        )
+
+)
+
+2024-12-14 04:19:21: Database connection successful
+2024-12-14 04:19:21: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:19:21: Combined address: no 22, andra, India 600081, India
+2024-12-14 04:19:21: Other inputs: license=1234567, region=India
+2024-12-14 04:19:21: File MIME type: image/png
+2024-12-14 04:19:21: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734146361.png
+2024-12-14 04:19:21: File uploaded successfully
+2024-12-14 04:19:21: Transaction started
+2024-12-14 04:19:21: Preparing SQL: INSERT INTO hospitals (
+        name, email, phone, address, region,
+        license_number, license_file, password,
+        status, registration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2024-12-14 04:19:22: Binding parameters for hospital insert
+2024-12-14 04:19:22: Error in hospital registration: Duplicate entry '1234567' for key 'license_number'
+2024-12-14 04:19:22: Transaction rolled back
+2024-12-14 04:19:22: Uploaded file deleted
+2024-12-14 04:19:22: Redirecting back to registration page with error
+2024-12-14 04:32:31: Registration process started
+2024-12-14 04:32:31: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => no a
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:32:31: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => Screenshot (502).png
+            [full_path] => Screenshot (502).png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5FDA.tmp
+            [error] => 0
+            [size] => 216651
+        )
+
+)
+
+2024-12-14 04:32:31: Database connection successful
+2024-12-14 04:32:31: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:32:31: Combined address: no a, andra, India 600081, India
+2024-12-14 04:32:31: Other inputs: license=1234567, region=India
+2024-12-14 04:32:31: File MIME type: image/png
+2024-12-14 04:32:31: Attempting to move uploaded file to: ../../uploads/licenses/1234567_1734147151.png
+2024-12-14 04:32:31: File uploaded successfully
+2024-12-14 04:32:31: Error in hospital registration: Unknown column 'hospital_name' in 'field list'
+2024-12-14 04:32:31: Transaction rolled back
+2024-12-14 04:32:31: Uploaded file deleted
+2024-12-14 04:32:31: Redirecting back to registration page with error
+2024-12-14 04:35:46: Registration process started
+2024-12-14 04:35:46: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => dasdas
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => neurology
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 1234567
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:35:46: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => cnn and mn.png
+            [full_path] => cnn and mn.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5AEA.tmp
+            [error] => 0
+            [size] => 307367
+        )
+
+)
+
+2024-12-14 04:35:46: Database connection successful
+2024-12-14 04:35:46: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:35:46: Combined address: dasdas, andra, India 600081, India
+2024-12-14 04:35:46: Other inputs: license=1234567, region=India
+2024-12-14 04:35:46: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 04:41:37: Registration process started
+2024-12-14 04:41:37: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => nsdb
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 62472476
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:41:37: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 9. range1000 hw.png
+            [full_path] => 9. range1000 hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpB40F.tmp
+            [error] => 0
+            [size] => 70991
+        )
+
+)
+
+2024-12-14 04:41:37: Database connection successful
+2024-12-14 04:41:37: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:41:37: Combined address: nsdb, andra, India 600081, India
+2024-12-14 04:41:37: Other inputs: license=62472476, region=India
+2024-12-14 04:41:37: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 04:45:36: Registration process started
+2024-12-14 04:45:36: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => chjcnjnzxc
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 62472476
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:45:36: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => Screenshot (505).png
+            [full_path] => Screenshot (505).png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5BAC.tmp
+            [error] => 0
+            [size] => 743952
+        )
+
+)
+
+2024-12-14 04:45:36: Database connection successful
+2024-12-14 04:45:36: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:45:36: Combined address: chjcnjnzxc, andra, India 600081, India
+2024-12-14 04:45:36: Other inputs: license=62472476, region=India
+2024-12-14 04:45:36: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 04:48:21: Registration process started
+2024-12-14 04:48:21: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => vtfhhb
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 62472476
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:48:21: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 6.m x n matrix.png
+            [full_path] => 6.m x n matrix.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpDEED.tmp
+            [error] => 0
+            [size] => 106163
+        )
+
+)
+
+2024-12-14 04:48:21: Database connection successful
+2024-12-14 04:48:21: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:48:21: Combined address: vtfhhb, andra, India 600081, India
+2024-12-14 04:48:21: Other inputs: license=62472476, region=India
+2024-12-14 04:48:21: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 04:50:55: Registration process started
+2024-12-14 04:50:55: POST data: Array
+(
+    [hospital_name] => healthcare
+    [hospital_email] => wecare@gmail.com
+    [hospital_phone] => 9876543210
+    [street] => xaXz
+    [city] => andra
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => neurology
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1111100000
+    [contact_email] => sample123@gmail.com
+    [license_number] => 62472476
+    [username] => MNM
+    [password] => @Wecare123
+    [confirm_password] => @Wecare123
+    [terms] => on
+)
+
+2024-12-14 04:50:55: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 6.m x n matrix.png
+            [full_path] => 6.m x n matrix.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php37B3.tmp
+            [error] => 0
+            [size] => 106163
+        )
+
+)
+
+2024-12-14 04:50:55: Database connection successful
+2024-12-14 04:50:55: Sanitized inputs: hospital_name=healthcare, email=wecare@gmail.com, phone=9876543210
+2024-12-14 04:50:55: Combined address: xaXz, andra, India 600081, India
+2024-12-14 04:50:55: Other inputs: license=62472476, region=India
+2024-12-14 04:50:55: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 04:56:07: Registration process started
+2024-12-14 04:56:07: POST data: Array
+(
+    [hospital_name] => appolo
+    [hospital_email] => appolo1123@gmail.com
+    [hospital_phone] => 1233211234
+    [street] => no 100
+    [city] => hyderbad
+    [state] => telangana
+    [postal_code] => 60091
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => general
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 7567865434
+    [contact_email] => sample123@gmail.com
+    [license_number] =>  000001
+    [username] => MNM
+    [password] => Apollo@123
+    [confirm_password] => Apollo@123
+    [terms] => on
+)
+
+2024-12-14 04:56:07: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 2.pattern printing hw.png
+            [full_path] => 2.pattern printing hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpFAB2.tmp
+            [error] => 0
+            [size] => 73813
+        )
+
+)
+
+2024-12-14 04:56:07: Database connection successful
+2024-12-14 04:56:07: Sanitized inputs: hospital_name=appolo, email=appolo1123@gmail.com, phone=1233211234
+2024-12-14 04:56:07: Combined address: no 100, hyderbad, telangana 60091, India
+2024-12-14 04:56:07: Other inputs: license= 000001, region=telangana
+2024-12-14 04:56:07: Error: Unknown column 'hospital_id' in 'field list'
+2024-12-14 05:12:40: Registration process started
+2024-12-14 05:12:40: Database connection successful
+2024-12-14 05:12:40: Sanitized inputs: name=ABC Hospitals, email=abc123@gmail.com, phone=7654321987, license= 100001
+2024-12-14 05:12:40: File uploaded successfully:  100001_1734149560.png
+2024-12-14 05:12:40: Error: Unknown column 'hospital_name' in 'field list'
+2024-12-14 05:17:31: Registration process started
+2024-12-14 05:17:32: Database connection successful
+2024-12-14 05:17:32: Sanitized inputs: name=ABC Hospitals, email=abc123@gmail.com, phone=7654321987, license= 100002
+2024-12-14 05:17:32: File uploaded successfully:  100002_1734149852.png
+2024-12-14 05:17:32: Error: Unknown column 'created_at' in 'field list'
+2024-12-14 06:50:35: Registration process started
+2024-12-14 06:50:35: POST data: Array
+(
+    [hospital_name] => ABC Hospitals
+    [hospital_email] => abc123@gmail.com
+    [hospital_phone] => 7654321987
+    [street] => xx street
+    [city] => hyderbad
+    [state] => telangana
+    [postal_code] => 60091
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 1233232121
+    [contact_email] => sampl123@gmail.com
+    [license_number] =>  L100002
+    [username] => ABC
+    [password] => @Abc123456
+    [confirm_password] => @Abc123456
+    [terms] => on
+)
+
+2024-12-14 06:50:35: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => Screenshot (578).png
+            [full_path] => Screenshot (578).png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpC762.tmp
+            [error] => 0
+            [size] => 304793
+        )
+
+)
+
+2024-12-14 06:50:35: Database connection successful
+2024-12-14 06:50:35: Sanitized inputs: name=ABC Hospitals, email=abc123@gmail.com, phone=7654321987
+2024-12-14 06:50:35: Address: xx street, hyderbad, telangana, 60091, India
+2024-12-14 06:50:35: Region: telangana
+2024-12-14 06:50:35: Attempting to upload file to: ../../uploads/licenses/L100002_1734155435.png
+2024-12-14 06:50:35: File uploaded successfully
+2024-12-14 06:50:35: Transaction started
+2024-12-14 06:50:35: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2024-12-14 06:50:35: SQL executed successfully
+2024-12-14 06:50:35: Transaction committed
+2024-12-14 06:57:18: Registration process started
+2024-12-14 06:57:18: POST data: Array
+(
+    [hospital_name] => Viswa Hospitals
+    [hospital_email] => vishwa123@gmail.com
+    [hospital_phone] => 6534672876
+    [street] => somewhere
+    [city] => hyderbad
+    [state] => telangana
+    [postal_code] => 60091
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => WAAjith
+    [designation] => Head
+    [contact_phone] => 9874563211
+    [contact_email] => samp123@gmail.com
+    [license_number] =>  L100003
+    [username] => Vishwa Hospitals
+    [password] => Vishwa@123
+    [confirm_password] => Vishwa@123
+    [terms] => on
+)
+
+2024-12-14 06:57:18: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => Screenshot (476).png
+            [full_path] => Screenshot (476).png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpEE37.tmp
+            [error] => 0
+            [size] => 111029
+        )
+
+)
+
+2024-12-14 06:57:18: Database connection successful
+2024-12-14 06:57:18: Sanitized inputs: name=Viswa Hospitals, email=vishwa123@gmail.com, phone=6534672876
+2024-12-14 06:57:18: Address: somewhere, hyderbad, telangana, 60091, India
+2024-12-14 06:57:18: Region: telangana
+2024-12-14 06:57:18: Attempting to upload file to: ../../uploads/licenses/L100003_1734155838.png
+2024-12-14 06:57:18: File uploaded successfully
+2024-12-14 06:57:18: Transaction started
+2024-12-14 06:57:18: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2024-12-14 06:57:18: SQL executed successfully
+2024-12-14 06:57:18: Transaction committed
