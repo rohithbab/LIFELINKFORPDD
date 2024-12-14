@@ -90,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
-        // Sanitize and validate input
+        // Get and sanitize input
         $name = sanitize_input($_POST['fullName']);
         $gender = sanitize_input($_POST['gender']);
         $dob = sanitize_input($_POST['dob']);
@@ -98,17 +98,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
         $phone = sanitize_input($_POST['phone']);
         $address = sanitize_input($_POST['address']);
-        $medical_conditions = sanitize_input($_POST['medicalConditions']);
-        $organs = sanitize_input($_POST['organs']);
-        $reason = sanitize_input($_POST['donationReason']);
+        
+        // Handle medical conditions and organs (these might be arrays)
+        $medical_conditions = isset($_POST['medicalConditions']) ? 
+            (is_array($_POST['medicalConditions']) ? implode(", ", $_POST['medicalConditions']) : sanitize_input($_POST['medicalConditions'])) : '';
+        
+        $organs = isset($_POST['organs']) ? 
+            (is_array($_POST['organs']) ? implode(", ", $_POST['organs']) : sanitize_input($_POST['organs'])) : '';
+        
+        $reason = sanitize_input($_POST['reason']);
         $guardian_name = sanitize_input($_POST['guardianName']);
         $guardian_email = filter_var($_POST['guardianEmail'], FILTER_SANITIZE_EMAIL);
         $guardian_phone = sanitize_input($_POST['guardianPhone']);
         
-        // Generate a random password for the donor
-        $password = bin2hex(random_bytes(8)); // generates a 16-character random password
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
+        // Get and hash the user's password
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        
         // Validate email
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("Invalid email format.");
@@ -180,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $guardian_email,        // guardian_email
             $guardian_phone,        // guardian_phone
             $guardian_id_proof_path, // guardian_id_proof_path
-            $hashed_password       // password
+            $password               // password
         ];
         
         error_log("SQL Query: " . $sql);
@@ -192,9 +197,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Commit transaction
         $conn->commit();
-
-        // Store the password in session to show on success page
-        $_SESSION['temp_password'] = $password;
 
         // Set success message and session variables
         $_SESSION['registration_success'] = true;

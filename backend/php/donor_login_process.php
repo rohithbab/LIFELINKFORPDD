@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Check if donor exists and is approved
-        $stmt = $conn->prepare("SELECT donor_id, name, password, status FROM Donor WHERE email = ? AND odml_id = ?");
+        $stmt = $conn->prepare("SELECT donor_id, name, password, status FROM donor WHERE email = ? AND odml_id = ?");
         $stmt->execute([$email, $odml_id]);
         $donor = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -48,11 +48,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     } catch(Exception $e) {
         $_SESSION['error'] = $e->getMessage();
-        header("Location: ../../pages/donor/donor_login.php");
+        header("Location: ../../pages/donor_login.php");
         exit();
     }
 } else {
-    header("Location: ../../pages/donor/donor_login.php");
+    header("Location: ../../pages/donor_login.php");
     exit();
 }
 ?>

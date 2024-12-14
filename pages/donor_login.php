@@ -148,40 +148,30 @@ session_start();
         }
         ?>
 
-        <form action="../backend/php/donor_login_process.php" method="POST" id="donorLoginForm">
+        <form action="../backend/php/donor_login_process.php" method="POST">
             <div class="form-group">
-                <label for="email">Email Address *</label>
+                <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required>
             </div>
-
             <div class="form-group">
-                <label for="odmId">ODM ID *</label>
-                <input type="text" id="odmId" name="odmId" required>
-                <div class="odm-id-info">This ID will be provided by the admin after verification</div>
+                <label for="odml_id">ODML ID</label>
+                <input type="text" id="odml_id" name="odml_id" required>
+                <small class="form-text text-muted">This ID will be provided by admin after verification</small>
             </div>
-
             <div class="form-group">
-                <label for="password">Password *</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-
-            <button type="submit" class="submit-button">
-                <i class="fas fa-sign-in-alt"></i>
-                Login
-            </button>
-
-            <div class="register-link">
-                Don't have an account? <a href="donor_registration.php">Register here</a>
-            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('donorLoginForm').addEventListener('submit', function(e) {
+        document.querySelector('form').addEventListener('submit', function(e) {
             let isValid = true;
             const email = document.getElementById('email');
-            const odmId = document.getElementById('odmId');
             const password = document.getElementById('password');
+            const odml_id = document.getElementById('odml_id');
 
             // Basic validation
             if (!email.value || !email.value.match(/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/)) {
@@ -191,18 +181,18 @@ session_start();
                 email.style.borderColor = '#ddd';
             }
 
-            if (!odmId.value) {
-                isValid = false;
-                odmId.style.borderColor = '#dc3545';
-            } else {
-                odmId.style.borderColor = '#ddd';
-            }
-
             if (!password.value) {
                 isValid = false;
                 password.style.borderColor = '#dc3545';
             } else {
                 password.style.borderColor = '#ddd';
+            }
+
+            if (!odml_id.value) {
+                isValid = false;
+                odml_id.style.borderColor = '#dc3545';
+            } else {
+                odml_id.style.borderColor = '#ddd';
             }
 
             if (!isValid) {

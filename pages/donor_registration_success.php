@@ -131,18 +131,6 @@ unset($_SESSION['donor_email']);
             <p>A confirmation email will be sent to: <strong><?php echo htmlspecialchars($email); ?></strong></p>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['temp_password'])): ?>
-            <div class="password-info">
-                <h3>Your Temporary Password</h3>
-                <p>Please save this password securely. You will need it to log in once your registration is approved:</p>
-                <div class="password-display">
-                    <code><?php echo htmlspecialchars($_SESSION['temp_password']); ?></code>
-                </div>
-                <p class="warning">Please change this password after your first login!</p>
-            </div>
-            <?php unset($_SESSION['temp_password']); ?>
-        <?php endif; ?>
-
         <div class="timeline">
             <div class="timeline-item active">
                 <div class="timeline-content">
