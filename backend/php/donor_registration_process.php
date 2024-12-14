@@ -1,6 +1,9 @@
 <?php
 session_start();
-require_once '../config/db_connect.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once 'connection.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -10,7 +13,7 @@ function sanitize_input($data) {
     return $data;
 }
 
-// Function to handle file upload
+// Function to handle single file upload
 function handle_file_upload($file, $target_dir) {
     // Create directory if it doesn't exist
     if (!is_dir($target_dir)) {
@@ -19,7 +22,7 @@ function handle_file_upload($file, $target_dir) {
     
     // Check if file was actually uploaded
     if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
-        return null;
+        throw new Exception("No file uploaded.");
     }
     
     $target_file = $target_dir . basename($file["name"]);
@@ -42,121 +45,177 @@ function handle_file_upload($file, $target_dir) {
     if (move_uploaded_file($file["tmp_name"], $target_file)) {
         return $filename;
     } else {
-        throw new Exception("Error uploading file.");
+        throw new Exception("Error uploading file: " . error_get_last()['message']);
     }
+}
+
+// Function to handle multiple file uploads
+function handle_multiple_file_uploads($files, $target_dir) {
+    if (!is_array($files['name'])) {
+        return null;
+    }
+
+    $uploaded_files = [];
+    
+    for ($i = 0; $i < count($files['name']); $i++) {
+        if ($files['error'][$i] === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+
+        $file = [
+            'name' => $files['name'][$i],
+            'type' => $files['type'][$i],
+            'tmp_name' => $files['tmp_name'][$i],
+            'error' => $files['error'][$i],
+            'size' => $files['size'][$i]
+        ];
+
+        $uploaded_files[] = handle_file_upload($file, $target_dir);
+    }
+
+    return !empty($uploaded_files) ? implode(',', $uploaded_files) : null;
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        // Basic validation
-        if (empty($_POST['fullName']) || empty($_POST['gender']) || empty($_POST['dob']) || 
-            empty($_POST['bloodGroup']) || empty($_POST['address']) || empty($_POST['phone']) || 
-            empty($_POST['email']) || empty($_POST['username']) || empty($_POST['password'])) {
-            throw new Exception("Please fill in all required fields.");
+        // Debug: Print POST data
+        error_log("POST data: " . print_r($_POST, true));
+        error_log("FILES data: " . print_r($_FILES, true));
+
+        // Validate required fields
+        $required_fields = ['fullName', 'gender', 'dob', 'bloodGroup', 'email', 'phone', 'address'];
+        foreach ($required_fields as $field) {
+            if (empty($_POST[$field])) {
+                throw new Exception("Required field missing: " . $field);
+            }
         }
 
-        // Validate password match
-        if ($_POST['password'] !== $_POST['confirmPassword']) {
-            throw new Exception("Passwords do not match.");
-        }
-
-        // Validate organ selection
-        if (!isset($_POST['organs']) || empty($_POST['organs'])) {
-            throw new Exception("Please select at least one organ to donate.");
-        }
-
-        // Sanitize inputs
-        $fullName = sanitize_input($_POST['fullName']);
+        // Sanitize and validate input
+        $name = sanitize_input($_POST['fullName']);
         $gender = sanitize_input($_POST['gender']);
         $dob = sanitize_input($_POST['dob']);
-        $bloodGroup = sanitize_input($_POST['bloodGroup']);
-        $address = sanitize_input($_POST['address']);
+        $blood_group = sanitize_input($_POST['bloodGroup']);
+        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
         $phone = sanitize_input($_POST['phone']);
-        $email = sanitize_input($_POST['email']);
-        $medicalConditions = isset($_POST['medicalConditions']) ? sanitize_input($_POST['medicalConditions']) : '';
-        $organs = implode(',', $_POST['organs']);
-        $donationReason = sanitize_input($_POST['donationReason']);
-        $username = sanitize_input($_POST['username']);
-        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $address = sanitize_input($_POST['address']);
+        $medical_conditions = sanitize_input($_POST['medicalConditions']);
+        $organs = sanitize_input($_POST['organs']);
+        $reason = sanitize_input($_POST['donationReason']);
+        $guardian_name = sanitize_input($_POST['guardianName']);
+        $guardian_email = filter_var($_POST['guardianEmail'], FILTER_SANITIZE_EMAIL);
+        $guardian_phone = sanitize_input($_POST['guardianPhone']);
+        
+        // Generate a random password for the donor
+        $password = bin2hex(random_bytes(8)); // generates a 16-character random password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Optional guardian details
-        $guardianName = isset($_POST['guardianName']) ? sanitize_input($_POST['guardianName']) : null;
-        $guardianEmail = isset($_POST['guardianEmail']) ? sanitize_input($_POST['guardianEmail']) : null;
-        $guardianPhone = isset($_POST['guardianPhone']) ? sanitize_input($_POST['guardianPhone']) : null;
-        $guardianConfirmation = isset($_POST['guardianConfirmation']) ? 1 : 0;
-
-        // Check if username or email already exists
-        $stmt = $conn->prepare("SELECT id FROM donors WHERE username = ? OR email = ?");
-        $stmt->execute([$username, $email]);
-        if ($stmt->rowCount() > 0) {
-            throw new Exception("Username or email already exists.");
+        // Validate email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Invalid email format.");
         }
 
-        // Base upload directory
-        $baseUploadDir = __DIR__ . '/../../uploads/donors/' . $username . '/';
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM donor WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetchColumn() > 0) {
+            throw new Exception("Email already registered.");
+        }
 
-        // Handle ID Proof upload
-        $idProofPath = null;
+        // Handle ID proof upload
+        $id_proof_path = null;
         if (isset($_FILES['idProof']) && $_FILES['idProof']['error'] !== UPLOAD_ERR_NO_FILE) {
-            $idProofPath = handle_file_upload($_FILES['idProof'], $baseUploadDir . 'id_proof/');
+            $upload_dir = __DIR__ . "/../../uploads/donor_documents/";
+            $id_proof_path = handle_file_upload($_FILES['idProof'], $upload_dir);
+        } else {
+            throw new Exception("ID proof is required.");
         }
 
-        // Handle Medical Reports upload
-        $medicalReportsPath = null;
-        if (isset($_FILES['medicalReports']) && $_FILES['medicalReports']['error'][0] !== UPLOAD_ERR_NO_FILE) {
-            $medicalReportPaths = [];
-            foreach ($_FILES['medicalReports']['tmp_name'] as $key => $tmp_name) {
-                if (!empty($tmp_name)) {
-                    $file = [
-                        'name' => $_FILES['medicalReports']['name'][$key],
-                        'type' => $_FILES['medicalReports']['type'][$key],
-                        'tmp_name' => $tmp_name,
-                        'error' => $_FILES['medicalReports']['error'][$key],
-                        'size' => $_FILES['medicalReports']['size'][$key]
-                    ];
-                    $medicalReportPaths[] = handle_file_upload($file, $baseUploadDir . 'medical_reports/');
-                }
-            }
-            $medicalReportsPath = !empty($medicalReportPaths) ? implode(',', $medicalReportPaths) : null;
+        // Handle medical reports upload (if provided)
+        $medical_reports_path = null;
+        if (isset($_FILES['medicalReports'])) {
+            $upload_dir = __DIR__ . "/../../uploads/medical_reports/";
+            $medical_reports_path = handle_multiple_file_uploads($_FILES['medicalReports'], $upload_dir);
         }
 
-        // Handle Guardian ID Proof upload
-        $guardianIdProofPath = null;
+        // Handle guardian ID proof upload (if provided)
+        $guardian_id_proof_path = null;
         if (isset($_FILES['guardianIdProof']) && $_FILES['guardianIdProof']['error'] !== UPLOAD_ERR_NO_FILE) {
-            $guardianIdProofPath = handle_file_upload($_FILES['guardianIdProof'], $baseUploadDir . 'guardian_proof/');
+            $upload_dir = __DIR__ . "/../../uploads/guardian_documents/";
+            $guardian_id_proof_path = handle_file_upload($_FILES['guardianIdProof'], $upload_dir);
         }
 
-        // Insert into database
-        $stmt = $conn->prepare("INSERT INTO donors (
-            full_name, gender, date_of_birth, blood_group, address, phone, email,
-            medical_conditions, organs_to_donate, medical_reports_path, id_proof_path,
-            donation_reason, username, password, guardian_name, guardian_email,
-            guardian_phone, guardian_id_proof_path, guardian_confirmation,
-            policy_agreement, terms_agreement
+        // Begin transaction
+        $conn->beginTransaction();
+
+        // Debug: Print SQL data
+        $sql = "INSERT INTO donor (
+            name, gender, dob, blood_group, email, phone, address,
+            medical_conditions, organs_to_donate, medical_reports_path,
+            id_proof_path, reason_for_donation, guardian_name,
+            guardian_email, guardian_phone, guardian_id_proof_path,
+            password, status
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )");
+            ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, 'Pending'
+        )";
+        
+        // Debug log the parameters
+        $params = [
+            $name,                  // name
+            $gender,                // gender
+            $dob,                   // dob
+            $blood_group,           // blood_group
+            $email,                 // email
+            $phone,                 // phone
+            $address,               // address
+            $medical_conditions,    // medical_conditions
+            $organs,                // organs_to_donate
+            $medical_reports_path,  // medical_reports_path
+            $id_proof_path,         // id_proof_path
+            $reason,                // reason_for_donation
+            $guardian_name,         // guardian_name
+            $guardian_email,        // guardian_email
+            $guardian_phone,        // guardian_phone
+            $guardian_id_proof_path, // guardian_id_proof_path
+            $hashed_password       // password
+        ];
+        
+        error_log("SQL Query: " . $sql);
+        error_log("Parameters: " . print_r($params, true));
 
-        $stmt->execute([
-            $fullName, $gender, $dob, $bloodGroup, $address, $phone, $email,
-            $medicalConditions, $organs, $medicalReportsPath, $idProofPath,
-            $donationReason, $username, $password, $guardianName, $guardianEmail,
-            $guardianPhone, $guardianIdProofPath, $guardianConfirmation,
-            isset($_POST['policyAgreement']) ? 1 : 0,
-            isset($_POST['termsAgreement']) ? 1 : 0
-        ]);
+        // Insert donor data
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($params);
 
-        $_SESSION['success'] = "Registration successful! You can now login.";
-        header("Location: ../../pages/donor_login.php");
+        // Commit transaction
+        $conn->commit();
+
+        // Store the password in session to show on success page
+        $_SESSION['temp_password'] = $password;
+
+        // Set success message and session variables
+        $_SESSION['registration_success'] = true;
+        $_SESSION['donor_email'] = $email;
+        
+        // Redirect to success page
+        header("Location: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/donor_registration_success.php");
         exit();
 
     } catch(Exception $e) {
+        // Rollback transaction if active
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        
+        error_log("Error in donor registration: " . $e->getMessage());
         $_SESSION['error'] = $e->getMessage();
-        header("Location: ../../pages/donor_registration.php");
+        header("Location: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/donor_registration.php");
         exit();
     }
 } else {
-    header("Location: ../../pages/donor_registration.php");
+    header("Location: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/donor_registration.php");
     exit();
 }
-?>
