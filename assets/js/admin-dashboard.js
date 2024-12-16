@@ -145,6 +145,15 @@ function updateNotifications() {
         .catch(error => console.error('Error updating notifications:', error));
 }
 
+// Function to update all dashboard data
+function updateAllDashboardData() {
+    updateDashboardStats();
+    updatePendingHospitals();
+    updatePendingDonors();
+    updatePendingRecipients();
+    updateNotifications();
+}
+
 // Function to update hospital status
 function updateHospitalStatus(hospitalId, status) {
     const formData = new FormData();
@@ -158,10 +167,7 @@ function updateHospitalStatus(hospitalId, status) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            // Update both stats and pending hospitals table
-            updateDashboardStats();
-            updatePendingHospitals();
-            // Show success message
+            updateAllDashboardData(); // Update everything immediately
             showNotification('Hospital status updated successfully', 'success');
         } else {
             showNotification('Failed to update hospital status', 'error');
@@ -186,9 +192,7 @@ function updateDonorStatus(donorId, status) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            // Update both stats and pending donors table
-            updateDashboardStats();
-            updatePendingDonors();
+            updateAllDashboardData(); // Update everything immediately
             showNotification('Donor status updated successfully', 'success');
         } else {
             showNotification('Failed to update donor status', 'error');
@@ -213,9 +217,7 @@ function updateRecipientStatus(recipientId, status) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            // Update both stats and pending recipients table
-            updateDashboardStats();
-            updatePendingRecipients();
+            updateAllDashboardData(); // Update everything immediately
             showNotification('Recipient status updated successfully', 'success');
         } else {
             showNotification('Failed to update recipient status', 'error');
@@ -250,19 +252,7 @@ function escapeHtml(unsafe) {
 }
 
 // Update all tables every 30 seconds
-setInterval(() => {
-    updateDashboardStats();
-    updatePendingHospitals();
-    updatePendingDonors();
-    updatePendingRecipients();
-    updateNotifications();
-}, 30000);
+setInterval(updateAllDashboardData, 30000);
 
 // Initial update when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardStats();
-    updatePendingHospitals();
-    updatePendingDonors();
-    updatePendingRecipients();
-    updateNotifications();
-});
+document.addEventListener('DOMContentLoaded', updateAllDashboardData);

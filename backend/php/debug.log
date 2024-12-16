@@ -895,3 +895,58 @@
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
 2024-12-16 04:43:09: SQL executed successfully
 2024-12-16 04:43:09: Transaction committed
+2024-12-16 10:05:37: Registration process started
+2024-12-16 10:05:37: POST data: Array
+(
+    [hospital_name] => verifyhospitals
+    [hospital_email] => verifyhospital@gmail.com
+    [hospital_phone] => 0654789433
+    [street] => no.40 unkown nagar
+    [city] => chennai
+    [state] => tamil nadu
+    [postal_code] => 600091
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => verifyguy
+    [designation] => chjeif
+    [contact_phone] => 9000000009
+    [contact_email] => cheifffff@gmail.com
+    [license_number] => 11139
+    [username] => verify123
+    [password] => @Verify123
+    [confirm_password] => @Verify123
+    [terms] => on
+)
+
+2024-12-16 10:05:37: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 9. range1000 hw.png
+            [full_path] => 9. range1000 hw.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php159C.tmp
+            [error] => 0
+            [size] => 70991
+        )
+
+)
+
+2024-12-16 10:05:37: Database connection successful
+2024-12-16 10:05:37: Sanitized inputs: name=verifyhospitals, email=verifyhospital@gmail.com, phone=0654789433
+2024-12-16 10:05:37: Address: no.40 unkown nagar, chennai, tamil nadu, 600091, India
+2024-12-16 10:05:37: Region: tamil nadu
+2024-12-16 10:05:37: Attempting to upload file to: ../../uploads/licenses/11139_1734339937.png
+2024-12-16 10:05:37: File uploaded successfully
+2024-12-16 10:05:37: Transaction started
+2024-12-16 10:05:38: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2024-12-16 10:05:38: SQL executed successfully
+2024-12-16 10:05:38: Transaction committed

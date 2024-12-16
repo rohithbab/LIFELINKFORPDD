@@ -239,23 +239,86 @@ function getPendingRecipients($conn) {
     }
 }
 
-// Update donor status
+// Function to add system notification
+function addSystemNotification($conn, $type, $message) {
+    try {
+        $stmt = $conn->prepare("
+            INSERT INTO notifications (type, message, created_at, is_read) 
+            VALUES (:type, :message, NOW(), 0)
+        ");
+        return $stmt->execute([
+            'type' => $type,
+            'message' => $message
+        ]);
+    } catch (PDOException $e) {
+        error_log("Error adding notification: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Update donor status with notification
 function updateDonorStatus($conn, $donor_id, $status) {
     try {
+        $conn->beginTransaction();
+        
+        // Update status
         $stmt = $conn->prepare("UPDATE donors SET status = :status WHERE id = :donor_id");
-        return $stmt->execute(['status' => $status, 'donor_id' => $donor_id]);
+        $success = $stmt->execute(['status' => $status, 'donor_id' => $donor_id]);
+        
+        if ($success) {
+            // Get donor details for notification
+            $stmt = $conn->prepare("SELECT name, organ_type FROM donors WHERE id = :donor_id");
+            $stmt->execute(['donor_id' => $donor_id]);
+            $donor = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Create notification
+            $message = sprintf(
+                "Donor %s (%s) has been %s",
+                $donor['name'],
+                $donor['organ_type'],
+                $status
+            );
+            addSystemNotification($conn, 'donor_' . $status, $message);
+        }
+        
+        $conn->commit();
+        return $success;
     } catch (PDOException $e) {
+        $conn->rollBack();
         error_log("Error updating donor status: " . $e->getMessage());
         return false;
     }
 }
 
-// Update recipient status
+// Update recipient status with notification
 function updateRecipientStatus($conn, $recipient_id, $status) {
     try {
+        $conn->beginTransaction();
+        
+        // Update status
         $stmt = $conn->prepare("UPDATE recipients SET status = :status WHERE id = :recipient_id");
-        return $stmt->execute(['status' => $status, 'recipient_id' => $recipient_id]);
+        $success = $stmt->execute(['status' => $status, 'recipient_id' => $recipient_id]);
+        
+        if ($success) {
+            // Get recipient details for notification
+            $stmt = $conn->prepare("SELECT name, organ_needed FROM recipients WHERE id = :recipient_id");
+            $stmt->execute(['recipient_id' => $recipient_id]);
+            $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Create notification
+            $message = sprintf(
+                "Recipient %s (needs %s) has been %s",
+                $recipient['name'],
+                $recipient['organ_needed'],
+                $status
+            );
+            addSystemNotification($conn, 'recipient_' . $status, $message);
+        }
+        
+        $conn->commit();
+        return $success;
     } catch (PDOException $e) {
+        $conn->rollBack();
         error_log("Error updating recipient status: " . $e->getMessage());
         return false;
     }
