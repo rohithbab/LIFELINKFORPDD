@@ -124,6 +124,24 @@ session_start();
     <div class="container" style="padding: 2rem;">
         <h2 class="text-center" style="margin-bottom: 2rem; color: var(--primary-blue);">Recipient Registration</h2>
         
+        <?php
+        // Display error message if any
+        if (isset($_SESSION['error'])) {
+            echo '<div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #f5c6cb;">';
+            echo '<i class="fas fa-exclamation-circle"></i> ' . htmlspecialchars($_SESSION['error']);
+            echo '</div>';
+            unset($_SESSION['error']);
+        }
+        
+        // Display success message if any
+        if (isset($_SESSION['success'])) {
+            echo '<div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #c3e6cb;">';
+            echo '<i class="fas fa-check-circle"></i> ' . htmlspecialchars($_SESSION['success']);
+            echo '</div>';
+            unset($_SESSION['success']);
+        }
+        ?>
+        
         <form action="../backend/php/recipient_registration_process.php" method="POST" enctype="multipart/form-data" id="recipientForm">
             <!-- Personal Details Section -->
             <div class="form-section">
@@ -222,8 +240,12 @@ session_start();
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="idProof">ID Proof Upload *</label>
-                        <input type="file" id="idProof" name="idProof" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <label for="idNumber">ID Number *</label>
+                        <input type="text" id="idNumber" name="idNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="idDocument">ID Document Upload *</label>
+                        <input type="file" id="idDocument" name="idDocument" accept=".pdf,.jpg,.jpeg,.png" required>
                         <small class="error-message">Supported formats: PDF, JPG, JPEG, PNG (Max size: 2MB)</small>
                     </div>
                 </div>
@@ -300,7 +322,7 @@ session_start();
 
             // File size validation
             const medicalRecords = document.getElementById('medicalRecords').files[0];
-            const idProof = document.getElementById('idProof').files[0];
+            const idDocument = document.getElementById('idDocument').files[0];
 
             if (medicalRecords && medicalRecords.size > 5 * 1024 * 1024) {
                 e.preventDefault();
@@ -308,9 +330,9 @@ session_start();
                 return;
             }
 
-            if (idProof && idProof.size > 2 * 1024 * 1024) {
+            if (idDocument && idDocument.size > 2 * 1024 * 1024) {
                 e.preventDefault();
-                alert('ID proof file size must be less than 2MB!');
+                alert('ID document file size must be less than 2MB!');
                 return;
             }
         });

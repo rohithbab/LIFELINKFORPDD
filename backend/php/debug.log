@@ -840,3 +840,58 @@
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
 2024-12-14 06:57:18: SQL executed successfully
 2024-12-14 06:57:18: Transaction committed
+2024-12-16 04:43:09: Registration process started
+2024-12-16 04:43:09: POST data: Array
+(
+    [hospital_name] => carehospitals
+    [hospital_email] => care123@gmail.com
+    [hospital_phone] => 06547894322
+    [street] => no.40 unkown nagar
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => nithya
+    [designation] => chjeif
+    [contact_phone] => 01233214562
+    [contact_email] => cheif@gmail.com
+    [license_number] => 11132
+    [username] => care123
+    [password] => @Care12345
+    [confirm_password] => @Care12345
+    [terms] => on
+)
+
+2024-12-16 04:43:09: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 7.geometric progression.png
+            [full_path] => 7.geometric progression.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpD9EB.tmp
+            [error] => 0
+            [size] => 84418
+        )
+
+)
+
+2024-12-16 04:43:09: Database connection successful
+2024-12-16 04:43:09: Sanitized inputs: name=carehospitals, email=care123@gmail.com, phone=06547894322
+2024-12-16 04:43:09: Address: no.40 unkown nagar, chennai, India, 600081, India
+2024-12-16 04:43:09: Region: India
+2024-12-16 04:43:09: Attempting to upload file to: ../../uploads/licenses/11132_1734320589.png
+2024-12-16 04:43:09: File uploaded successfully
+2024-12-16 04:43:09: Transaction started
+2024-12-16 04:43:09: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2024-12-16 04:43:09: SQL executed successfully
+2024-12-16 04:43:09: Transaction committed

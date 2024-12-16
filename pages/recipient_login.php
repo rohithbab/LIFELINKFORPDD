@@ -42,8 +42,8 @@ session_start();
         .login-btn {
             background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
             color: white;
-            padding: 1rem;
             border: none;
+            padding: 1rem;
             border-radius: 5px;
             font-size: 1.1rem;
             cursor: pointer;
@@ -79,41 +79,74 @@ session_start();
             </a>
             <div class="nav-links">
                 <a href="../index.php" class="btn" style="
-                    background: var(--primary-blue);
-                    color: var(--white);
-                    transition: all 0.3s ease;
-                    border: 2px solid var(--primary-blue);
+                    color: var(--primary-blue);
+                    text-decoration: none;
+                    font-weight: 500;
                     padding: 0.5rem 1rem;
-                    font-size: 0.9rem;
-                " onmouseover="
-                    this.style.background='transparent';
-                    this.style.color='var(--primary-blue)';
-                " onmouseout="
-                    this.style.background='var(--primary-blue)';
-                    this.style.color='var(--white)';
-                "><i class="fas fa-home"></i> Back to Home</a>
+                    border-radius: 5px;
+                    transition: background-color 0.3s ease;
+                " onmouseover="this.style.backgroundColor='rgba(0, 123, 255, 0.1)'" 
+                   onmouseout="this.style.backgroundColor='transparent'">
+                    Back to Home
+                </a>
             </div>
         </div>
     </nav>
+
+    <?php
+    // Display debug info if available
+    if (isset($_SESSION['debug_info'])) {
+        echo '<div style="position: fixed; top: 10px; right: 10px; background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace; max-width: 400px; z-index: 1000;">';
+        echo '<strong>Debug Info:</strong><br>';
+        
+        if (isset($_SESSION['debug_info']['input_email'])) {
+            echo 'Input Email: ' . htmlspecialchars($_SESSION['debug_info']['input_email']) . '<br>';
+        }
+        
+        if (isset($_SESSION['debug_info']['input_odml'])) {
+            echo 'Input ODML: ' . htmlspecialchars($_SESSION['debug_info']['input_odml']) . '<br>';
+        }
+        
+        if (isset($_SESSION['debug_info']['user_found'])) {
+            echo 'User Found: ' . htmlspecialchars($_SESSION['debug_info']['user_found']) . '<br>';
+        }
+        
+        if (isset($_SESSION['debug_info']['db_data'])) {
+            echo '<br><strong>Database Data:</strong><br>';
+            foreach ($_SESSION['debug_info']['db_data'] as $key => $value) {
+                echo htmlspecialchars($key) . ': ' . htmlspecialchars($value) . '<br>';
+            }
+        }
+        
+        echo '</div>';
+    }
+
+    // Display error message if any
+    if (isset($_SESSION['error'])) {
+        echo '<div class="alert alert-danger" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #f8d7da; color: #721c24; padding: 10px; border: 1px solid #f5c6cb; border-radius: 5px; z-index: 1000;">';
+        echo htmlspecialchars($_SESSION['error']);
+        echo '</div>';
+    }
+    ?>
 
     <div class="container">
         <div class="login-container">
             <h2 class="text-center" style="color: var(--primary-blue); margin-bottom: 2rem;">Recipient Login</h2>
             
-            <?php if (isset($_SESSION['error_message'])): ?>
+            <?php if (isset($_SESSION['error'])): ?>
                 <div class="error-message text-center">
                     <?php 
-                        echo $_SESSION['error_message'];
-                        unset($_SESSION['error_message']);
+                        echo $_SESSION['error'];
+                        unset($_SESSION['error']);
                     ?>
                 </div>
             <?php endif; ?>
 
-            <?php if (isset($_SESSION['success_message'])): ?>
+            <?php if (isset($_SESSION['success'])): ?>
                 <div class="success-message text-center">
                     <?php 
-                        echo $_SESSION['success_message'];
-                        unset($_SESSION['success_message']);
+                        echo $_SESSION['success'];
+                        unset($_SESSION['success']);
                     ?>
                 </div>
             <?php endif; ?>
@@ -125,10 +158,10 @@ session_start();
                 </div>
 
                 <div class="form-group">
-                    <label for="odm_id">ODM ID</label>
-                    <input type="text" id="odm_id" name="odm_id" required>
+                    <label for="odml_id">ODML ID</label>
+                    <input type="text" id="odml_id" name="odml_id" required>
                     <div class="info-tooltip">
-                        <i class="fas fa-info-circle"></i> Enter the ODM ID provided after verification
+                        <i class="fas fa-info-circle"></i> Enter the ODML ID sent to your email after approval
                     </div>
                 </div>
 
@@ -156,26 +189,13 @@ session_start();
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const email = document.getElementById('email').value;
-            const odmId = document.getElementById('odm_id').value;
-            const password = document.getElementById('password').value;
-
-            if (!email || !odmId || !password) {
-                e.preventDefault();
-                alert('Please fill in all fields');
-                return;
-            }
-
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                e.preventDefault();
-                alert('Please enter a valid email address');
-                return;
-            }
-        });
-    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+<?php
+// Clear session messages after displaying
+unset($_SESSION['error']);
+unset($_SESSION['debug_info']);
+?>

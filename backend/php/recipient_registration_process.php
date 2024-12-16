@@ -1,127 +1,135 @@
 <?php
 session_start();
-require_once '../config/db_connection.php';
+require_once 'connection.php';
 
 // Function to sanitize input
-function sanitize($data) {
+function sanitize_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
     return $data;
 }
 
-// Function to handle file upload
-function handleFileUpload($file, $targetDir, $maxSize, $allowedTypes) {
-    if ($file['size'] > $maxSize) {
-        return ['success' => false, 'message' => 'File size exceeds the limit'];
-    }
-
-    $fileType = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($fileType, $allowedTypes)) {
-        return ['success' => false, 'message' => 'Invalid file type'];
-    }
-
-    // Create unique filename
-    $fileName = uniqid() . '.' . $fileType;
-    $targetPath = $targetDir . $fileName;
-
-    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-        return ['success' => true, 'path' => $targetPath];
-    } else {
-        return ['success' => false, 'message' => 'Failed to upload file'];
-    }
-}
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        // Personal Details
-        $fullName = sanitize($_POST['fullName']);
-        $dob = sanitize($_POST['dob']);
-        $gender = sanitize($_POST['gender']);
-        $phone = sanitize($_POST['phone']);
-        $email = sanitize($_POST['email']);
-        $address = sanitize($_POST['address']);
+        // Get and sanitize input
+        $full_name = sanitize_input($_POST['fullName']);
+        $date_of_birth = sanitize_input($_POST['dob']);
+        $gender = sanitize_input($_POST['gender']);
+        $phone_number = sanitize_input($_POST['phone']);
+        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+        $address = sanitize_input($_POST['address']);
+        $medical_condition = sanitize_input($_POST['medicalCondition']);
+        $blood_type = sanitize_input($_POST['bloodType']);
+        $organ_required = sanitize_input($_POST['organRequired']);
+        $organ_reason = sanitize_input($_POST['organReason']);
+        $id_proof_type = sanitize_input($_POST['idType']);
+        $id_proof_number = sanitize_input($_POST['idNumber']);
+        
+        // Handle file upload for ID document
+        $id_document = '';
+        if(isset($_FILES['idDocument']) && $_FILES['idDocument']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../../uploads/id_documents/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            $file_extension = strtolower(pathinfo($_FILES['idDocument']['name'], PATHINFO_EXTENSION));
+            $new_filename = uniqid() . '.' . $file_extension;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if(move_uploaded_file($_FILES['idDocument']['tmp_name'], $upload_path)) {
+                $id_document = $new_filename;
+            } else {
+                throw new Exception("Failed to upload ID document. Please try again.");
+            }
+        } else {
+            throw new Exception("ID document is required.");
+        }
 
-        // Medical Information
-        $medicalCondition = sanitize($_POST['medicalCondition']);
-        $bloodType = sanitize($_POST['bloodType']);
-        $organRequired = sanitize($_POST['organRequired']);
+        // Generate username from email (part before @)
+        $username = explode('@', $email)[0];
+        // Add random number if username exists
+        $stmt = $conn->prepare("SELECT id FROM recipient_registration WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetch()) {
+            $username .= rand(100, 999);
+        }
 
-        // ID Information
-        $idType = sanitize($_POST['idType']);
-
-        // Authentication Information
-        $username = sanitize($_POST['username']);
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        // Handle file uploads
-        $uploadDir = '../../uploads/recipients/';
-        if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        // Validate email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Invalid email format.");
         }
 
-        // Medical Records Upload
-        $medicalRecordsResult = handleFileUpload(
-            $_FILES['medicalRecords'],
-            $uploadDir . 'medical_records/',
-            5 * 1024 * 1024, // 5MB
-            ['pdf', 'doc', 'docx']
-        );
-
-        if (!$medicalRecordsResult['success']) {
-            throw new Exception('Medical Records: ' . $medicalRecordsResult['message']);
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT id FROM recipient_registration WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            throw new Exception("Email already registered.");
         }
 
-        // ID Proof Upload
-        $idProofResult = handleFileUpload(
-            $_FILES['idProof'],
-            $uploadDir . 'id_proofs/',
-            2 * 1024 * 1024, // 2MB
-            ['pdf', 'jpg', 'jpeg', 'png']
-        );
+        // Begin transaction
+        $conn->beginTransaction();
 
-        if (!$idProofResult['success']) {
-            throw new Exception('ID Proof: ' . $idProofResult['message']);
+        // Insert into recipient_registration table
+        $sql = "INSERT INTO recipient_registration (
+            full_name, date_of_birth, gender, phone_number, email, address,
+            medical_condition, blood_type, organ_required, organ_reason,
+            id_proof_type, id_proof_number, id_document,
+            username, password, request_status
+        ) VALUES (
+            :full_name, :date_of_birth, :gender, :phone_number, :email, :address,
+            :medical_condition, :blood_type, :organ_required, :organ_reason,
+            :id_proof_type, :id_proof_number, :id_document,
+            :username, :password, 'pending'
+        )";
+
+        $stmt = $conn->prepare($sql);
+        
+        // Bind parameters
+        $params = [
+            ':full_name' => $full_name,
+            ':date_of_birth' => $date_of_birth,
+            ':gender' => $gender,
+            ':phone_number' => $phone_number,
+            ':email' => $email,
+            ':address' => $address,
+            ':medical_condition' => $medical_condition,
+            ':blood_type' => $blood_type,
+            ':organ_required' => $organ_required,
+            ':organ_reason' => $organ_reason,
+            ':id_proof_type' => $id_proof_type,
+            ':id_proof_number' => $id_proof_number,
+            ':id_document' => $id_document,
+            ':username' => $username,
+            ':password' => $password
+        ];
+        
+        $stmt->execute($params);
+
+        // Commit transaction
+        $conn->commit();
+
+        // Set success message and session variables
+        $_SESSION['success'] = "Registration successful! Your username is: $username";
+        $_SESSION['recipient_email'] = $email;
+
+        // Redirect to success page
+        header("Location: ../../pages/recipient_registration_success.php");
+        exit();
+
+    } catch(Exception $e) {
+        // Rollback transaction on error
+        if ($conn->inTransaction()) {
+            $conn->rollback();
         }
-
-        // Check if email or username already exists
-        $stmt = $conn->prepare("SELECT id FROM recipients WHERE email = ? OR username = ?");
-        $stmt->bind_param("ss", $email, $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            throw new Exception("Email or username already exists!");
-        }
-
-        // Insert into database
-        $stmt = $conn->prepare("INSERT INTO recipients (
-            full_name, date_of_birth, gender, phone, email, address,
-            medical_condition, blood_type, organ_required,
-            medical_records_path, id_type, id_proof_path,
-            username, password, policy_agreement,
-            medical_records_consent, terms_agreement
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 1)");
-
-        $stmt->bind_param("sssssssssssss",
-            $fullName, $dob, $gender, $phone, $email, $address,
-            $medicalCondition, $bloodType, $organRequired,
-            $medicalRecordsResult['path'], $idType, $idProofResult['path'],
-            $username, $password
-        );
-
-        if ($stmt->execute()) {
-            $_SESSION['success_message'] = "Registration successful! Please wait for verification.";
-            header("Location: ../../pages/recipient_login.php");
-            exit();
-        } else {
-            throw new Exception("Error in registration. Please try again.");
-        }
-
-    } catch (Exception $e) {
-        $_SESSION['error_message'] = $e->getMessage();
+        $_SESSION['error'] = $e->getMessage();
         header("Location: ../../pages/recipient_registration.php");
         exit();
     }
+} else {
+    $_SESSION['error'] = "Invalid request method";
+    header("Location: ../../pages/recipient_registration.php");
+    exit();
 }
-?>
