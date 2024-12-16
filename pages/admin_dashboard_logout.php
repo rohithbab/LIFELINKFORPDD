@@ -23,4 +23,3 @@ switch($userType) {
         header("Location: hospital_login.php");
 }
 exit();
-?>

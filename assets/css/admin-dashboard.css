@@ -37,6 +37,17 @@
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.sidebar-header .logo-gradient {
+    color: white;
+    font-weight: bold;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: initial;
 }
 
 .nav-menu {

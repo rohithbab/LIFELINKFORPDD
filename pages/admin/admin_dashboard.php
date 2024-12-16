@@ -245,7 +245,7 @@ $pending_count = $stmt->fetchColumn();
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="../logout.php" class="nav-link">
+                    <a href="../admin_dashboard_logout.php" class="nav-link">
                         <i class="fas fa-sign-out-alt"></i>
                         Logout
                     </a>
