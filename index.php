@@ -105,15 +105,18 @@
                         background: var(--primary-blue);
                         transition: all 0.3s ease;
                         color: var(--white);
-                        padding: 0.4rem 0.8rem;
-                        font-size: 0.8rem;
+                        padding: 0.8rem 1.5rem;
+                        font-size: 1.1rem;
+                        transform: translateY(0);
                    " 
                    onmouseover="
                         this.style.background='var(--primary-green)';
+                        this.style.transform='translateY(-5px)';
                         document.querySelector('.recipient-btn').style.background='transparent';
                    " 
                    onmouseout="
                         this.style.background='var(--primary-blue)';
+                        this.style.transform='translateY(0)';
                         document.querySelector('.recipient-btn').style.background='transparent';
                    ">Register as Donor</a>
                 <a href="pages/recipient_registration.php" 
@@ -123,16 +126,19 @@
                         color: var(--white);
                         transition: all 0.3s ease;
                         background: transparent;
-                        padding: 0.4rem 0.8rem;
-                        font-size: 0.8rem;
+                        padding: 0.8rem 1.5rem;
+                        font-size: 1.1rem;
+                        transform: translateY(0);
                    " 
                    onmouseover="
                         this.style.background='var(--primary-green)';
+                        this.style.transform='translateY(-5px)';
                         document.querySelector('.donor-btn').style.background='transparent';
                         document.querySelector('.donor-btn').style.border='2px solid var(--white)';
                    " 
                    onmouseout="
                         this.style.background='transparent';
+                        this.style.transform='translateY(0)';
                         document.querySelector('.donor-btn').style.background='var(--primary-blue)';
                    ">Register as Recipient</a>
             </div>
