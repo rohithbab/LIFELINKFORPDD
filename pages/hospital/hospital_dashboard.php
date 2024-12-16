@@ -1,15 +1,16 @@
 <?php
 session_start();
-require_once '../../config/connection.php';
+require_once '../../backend/php/connection.php';
 
 // Check if hospital is logged in
-if (!isset($_SESSION['hospital_id'])) {
-    header("Location: ../../index.php");
+if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
+    header("Location: ../../pages/hospital_login.php");
     exit();
 }
 
-$hospital_id = $_SESSION['hospital_id'];
 $hospital_name = $_SESSION['hospital_name'];
+$hospital_email = $_SESSION['hospital_email'];
+$odml_id = $_SESSION['odml_id'];
 ?>
 
 <!DOCTYPE html>
