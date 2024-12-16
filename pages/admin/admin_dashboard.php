@@ -12,6 +12,8 @@ if (!isset($_SESSION['admin_id'])) {
 $stats = getDashboardStats($conn);
 $notifications = getAdminNotifications($conn, 5);
 $pendingHospitals = getPendingHospitals($conn);
+$pendingDonors = getPendingDonors($conn);
+$pendingRecipients = getPendingRecipients($conn);
 $urgentRecipients = getUrgentRecipients($conn);
 
 // Get pending hospitals count using PDO
@@ -264,49 +266,203 @@ $pending_count = $stmt->fetchColumn();
                 <div class="card">
                     <i class="fas fa-hospital card-icon"></i>
                     <h3 class="card-title">Pending Hospitals</h3>
-                    <div class="card-value"><?php echo $pending_count; ?></div>
+                    <div class="card-value" data-stat="pending_hospitals"><?php echo isset($stats['pending_hospitals']) ? $stats['pending_hospitals'] : 0; ?></div>
                 </div>
                 <div class="card">
                     <i class="fas fa-user-plus card-icon"></i>
                     <h3 class="card-title">Total Donors</h3>
-                    <div class="card-value"><?php echo $stats['total_donors']; ?></div>
+                    <div class="card-value" data-stat="total_donors"><?php echo isset($stats['total_donors']) ? $stats['total_donors'] : 0; ?></div>
                 </div>
                 <div class="card">
                     <i class="fas fa-users card-icon"></i>
                     <h3 class="card-title">Total Recipients</h3>
-                    <div class="card-value"><?php echo $stats['total_recipients']; ?></div>
+                    <div class="card-value" data-stat="total_recipients"><?php echo isset($stats['total_recipients']) ? $stats['total_recipients'] : 0; ?></div>
                 </div>
                 <div class="card">
                     <i class="fas fa-handshake card-icon"></i>
                     <h3 class="card-title">Successful Matches</h3>
-                    <div class="card-value"><?php echo $stats['successful_matches']; ?></div>
+                    <div class="card-value" data-stat="successful_matches"><?php echo isset($stats['successful_matches']) ? $stats['successful_matches'] : 0; ?></div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-clock card-icon"></i>
+                    <h3 class="card-title">Pending Matches</h3>
+                    <div class="card-value" data-stat="pending_matches"><?php echo isset($stats['pending_matches']) ? $stats['pending_matches'] : 0; ?></div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-exclamation-triangle card-icon" style="color: #ff9800;"></i>
+                    <h3 class="card-title">Urgent Cases</h3>
+                    <div class="card-value" data-stat="urgent_recipients"><?php echo isset($stats['urgent_recipients']) ? $stats['urgent_recipients'] : 0; ?></div>
+                </div>
+            </div>
+
+            <!-- Pending Hospitals Section -->
+            <div class="table-container">
+                <h2>Pending Hospital Approvals (<span id="pending-hospitals-count"><?php echo count($pendingHospitals); ?></span>)</h2>
+                <table class="dashboard-table" id="pending-hospitals-table">
+                    <thead>
+                        <tr>
+                            <th>Hospital Name</th>
+                            <th>Email</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pendingHospitals as $hospital): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
+                            <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                            <td><?php echo date('M d, Y', strtotime($hospital['registration_date'])); ?></td>
+                            <td>
+                                <button class="btn-action btn-approve" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'approved')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn-action btn-reject" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'rejected')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pending Donors Section -->
+            <div class="table-container">
+                <h2>Pending Donor Approvals (<span id="pending-donors-count"><?php echo count($pendingDonors); ?></span>)</h2>
+                <table class="dashboard-table" id="pending-donors-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Blood Type</th>
+                            <th>Organ Type</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pendingDonors as $donor): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($donor['name']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['email']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['organ_type']); ?></td>
+                            <td><?php echo $donor['formatted_date']; ?></td>
+                            <td>
+                                <button class="btn-action btn-approve" onclick="updateDonorStatus(<?php echo $donor['id']; ?>, 'approved')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn-action btn-reject" onclick="updateDonorStatus(<?php echo $donor['id']; ?>, 'rejected')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pending Recipients Section -->
+            <div class="table-container">
+                <h2>Pending Recipient Approvals (<span id="pending-recipients-count"><?php echo count($pendingRecipients); ?></span>)</h2>
+                <table class="dashboard-table" id="pending-recipients-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Blood Type</th>
+                            <th>Needed Organ</th>
+                            <th>Urgency</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pendingRecipients as $recipient): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($recipient['name']); ?></td>
+                            <td><?php echo htmlspecialchars($recipient['email']); ?></td>
+                            <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
+                            <td><?php echo htmlspecialchars($recipient['organ_needed']); ?></td>
+                            <td>
+                                <span class="urgency-badge urgency-<?php echo strtolower($recipient['urgency_level']); ?>">
+                                    <?php echo $recipient['urgency_level']; ?>
+                                </span>
+                            </td>
+                            <td><?php echo $recipient['formatted_date']; ?></td>
+                            <td>
+                                <button class="btn-action btn-approve" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn-action btn-reject" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="notifications-section">
+                <h2>Recent Notifications</h2>
+                <div id="notifications-container">
+                    <?php foreach ($notifications as $notification): ?>
+                    <div class="notification-item">
+                        <div class="notification-content">
+                            <span class="notification-type"><?php echo htmlspecialchars($notification['type']); ?></span>
+                            <p><?php echo htmlspecialchars($notification['message']); ?></p>
+                            <small><?php echo date('M d, Y H:i', strtotime($notification['created_at'])); ?></small>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
             <!-- Recent Activities Table -->
             <div class="table-container">
-                <h2>Recent Activities</h2>
+                <h2>Recent Organ Match Activities</h2>
                 <table class="dashboard-table">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Activity</th>
+                            <th>Donor</th>
+                            <th>Recipient</th>
+                            <th>Hospital</th>
+                            <th>Organ Type</th>
                             <th>Status</th>
+                            <th>Urgency</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($notifications as $notification): ?>
+                        <?php 
+                        require_once '../../backend/php/organ_matches.php';
+                        $recent_matches = getOrganMatches($conn, ['limit' => 5]);
+                        foreach ($recent_matches as $match): 
+                        ?>
                         <tr>
-                            <td><?php echo date('M d, Y', strtotime($notification['created_at'])); ?></td>
-                            <td><?php echo $notification['message']; ?></td>
+                            <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
+                            <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                            <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                            <td><?php echo htmlspecialchars($match['hospital_name']); ?></td>
+                            <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
                             <td>
-                                <span class="status-badge status-<?php echo strtolower($notification['status']); ?>">
-                                    <?php echo $notification['status']; ?>
+                                <span class="status-badge status-<?php echo strtolower($match['status']); ?>">
+                                    <?php echo $match['status']; ?>
                                 </span>
                             </td>
                             <td>
-                                <button class="btn-action btn-view">View</button>
+                                <span class="urgency-badge urgency-<?php echo strtolower($match['urgency_level']); ?>">
+                                    <?php echo $match['urgency_level']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-action btn-view" onclick="viewMatch(<?php echo $match['match_id']; ?>)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -317,6 +473,6 @@ $pending_count = $stmt->fetchColumn();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../../assets/js/admin.js"></script>
+    <script src="../../assets/js/admin-dashboard.js"></script>
 </body>
 </html>

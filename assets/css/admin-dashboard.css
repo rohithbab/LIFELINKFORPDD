@@ -143,6 +143,22 @@
     color: var(--primary-blue);
 }
 
+.card-value.updating {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
 /* Tables */
 .table-container {
     background: var(--white);
@@ -172,42 +188,70 @@
     background: rgba(33, 150, 243, 0.05);
 }
 
-/* Status Badges */
-.status-badge {
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
+/* Status and Urgency Badges */
+.status-badge,
+.urgency-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
     font-weight: 500;
 }
 
-.status-pending {
-    background: rgba(255, 152, 0, 0.1);
-    color: #f57c00;
+.status-badge {
+    background-color: #f0f0f0;
 }
 
-.status-approved {
-    background: rgba(76, 175, 80, 0.1);
-    color: var(--primary-green);
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-confirmed {
+    background-color: #d4edda;
+    color: #155724;
 }
 
 .status-rejected {
-    background: rgba(244, 67, 54, 0.1);
-    color: #f44336;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.urgency-badge {
+    text-transform: uppercase;
+    font-size: 0.75em;
+}
+
+.urgency-high {
+    background-color: #dc3545;
+    color: white;
+}
+
+.urgency-medium {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.urgency-low {
+    background-color: #28a745;
+    color: white;
 }
 
 /* Action Buttons */
 .btn-action {
-    padding: 0.5rem 1rem;
+    padding: 4px 8px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
+    transition: background-color 0.2s;
 }
 
 .btn-view {
-    background: var(--primary-blue);
-    color: var(--white);
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-view:hover {
+    background-color: #0056b3;
 }
 
 .btn-edit {
@@ -220,7 +264,101 @@
     color: var(--white);
 }
 
+.btn-approve {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+}
+
+.btn-reject {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
 .btn-action:hover {
     opacity: 0.9;
     transform: translateY(-2px);
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 4px;
+    color: white;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #dc3545;
+}
+
+/* Notifications Section */
+.notifications-section {
+    margin-top: 2rem;
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notification-item {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notification-type {
+    font-weight: 500;
+    color: #007bff;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.notification-content p {
+    margin: 0;
+    color: #343a40;
+}
+
+.notification-content small {
+    color: #6c757d;
 }
