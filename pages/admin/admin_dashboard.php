@@ -28,7 +28,7 @@ $pending_count = $stmt->fetchColumn();
     <title>Admin Dashboard - LifeLink</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
-    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <style>
         /* Logo and Navigation Styles */
         .navbar {
@@ -195,144 +195,120 @@ $pending_count = $stmt->fetchColumn();
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <span class="logo-text"><span class="logo-gradient">LifeLink</span> Admin</span>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><span class="logo-gradient">LifeLink</span> Admin</h2>
             </div>
-            <div class="nav-links">
-                <a href="admin_dashboard.php" class="active">Hospital</a>
-                <a href="manage_donors.php">Donor</a>
-                <a href="manage_recipients.php">Recipients</a>
-                <a href="analytics.php">Analytics</a>
-                <a href="notifications.php">Notifications</a>
-                <a href="../logout.php" class="btn-logout">Logout</a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin_dashboard.php" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="manage_hospitals.php" class="nav-link">
+                        <i class="fas fa-hospital"></i>
+                        Manage Hospitals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="manage_donors.php" class="nav-link">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        Manage Donors
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="manage_recipients.php" class="nav-link">
+                        <i class="fas fa-user-plus"></i>
+                        Manage Recipients
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="analytics.php" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="notifications.php" class="nav-link">
+                        <i class="fas fa-bell"></i>
+                        Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.php" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../logout.php" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1>Dashboard Overview</h1>
             </div>
-        </div>
-    </nav>
 
-    <div class="dashboard-container">
-        <div class="welcome-section">
-            <h1>Welcome, Admin!</h1>
-            <p>Manage and monitor the organ donation system</p>
-        </div>
-
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- Pending Hospitals Card -->
-            <div class="card">
-                <h2>Pending Hospital Approvals</h2>
-                <div class="pending-list">
-                    <?php if (!empty($pendingHospitals)): ?>
-                        <?php foreach ($pendingHospitals as $hospital): ?>
-                            <div class="pending-item">
-                                <div class="hospital-info">
-                                    <div class="hospital-name">
-                                        <?php echo htmlspecialchars($hospital['name'] ?? $hospital['hospital_name'] ?? 'Unknown Hospital'); ?>
-                                    </div>
-                                    <div class="hospital-details">
-                                        Email: <?php echo htmlspecialchars($hospital['email'] ?? 'N/A'); ?><br>
-                                        Address: <?php echo htmlspecialchars($hospital['address'] ?? 'N/A'); ?>
-                                    </div>
-                                </div>
-                                <div class="action-buttons">
-                                    <?php if (isset($hospital['hospital_id'])): ?>
-                                        <button onclick="approveHospital(<?php echo $hospital['hospital_id']; ?>)" 
-                                                class="btn btn-success">
-                                            <i class="fas fa-check"></i> Approve
-                                        </button>
-                                        <button onclick="rejectHospital(<?php echo $hospital['hospital_id']; ?>)" 
-                                                class="btn btn-danger">
-                                            <i class="fas fa-times"></i> Reject
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p>No pending hospital approvals.</p>
-                    <?php endif; ?>
+            <!-- Stats Cards -->
+            <div class="dashboard-cards">
+                <div class="card">
+                    <i class="fas fa-hospital card-icon"></i>
+                    <h3 class="card-title">Pending Hospitals</h3>
+                    <div class="card-value"><?php echo $pending_count; ?></div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-user-plus card-icon"></i>
+                    <h3 class="card-title">Total Donors</h3>
+                    <div class="card-value"><?php echo $stats['total_donors']; ?></div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-users card-icon"></i>
+                    <h3 class="card-title">Total Recipients</h3>
+                    <div class="card-value"><?php echo $stats['total_recipients']; ?></div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-handshake card-icon"></i>
+                    <h3 class="card-title">Successful Matches</h3>
+                    <div class="card-value"><?php echo $stats['successful_matches']; ?></div>
                 </div>
             </div>
 
-            <!-- Urgent Recipients Card -->
-            <div class="card">
-                <h2>Urgent Recipients</h2>
-                <div class="urgent-list">
-                    <?php if (!empty($urgentRecipients)): ?>
-                        <?php foreach ($urgentRecipients as $recipient): ?>
-                            <div class="urgent-item">
-                                <h4><?php echo htmlspecialchars($recipient['name'] ?? 'Unknown Patient'); ?></h4>
-                                <p>Blood Type: <?php echo htmlspecialchars($recipient['blood_type'] ?? 'N/A'); ?></p>
-                                <p>Organ Needed: <?php echo htmlspecialchars($recipient['needed_organ'] ?? 'N/A'); ?></p>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p>No urgent recipients at this time.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hospital Management Section -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <h2><i class="fas fa-hospital"></i> Hospital Management</h2>
-                <a href="manage_hospitals.php" class="btn btn-primary">View All</a>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table">
+            <!-- Recent Activities Table -->
+            <div class="table-container">
+                <h2>Recent Activities</h2>
+                <table class="dashboard-table">
                     <thead>
                         <tr>
-                            <th>Hospital Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Registration Date</th>
-                            <th>License</th>
-                            <th>Actions</th>
+                            <th>Date</th>
+                            <th>Activity</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($pendingHospitals as $hospital): ?>
-                            <tr class="<?php echo isset($hospital['is_new']) && $hospital['is_new'] ? 'new-registration' : ''; ?>">
-                                <td>
-                                    <?php echo htmlspecialchars($hospital['name'] ?? $hospital['hospital_name'] ?? 'Unknown Hospital'); ?>
-                                    <?php if (isset($hospital['is_new']) && $hospital['is_new']): ?>
-                                        <span class="new-badge">New</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($hospital['email'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($hospital['phone'] ?? 'N/A'); ?></td>
-                                <td>
-                                    <?php 
-                                    echo isset($hospital['created_at']) 
-                                        ? date('Y-m-d H:i', strtotime($hospital['created_at'])) 
-                                        : 'N/A'; 
-                                    ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($hospital['hospital_id'])): ?>
-                                        <a href="../view_license.php?hospital_id=<?php echo $hospital['hospital_id']; ?>" 
-                                           target="_blank" 
-                                           class="btn btn-sm btn-primary">
-                                            <i class="fas fa-file-medical"></i> View License
-                                        </a>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($hospital['hospital_id'])): ?>
-                                        <button onclick="approveHospital(<?php echo $hospital['hospital_id']; ?>)" 
-                                                class="btn btn-sm btn-success">
-                                            <i class="fas fa-check"></i> Approve
-                                        </button>
-                                        <button onclick="rejectHospital(<?php echo $hospital['hospital_id']; ?>)" 
-                                                class="btn btn-sm btn-danger">
-                                            <i class="fas fa-times"></i> Reject
-                                        </button>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
+                        <?php foreach ($notifications as $notification): ?>
+                        <tr>
+                            <td><?php echo date('M d, Y', strtotime($notification['created_at'])); ?></td>
+                            <td><?php echo $notification['message']; ?></td>
+                            <td>
+                                <span class="status-badge status-<?php echo strtolower($notification['status']); ?>">
+                                    <?php echo $notification['status']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-action btn-view">View</button>
+                            </td>
+                        </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
