@@ -418,41 +418,4 @@ function getRegionalStats($conn) {
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-// Get recent organ matches with detailed information
-function getRecentOrganMatches($conn, $limit = 10) {
-    try {
-        $stmt = $conn->prepare("
-            SELECT 
-                om.*,
-                d.name as donor_name,
-                d.email as donor_email,
-                r.name as recipient_name,
-                r.email as recipient_email,
-                h.name as hospital_name,
-                h.email as hospital_email,
-                d.organ_type,
-                r.urgency_level,
-                om.status,
-                om.created_at as match_date,
-                om.updated_at as last_update
-            FROM 
-                organ_matches om
-                LEFT JOIN donor d ON om.donor_id = d.donor_id
-                LEFT JOIN recipient_registration r ON om.recipient_id = r.id
-                LEFT JOIN hospitals h ON r.hospital_id = h.hospital_id
-            ORDER BY 
-                om.created_at DESC
-            LIMIT :limit
-        ");
-        
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error getting organ matches: " . $e->getMessage());
-        return [];
-    }
-}
-
 ?>

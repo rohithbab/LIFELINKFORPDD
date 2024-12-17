@@ -15,7 +15,11 @@ $pendingHospitals = getPendingHospitals($conn);
 $pendingDonors = getPendingDonors($conn);
 $pendingRecipients = getPendingRecipients($conn);
 $urgentRecipients = getUrgentRecipients($conn);
-$recentMatches = getRecentOrganMatches($conn, 10);
+
+// Get pending hospitals count using PDO
+$stmt = $conn->prepare("SELECT COUNT(*) FROM hospitals WHERE status = 'pending'");
+$stmt->execute();
+$pending_count = $stmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -124,11 +128,10 @@ $recentMatches = getRecentOrganMatches($conn, 10);
 
         .table-container {
             background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .table-container h2 {
@@ -384,55 +387,6 @@ $recentMatches = getRecentOrganMatches($conn, 10);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
-
-        /* Status Badge Styles */
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-        }
-
-        .status-badge.pending {
-            background-color: #FFF3CD;
-            color: #856404;
-        }
-
-        .status-badge.approved {
-            background-color: #D4EDDA;
-            color: #155724;
-        }
-
-        .status-badge.rejected {
-            background-color: #F8D7DA;
-            color: #721C24;
-        }
-
-        .status-badge.inprocess {
-            background-color: #CCE5FF;
-            color: #004085;
-        }
-
-        /* Table Responsive Styles */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Ensure table headers stay visible */
-        .table thead th {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 1;
-            white-space: nowrap;
-        }
-
-        /* Compact table cells */
-        .table td, .table th {
-            padding: 8px;
-            font-size: 0.9em;
-            white-space: nowrap;
-        }
     </style>
 </head>
 <body>
@@ -665,37 +619,43 @@ $recentMatches = getRecentOrganMatches($conn, 10);
                             <table class="table" id="recent-matches-table">
                                 <thead>
                                     <tr>
-                                        <th>Donor Name</th>
-                                        <th>Donor Email</th>
-                                        <th>Recipient Name</th>
-                                        <th>Recipient Email</th>
-                                        <th>Hospital Name</th>
-                                        <th>Hospital Email</th>
+                                        <th>Date</th>
+                                        <th>Donor</th>
+                                        <th>Recipient</th>
+                                        <th>Hospital</th>
                                         <th>Organ Type</th>
-                                        <th>Urgency Level</th>
                                         <th>Status</th>
-                                        <th>Match Date</th>
-                                        <th>Last Update</th>
+                                        <th>Urgency</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($recentMatches as $match): ?>
+                                    <?php 
+                                    require_once '../../backend/php/organ_matches.php';
+                                    $recent_matches = getOrganMatches($conn, ['limit' => 5]);
+                                    foreach ($recent_matches as $match): 
+                                    ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($match['donor_name'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['donor_email'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['recipient_name'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['recipient_email'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['hospital_name'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['hospital_email'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['organ_type'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($match['urgency_level'] ?? 'N/A'); ?></td>
+                                        <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
+                                        <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['hospital_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
                                         <td>
-                                            <span class="status-badge <?php echo strtolower($match['status']); ?>">
-                                                <?php echo htmlspecialchars($match['status']); ?>
+                                            <span class="status-badge status-<?php echo strtolower($match['status']); ?>">
+                                                <?php echo $match['status']; ?>
                                             </span>
                                         </td>
-                                        <td><?php echo date('M d, Y H:i', strtotime($match['match_date'])); ?></td>
-                                        <td><?php echo date('M d, Y H:i', strtotime($match['last_update'])); ?></td>
+                                        <td>
+                                            <span class="urgency-badge urgency-<?php echo strtolower($match['urgency_level']); ?>">
+                                                <?php echo $match['urgency_level']; ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn-action btn-view" onclick="viewMatch(<?php echo $match['match_id']; ?>)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
