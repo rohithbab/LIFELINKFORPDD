@@ -157,12 +157,24 @@ function getPendingRecipients($conn) {
 // Update hospital status
 function updateHospitalStatus($conn, $hospital_id, $status) {
     try {
-        $stmt = $conn->prepare("UPDATE hospitals SET status = ?, updated_at = NOW() WHERE hospital_id = ?");
-        $stmt->execute([$status, $hospital_id]);
-        return true;
-    } catch (Exception $e) {
-        error_log("Error in updateHospitalStatus: " . $e->getMessage());
-        return false;
+        // First get the hospital's email
+        $stmt = $conn->prepare("SELECT email FROM hospitals WHERE hospital_id = ?");
+        $stmt->execute([$hospital_id]);
+        $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
+        $hospital_email = $hospital ? $hospital['email'] : 'Unknown';
+
+        // Update the status
+        $stmt = $conn->prepare("UPDATE hospitals SET status = ? WHERE hospital_id = ?");
+        $result = $stmt->execute([$status, $hospital_id]);
+        
+        if ($result) {
+            addSystemNotification($conn, 'hospital_status', "Hospital ($hospital_email) status updated to $status");
+            return ['success' => true];
+        }
+        return ['success' => false, 'message' => 'Failed to update status'];
+    } catch (PDOException $e) {
+        error_log("Error updating hospital status: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Database error'];
     }
 }
 
@@ -238,7 +250,10 @@ function addNotification($conn, $type, $message, $user_id = null) {
 // Get admin notifications
 function getAdminNotifications($conn, $limit = 10) {
     $stmt = $conn->prepare("
-        SELECT * FROM notifications 
+        SELECT 
+            *,
+            DATE_FORMAT(created_at, '%M %d, %Y at %h:%i %p') as formatted_time
+        FROM notifications 
         WHERE user_id IS NULL 
         ORDER BY created_at DESC 
         LIMIT :limit
@@ -268,11 +283,18 @@ function addSystemNotification($conn, $type, $message) {
 // Update donor status
 function updateDonorStatus($conn, $donor_id, $status) {
     try {
+        // First get the donor's email
+        $stmt = $conn->prepare("SELECT email FROM donor WHERE donor_id = ?");
+        $stmt->execute([$donor_id]);
+        $donor = $stmt->fetch(PDO::FETCH_ASSOC);
+        $donor_email = $donor ? $donor['email'] : 'Unknown';
+
+        // Update the status
         $stmt = $conn->prepare("UPDATE donor SET status = ? WHERE donor_id = ?");
         $result = $stmt->execute([$status, $donor_id]);
         
         if ($result) {
-            addSystemNotification($conn, 'donor_status', "Donor #$donor_id status updated to $status");
+            addSystemNotification($conn, 'donor_status', "Donor ($donor_email) status updated to $status");
             return ['success' => true];
         }
         return ['success' => false, 'message' => 'Failed to update status'];
@@ -285,6 +307,13 @@ function updateDonorStatus($conn, $donor_id, $status) {
 // Update recipient status
 function updateRecipientStatus($conn, $recipient_id, $status) {
     try {
+        // First get the recipient's email
+        $stmt = $conn->prepare("SELECT email FROM recipient_registration WHERE id = ?");
+        $stmt->execute([$recipient_id]);
+        $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
+        $recipient_email = $recipient ? $recipient['email'] : 'Unknown';
+
+        // Update the status
         $stmt = $conn->prepare("
             UPDATE recipient_registration 
             SET request_status = :status 
@@ -297,8 +326,8 @@ function updateRecipientStatus($conn, $recipient_id, $status) {
         ]);
 
         if ($result) {
-            // Add notification
-            $message = "Recipient registration has been " . $status;
+            // Add notification with email
+            $message = "Recipient ($recipient_email) registration has been " . $status;
             addSystemNotification($conn, 'recipient_status', $message);
             return true;
         }

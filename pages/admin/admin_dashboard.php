@@ -680,7 +680,7 @@ $pending_count = $stmt->fetchColumn();
             <div id="notifications-container">
                 <?php foreach ($notifications as $notification): ?>
                     <div class="notification-item">
-                        <span class="notification-time"><?php echo $notification['formatted_time']; ?></span>
+                        <span class="notification-time"><?php echo isset($notification['formatted_time']) ? $notification['formatted_time'] : date('F d, Y \a\t h:i A', strtotime($notification['created_at'])); ?></span>
                         <p><?php echo $notification['message']; ?></p>
                     </div>
                 <?php endforeach; ?>
