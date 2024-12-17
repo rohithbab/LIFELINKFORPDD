@@ -7775,3 +7775,201 @@ Data: [
     }
 ]
 -------------------
+2024-12-17 10:15:00 - Fetching pending donors
+-------------------
+2024-12-17 10:15:00 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
+2024-12-17 10:15:17 - Fetching pending donors
+-------------------
+2024-12-17 10:15:17 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
+2024-12-17 10:15:48 - Fetching pending donors
+-------------------
+2024-12-17 10:15:48 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
+2024-12-17 10:16:18 - Fetching pending donors
+-------------------
+2024-12-17 10:16:18 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
+2024-12-17 10:16:48 - Fetching pending donors
+-------------------
+2024-12-17 10:16:48 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
+2024-12-17 10:17:18 - Fetching pending donors
+-------------------
+2024-12-17 10:17:18 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------
