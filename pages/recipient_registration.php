@@ -218,6 +218,25 @@ session_start();
                         <textarea id="organReason" name="organReason" rows="3" required placeholder="Please explain your medical condition and why you need this organ"></textarea>
                     </div>
                     <div class="form-group">
+                        <label for="urgencyLevel">Urgency Level *</label>
+                        <select id="urgencyLevel" name="urgencyLevel" required>
+                            <option value="">Select Urgency Level</option>
+                            <option value="Low">Low (More than 6 months available)</option>
+                            <option value="Medium">Medium (3-6 months available)</option>
+                            <option value="High">High (Less than 3 months available)</option>
+                        </select>
+                        <div class="urgency-info alert alert-info mt-2">
+                            <strong>Please choose wisely:</strong>
+                            <ul>
+                                <li>Low: If you have more than 6 months available for the transplant</li>
+                                <li>Medium: If you need the transplant within 3-6 months</li>
+                                <li>High: If you need the transplant within 3 months</li>
+                            </ul>
+                            <p><em>Note: Please be ethical in your selection as it affects the priority of other recipients. 
+                            False urgency claims may delay critical cases.</em></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="medicalRecords">Medical Records Upload *</label>
                         <input type="file" id="medicalRecords" name="medicalRecords" accept=".pdf,.doc,.docx" required>
                         <small class="error-message">Supported formats: PDF, DOC, DOCX (Max size: 5MB)</small>

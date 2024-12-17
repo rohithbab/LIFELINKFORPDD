@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $blood_type = sanitize_input($_POST['bloodType']);
         $organ_required = sanitize_input($_POST['organRequired']);
         $organ_reason = sanitize_input($_POST['organReason']);
+        $urgency_level = sanitize_input($_POST['urgencyLevel']); // Added urgency level
         $id_proof_type = sanitize_input($_POST['idType']);
         $id_proof_number = sanitize_input($_POST['idNumber']);
         
@@ -75,12 +76,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Insert into recipient_registration table
         $sql = "INSERT INTO recipient_registration (
             full_name, date_of_birth, gender, phone_number, email, address,
-            medical_condition, blood_type, organ_required, organ_reason,
+            medical_condition, blood_type, organ_required, organ_reason, urgency_level,
             id_proof_type, id_proof_number, id_document,
             username, password, request_status
         ) VALUES (
             :full_name, :date_of_birth, :gender, :phone_number, :email, :address,
-            :medical_condition, :blood_type, :organ_required, :organ_reason,
+            :medical_condition, :blood_type, :organ_required, :organ_reason, :urgency_level,
             :id_proof_type, :id_proof_number, :id_document,
             :username, :password, 'pending'
         )";
@@ -99,6 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':blood_type' => $blood_type,
             ':organ_required' => $organ_required,
             ':organ_reason' => $organ_reason,
+            ':urgency_level' => $urgency_level,
             ':id_proof_type' => $id_proof_type,
             ':id_proof_number' => $id_proof_number,
             ':id_document' => $id_document,
