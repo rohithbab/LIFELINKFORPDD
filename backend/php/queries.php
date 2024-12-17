@@ -32,19 +32,19 @@ function getDashboardStats($conn) {
             $stats['approved_hospitals'] = $stmt->fetchColumn();
         }
         
-        if (in_array('donors', $tables)) {
+        if (in_array('donor', $tables)) {
             // Get total donors (active only)
-            $stmt = $conn->query("SELECT COUNT(*) FROM donors WHERE status = 'active'");
+            $stmt = $conn->query("SELECT COUNT(*) FROM donor WHERE status = 'active'");
             $stats['total_donors'] = $stmt->fetchColumn();
         }
         
-        if (in_array('recipients', $tables)) {
+        if (in_array('recipient_registration', $tables)) {
             // Get total recipients (active only)
-            $stmt = $conn->query("SELECT COUNT(*) FROM recipients WHERE status = 'active'");
+            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE request_status = 'active'");
             $stats['total_recipients'] = $stmt->fetchColumn();
             
             // Get urgent recipients count
-            $stmt = $conn->query("SELECT COUNT(*) FROM recipients WHERE urgency_level = 'High' AND status = 'active'");
+            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE urgency_level = 'High' AND request_status = 'active'");
             $stats['urgent_recipients'] = $stmt->fetchColumn();
         }
         
@@ -65,28 +65,91 @@ function getDashboardStats($conn) {
     }
 }
 
-// Get pending hospital approvals
+// Get pending hospitals
 function getPendingHospitals($conn) {
     try {
-        $query = "SELECT h.*, 
-                  CASE 
-                    WHEN h.status = 'pending' AND h.created_at > NOW() - INTERVAL 24 HOUR 
-                    THEN 1 ELSE 0 
-                  END as is_new 
-                  FROM hospitals h 
-                  WHERE h.status = 'pending' 
-                  ORDER BY h.created_at DESC";
-        
-        $stmt = $conn->prepare($query);
+        $stmt = $conn->prepare("
+            SELECT 
+                hospital_id as id,
+                name as hospital_name,
+                email,
+                DATE_FORMAT(registration_date, '%Y-%m-%d') as registration_date,
+                status
+            FROM 
+                hospitals 
+            WHERE 
+                status = 'pending'
+            ORDER BY 
+                registration_date DESC
+        ");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-    } catch (Exception $e) {
-        error_log("Error in getPendingHospitals: " . $e->getMessage());
-        return array();
+    } catch (PDOException $e) {
+        error_log("Error getting pending hospitals: " . $e->getMessage());
+        return [];
     }
 }
 
+// Get pending donors
+function getPendingDonors($conn) {
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                donor_id as id,
+                name,
+                email,
+                blood_group as blood_type,
+                organs_to_donate as organ_type,
+                DATE_FORMAT(created_at, '%Y-%m-%d') as registration_date,
+                status
+            FROM 
+                donor 
+            WHERE 
+                status = 'pending'
+            ORDER BY 
+                created_at DESC
+        ");
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Pending Donors Query Result: " . json_encode($result));
+        return $result;
+    } catch (PDOException $e) {
+        error_log("Error getting pending donors: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Get pending recipients
+function getPendingRecipients($conn) {
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                full_name as name,
+                email,
+                blood_type,
+                organ_required as needed_organ,
+                'Normal' as urgency,
+                DATE_FORMAT(CURRENT_TIMESTAMP, '%Y-%m-%d') as registration_date,
+                request_status as status
+            FROM 
+                recipient_registration 
+            WHERE 
+                request_status = 'pending'
+            ORDER BY 
+                id DESC
+        ");
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Pending Recipients Query Result: " . json_encode($result));
+        return $result;
+    } catch (PDOException $e) {
+        error_log("Error getting pending recipients: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Update hospital status
 function updateHospitalStatus($conn, $hospital_id, $status) {
     try {
         $stmt = $conn->prepare("UPDATE hospitals SET status = ?, updated_at = NOW() WHERE hospital_id = ?");
@@ -100,7 +163,7 @@ function updateHospitalStatus($conn, $hospital_id, $status) {
 
 // Get all donors with filters
 function getDonors($conn, $filters = []) {
-    $query = "SELECT * FROM donors WHERE 1=1";
+    $query = "SELECT * FROM donor WHERE 1=1";
     $params = [];
     
     if (!empty($filters['blood_type'])) {
@@ -126,7 +189,7 @@ function getUrgentRecipients($conn) {
                 r.*,
                 COALESCE(om.match_count, 0) as potential_matches
             FROM 
-                recipients r
+                recipient_registration r
                 LEFT JOIN (
                     SELECT recipient_id, COUNT(*) as match_count 
                     FROM organ_matches 
@@ -135,7 +198,7 @@ function getUrgentRecipients($conn) {
                 ) om ON r.id = om.recipient_id
             WHERE 
                 r.urgency_level = 'High'
-                AND r.status = 'active'
+                AND r.request_status = 'active'
             ORDER BY 
                 r.registration_date DESC
         ");
@@ -150,11 +213,11 @@ function getUrgentRecipients($conn) {
 // Match donors with recipients
 function findPotentialMatches($conn, $donor_id) {
     $stmt = $conn->prepare("
-        SELECT r.* FROM recipients r
-        JOIN donors d ON d.blood_type = r.blood_type
-        WHERE d.id = :donor_id
+        SELECT r.* FROM recipient_registration r
+        JOIN donor d ON d.blood_type = r.blood_type
+        WHERE d.donor_id = :donor_id
         AND d.organ_type = r.needed_organ
-        AND r.status = 'waiting'
+        AND r.request_status = 'waiting'
         ORDER BY r.urgency_level DESC, r.registration_date ASC
     ");
     $stmt->execute(['donor_id' => $donor_id]);
@@ -180,65 +243,6 @@ function getAdminNotifications($conn, $limit = 10) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Get pending donors
-function getPendingDonors($conn) {
-    try {
-        $stmt = $conn->prepare("
-            SELECT 
-                d.*,
-                COALESCE(om.match_count, 0) as potential_matches,
-                DATE_FORMAT(d.registration_date, '%M %d, %Y') as formatted_date
-            FROM 
-                donors d
-                LEFT JOIN (
-                    SELECT donor_id, COUNT(*) as match_count 
-                    FROM organ_matches 
-                    WHERE status = 'Pending'
-                    GROUP BY donor_id
-                ) om ON d.id = om.donor_id
-            WHERE 
-                d.status = 'pending'
-            ORDER BY 
-                d.registration_date DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error getting pending donors: " . $e->getMessage());
-        return [];
-    }
-}
-
-// Get pending recipients
-function getPendingRecipients($conn) {
-    try {
-        $stmt = $conn->prepare("
-            SELECT 
-                r.*,
-                COALESCE(om.match_count, 0) as potential_matches,
-                DATE_FORMAT(r.registration_date, '%M %d, %Y') as formatted_date
-            FROM 
-                recipients r
-                LEFT JOIN (
-                    SELECT recipient_id, COUNT(*) as match_count 
-                    FROM organ_matches 
-                    WHERE status = 'Pending'
-                    GROUP BY recipient_id
-                ) om ON r.id = om.recipient_id
-            WHERE 
-                r.status = 'pending'
-            ORDER BY 
-                r.urgency_level DESC,
-                r.registration_date DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error getting pending recipients: " . $e->getMessage());
-        return [];
-    }
-}
-
 // Function to add system notification
 function addSystemNotification($conn, $type, $message) {
     try {
@@ -256,71 +260,37 @@ function addSystemNotification($conn, $type, $message) {
     }
 }
 
-// Update donor status with notification
+// Update donor status
 function updateDonorStatus($conn, $donor_id, $status) {
     try {
-        $conn->beginTransaction();
+        $stmt = $conn->prepare("UPDATE donor SET status = ? WHERE donor_id = ?");
+        $result = $stmt->execute([$status, $donor_id]);
         
-        // Update status
-        $stmt = $conn->prepare("UPDATE donors SET status = :status WHERE id = :donor_id");
-        $success = $stmt->execute(['status' => $status, 'donor_id' => $donor_id]);
-        
-        if ($success) {
-            // Get donor details for notification
-            $stmt = $conn->prepare("SELECT name, organ_type FROM donors WHERE id = :donor_id");
-            $stmt->execute(['donor_id' => $donor_id]);
-            $donor = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // Create notification
-            $message = sprintf(
-                "Donor %s (%s) has been %s",
-                $donor['name'],
-                $donor['organ_type'],
-                $status
-            );
-            addSystemNotification($conn, 'donor_' . $status, $message);
+        if ($result) {
+            addSystemNotification($conn, 'donor_status', "Donor #$donor_id status updated to $status");
+            return ['success' => true];
         }
-        
-        $conn->commit();
-        return $success;
+        return ['success' => false, 'message' => 'Failed to update status'];
     } catch (PDOException $e) {
-        $conn->rollBack();
         error_log("Error updating donor status: " . $e->getMessage());
-        return false;
+        return ['success' => false, 'message' => 'Database error'];
     }
 }
 
-// Update recipient status with notification
+// Update recipient status
 function updateRecipientStatus($conn, $recipient_id, $status) {
     try {
-        $conn->beginTransaction();
+        $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ? WHERE id = ?");
+        $result = $stmt->execute([$status, $recipient_id]);
         
-        // Update status
-        $stmt = $conn->prepare("UPDATE recipients SET status = :status WHERE id = :recipient_id");
-        $success = $stmt->execute(['status' => $status, 'recipient_id' => $recipient_id]);
-        
-        if ($success) {
-            // Get recipient details for notification
-            $stmt = $conn->prepare("SELECT name, organ_needed FROM recipients WHERE id = :recipient_id");
-            $stmt->execute(['recipient_id' => $recipient_id]);
-            $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // Create notification
-            $message = sprintf(
-                "Recipient %s (needs %s) has been %s",
-                $recipient['name'],
-                $recipient['organ_needed'],
-                $status
-            );
-            addSystemNotification($conn, 'recipient_' . $status, $message);
+        if ($result) {
+            addSystemNotification($conn, 'recipient_status', "Recipient #$recipient_id status updated to $status");
+            return ['success' => true];
         }
-        
-        $conn->commit();
-        return $success;
+        return ['success' => false, 'message' => 'Failed to update status'];
     } catch (PDOException $e) {
-        $conn->rollBack();
         error_log("Error updating recipient status: " . $e->getMessage());
-        return false;
+        return ['success' => false, 'message' => 'Database error'];
     }
 }
 
@@ -360,7 +330,7 @@ function getMonthlyStats($conn) {
 function getOrganTypeStats($conn) {
     $stmt = $conn->query("
         SELECT organ_type, COUNT(*) as count
-        FROM donors
+        FROM donor
         GROUP BY organ_type
     ");
     return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -372,7 +342,7 @@ function getBloodTypeStats($conn) {
     // Get donor blood type stats
     $stmt = $conn->query("
         SELECT blood_type, COUNT(*) as count
-        FROM donors
+        FROM donor
         GROUP BY blood_type
     ");
     $stats['donors'] = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -395,11 +365,11 @@ function getRegionalStats($conn) {
         SELECT 
             h.region,
             COUNT(DISTINCT h.hospital_id) as hospitals,
-            COUNT(DISTINCT d.id) as donors,
+            COUNT(DISTINCT d.donor_id) as donors,
             COUNT(DISTINCT r.id) as recipients
         FROM hospitals h
-        LEFT JOIN donors d ON d.hospital_id = h.hospital_id
-        LEFT JOIN recipients r ON r.hospital_id = h.hospital_id
+        LEFT JOIN donor d ON d.hospital_id = h.hospital_id
+        LEFT JOIN recipient_registration r ON r.hospital_id = h.hospital_id
         GROUP BY h.region
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);

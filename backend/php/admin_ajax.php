@@ -3,6 +3,7 @@ session_start();
 require_once 'connection.php';
 require_once 'queries.php';
 require_once 'organ_matches.php';
+require_once 'debug.php';
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
@@ -37,7 +38,9 @@ switch ($action) {
         break;
 
     case 'get_pending_donors':
+        debug_log('Fetching pending donors');
         $pendingDonors = getPendingDonors($conn);
+        debug_log('Pending donors result', $pendingDonors);
         echo json_encode($pendingDonors);
         break;
 
@@ -67,32 +70,30 @@ switch ($action) {
         break;
 
     case 'update_donor_status':
-        if (isset($_POST['donor_id']) && isset($_POST['status'])) {
-            $success = updateDonorStatus($conn, $_POST['donor_id'], $_POST['status']);
-            if ($success) {
-                // Add notification
-                $status = $_POST['status'] === 'approved' ? 'approved' : 'rejected';
-                $message = "Donor ID " . $_POST['donor_id'] . " has been " . $status;
-                addAdminNotification($conn, $message);
-            }
-            echo json_encode(['success' => $success]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Missing parameters']);
+        if (!isset($_POST['donor_id']) || !isset($_POST['status'])) {
+            debug_log('Missing donor update parameters', $_POST);
+            echo json_encode(['success' => false, 'message' => 'Missing parameters']);
+            break;
         }
+
+        $donor_id = $_POST['donor_id'];
+        $status = $_POST['status'];
+        debug_log('Updating donor status', ['id' => $donor_id, 'status' => $status]);
+
+        $result = updateDonorStatus($conn, $donor_id, $status);
+        debug_log('Donor status update result', $result);
+        echo json_encode($result);
         break;
 
     case 'update_recipient_status':
-        if (isset($_POST['recipient_id']) && isset($_POST['status'])) {
-            $success = updateRecipientStatus($conn, $_POST['recipient_id'], $_POST['status']);
-            if ($success) {
-                // Add notification
-                $status = $_POST['status'] === 'approved' ? 'approved' : 'rejected';
-                $message = "Recipient ID " . $_POST['recipient_id'] . " has been " . $status;
-                addAdminNotification($conn, $message);
-            }
-            echo json_encode(['success' => $success]);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['recipient_id']) && isset($_POST['status'])) {
+            $recipient_id = $_POST['recipient_id'];
+            $status = $_POST['status'];
+            $result = updateRecipientStatus($conn, $recipient_id, $status);
+            echo json_encode(['success' => $result]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Missing parameters']);
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid request']);
         }
         break;
 

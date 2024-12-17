@@ -21,19 +21,20 @@ function updatePendingHospitals() {
         .then(response => response.json())
         .then(hospitals => {
             const tbody = document.querySelector('#pending-hospitals-table tbody');
-            tbody.innerHTML = ''; // Clear existing rows
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
             hospitals.forEach(hospital => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${hospital.hospital_name}</td>
-                    <td>${hospital.email}</td>
-                    <td>${hospital.registration_date}</td>
+                    <td>${hospital.hospital_name || ''}</td>
+                    <td>${hospital.email || ''}</td>
+                    <td>${hospital.registration_date || ''}</td>
                     <td>
-                        <button class="btn-action btn-approve" onclick="updateHospitalStatus(${hospital.hospital_id}, 'approved')">
+                        <button class="btn-action btn-approve" onclick="updateHospitalStatus(${hospital.id}, 'approved')">
                             <i class="fas fa-check"></i> Approve
                         </button>
-                        <button class="btn-action btn-reject" onclick="updateHospitalStatus(${hospital.hospital_id}, 'rejected')">
+                        <button class="btn-action btn-reject" onclick="updateHospitalStatus(${hospital.id}, 'rejected')">
                             <i class="fas fa-times"></i> Reject
                         </button>
                     </td>
@@ -43,27 +44,37 @@ function updatePendingHospitals() {
 
             // Update pending count in header
             const pendingCount = hospitals.length;
-            document.querySelector('#pending-hospitals-count').textContent = pendingCount;
+            const countElement = document.querySelector('#pending-hospitals-count');
+            if (countElement) {
+                countElement.textContent = pendingCount;
+            }
         })
         .catch(error => console.error('Error updating pending hospitals:', error));
 }
 
 // Function to update pending donors table
 function updatePendingDonors() {
+    console.log('Fetching pending donors...');
     fetch('../../backend/php/admin_ajax.php?action=get_pending_donors')
         .then(response => response.json())
         .then(donors => {
+            console.log('Received donors:', donors);
             const tbody = document.querySelector('#pending-donors-table tbody');
-            tbody.innerHTML = ''; // Clear existing rows
+            if (!tbody) {
+                console.error('Donors table body not found!');
+                return;
+            }
+            tbody.innerHTML = '';
 
             donors.forEach(donor => {
+                console.log('Processing donor:', donor);
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${escapeHtml(donor.name)}</td>
-                    <td>${escapeHtml(donor.email)}</td>
-                    <td>${escapeHtml(donor.blood_type)}</td>
-                    <td>${escapeHtml(donor.organ_type)}</td>
-                    <td>${donor.formatted_date}</td>
+                    <td>${donor.name || ''}</td>
+                    <td>${donor.email || ''}</td>
+                    <td>${donor.blood_type || ''}</td>
+                    <td>${donor.organ_type || ''}</td>
+                    <td>${donor.registration_date || ''}</td>
                     <td>
                         <button class="btn-action btn-approve" onclick="updateDonorStatus(${donor.id}, 'approved')">
                             <i class="fas fa-check"></i> Approve
@@ -76,33 +87,43 @@ function updatePendingDonors() {
                 tbody.appendChild(row);
             });
 
-            // Update pending count in header
-            document.querySelector('#pending-donors-count').textContent = donors.length;
+            const pendingCount = donors.length;
+            const countElement = document.querySelector('#pending-donors-count');
+            if (countElement) {
+                countElement.textContent = pendingCount;
+            }
         })
         .catch(error => console.error('Error updating pending donors:', error));
 }
 
 // Function to update pending recipients table
 function updatePendingRecipients() {
+    console.log('Fetching pending recipients...');
     fetch('../../backend/php/admin_ajax.php?action=get_pending_recipients')
         .then(response => response.json())
         .then(recipients => {
+            console.log('Received recipients:', recipients);
             const tbody = document.querySelector('#pending-recipients-table tbody');
-            tbody.innerHTML = ''; // Clear existing rows
+            if (!tbody) {
+                console.error('Recipients table body not found!');
+                return;
+            }
+            tbody.innerHTML = '';
 
             recipients.forEach(recipient => {
+                console.log('Processing recipient:', recipient);
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${escapeHtml(recipient.name)}</td>
-                    <td>${escapeHtml(recipient.email)}</td>
-                    <td>${escapeHtml(recipient.blood_type)}</td>
-                    <td>${escapeHtml(recipient.organ_needed)}</td>
+                    <td>${recipient.name || ''}</td>
+                    <td>${recipient.email || ''}</td>
+                    <td>${recipient.blood_type || ''}</td>
+                    <td>${recipient.needed_organ || ''}</td>
                     <td>
-                        <span class="urgency-badge urgency-${recipient.urgency_level.toLowerCase()}">
-                            ${recipient.urgency_level}
+                        <span class="urgency-badge urgency-${(recipient.urgency || 'normal').toLowerCase()}">
+                            ${recipient.urgency || 'Normal'}
                         </span>
                     </td>
-                    <td>${recipient.formatted_date}</td>
+                    <td>${recipient.registration_date || ''}</td>
                     <td>
                         <button class="btn-action btn-approve" onclick="updateRecipientStatus(${recipient.id}, 'approved')">
                             <i class="fas fa-check"></i> Approve
@@ -115,8 +136,11 @@ function updatePendingRecipients() {
                 tbody.appendChild(row);
             });
 
-            // Update pending count in header
-            document.querySelector('#pending-recipients-count').textContent = recipients.length;
+            const pendingCount = recipients.length;
+            const countElement = document.querySelector('#pending-recipients-count');
+            if (countElement) {
+                countElement.textContent = pendingCount;
+            }
         })
         .catch(error => console.error('Error updating pending recipients:', error));
 }
@@ -181,6 +205,12 @@ function updateHospitalStatus(hospitalId, status) {
 
 // Function to update donor status
 function updateDonorStatus(donorId, status) {
+    if (!donorId) {
+        console.error('No donor ID provided');
+        return;
+    }
+    
+    console.log('Updating donor status:', { donorId, status });
     const formData = new FormData();
     formData.append('donor_id', donorId);
     formData.append('status', status);
@@ -191,21 +221,25 @@ function updateDonorStatus(donorId, status) {
     })
     .then(response => response.json())
     .then(result => {
+        console.log('Update result:', result);
         if (result.success) {
-            updateAllDashboardData(); // Update everything immediately
-            showNotification('Donor status updated successfully', 'success');
+            updateDashboardStats();
+            updatePendingDonors();
+            showNotification(`Donor status updated to ${status}`, 'success');
         } else {
-            showNotification('Failed to update donor status', 'error');
+            showNotification(result.message || 'Failed to update donor status', 'error');
         }
     })
     .catch(error => {
-        console.error('Error updating donor status:', error);
+        console.error('Error:', error);
         showNotification('Error updating donor status', 'error');
     });
 }
 
 // Function to update recipient status
 function updateRecipientStatus(recipientId, status) {
+    if (!recipientId) return;
+    
     const formData = new FormData();
     formData.append('recipient_id', recipientId);
     formData.append('status', status);
@@ -217,25 +251,26 @@ function updateRecipientStatus(recipientId, status) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            updateAllDashboardData(); // Update everything immediately
-            showNotification('Recipient status updated successfully', 'success');
+            updateDashboardStats();
+            updatePendingRecipients();
+            showNotification(`Recipient status updated to ${status}`, 'success');
         } else {
             showNotification('Failed to update recipient status', 'error');
         }
     })
     .catch(error => {
-        console.error('Error updating recipient status:', error);
+        console.error('Error:', error);
         showNotification('Error updating recipient status', 'error');
     });
 }
 
 // Function to show notification
-function showNotification(message, type) {
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
-
+    
     setTimeout(() => {
         notification.remove();
     }, 3000);
@@ -252,7 +287,19 @@ function escapeHtml(unsafe) {
 }
 
 // Update all tables every 30 seconds
-setInterval(updateAllDashboardData, 30000);
+setInterval(() => {
+    updateDashboardStats();
+    updatePendingHospitals();
+    updatePendingDonors();
+    updatePendingRecipients();
+    updateNotifications();
+}, 30000);
 
 // Initial update when page loads
-document.addEventListener('DOMContentLoaded', updateAllDashboardData);
+document.addEventListener('DOMContentLoaded', () => {
+    updateDashboardStats();
+    updatePendingHospitals();
+    updatePendingDonors();
+    updatePendingRecipients();
+    updateNotifications();
+});
