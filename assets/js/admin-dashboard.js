@@ -114,10 +114,10 @@ function updatePendingRecipients() {
                 console.log('Processing recipient:', recipient);
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${recipient.name || ''}</td>
-                    <td>${recipient.email || ''}</td>
-                    <td>${recipient.blood_type || ''}</td>
-                    <td>${recipient.needed_organ || ''}</td>
+                    <td>${escapeHtml(recipient.name) || ''}</td>
+                    <td>${escapeHtml(recipient.email) || ''}</td>
+                    <td>${escapeHtml(recipient.blood_type) || ''}</td>
+                    <td>${escapeHtml(recipient.needed_organ) || ''}</td>
                     <td>
                         <span class="urgency-badge urgency-${(recipient.urgency || 'normal').toLowerCase()}">
                             ${recipient.urgency || 'Normal'}
@@ -125,7 +125,7 @@ function updatePendingRecipients() {
                     </td>
                     <td>${recipient.registration_date || ''}</td>
                     <td>
-                        <button class="btn-action btn-approve" onclick="updateRecipientStatus(${recipient.id}, 'approved')">
+                        <button class="btn-action btn-approve" onclick="updateRecipientStatus(${recipient.id}, 'accepted')">
                             <i class="fas fa-check"></i> Approve
                         </button>
                         <button class="btn-action btn-reject" onclick="updateRecipientStatus(${recipient.id}, 'rejected')">
@@ -205,12 +205,7 @@ function updateHospitalStatus(hospitalId, status) {
 
 // Function to update donor status
 function updateDonorStatus(donorId, status) {
-    if (!donorId) {
-        console.error('No donor ID provided');
-        return;
-    }
-    
-    console.log('Updating donor status:', { donorId, status });
+    console.log('Updating donor status:', donorId, status);
     const formData = new FormData();
     formData.append('donor_id', donorId);
     formData.append('status', status);
@@ -221,13 +216,13 @@ function updateDonorStatus(donorId, status) {
     })
     .then(response => response.json())
     .then(result => {
-        console.log('Update result:', result);
         if (result.success) {
-            updateDashboardStats();
+            showNotification(`Donor ${status} successfully`, 'success');
+            // Update both the pending donors table and the total stats
             updatePendingDonors();
-            showNotification(`Donor status updated to ${status}`, 'success');
+            updateDashboardStats();
         } else {
-            showNotification(result.message || 'Failed to update donor status', 'error');
+            showNotification('Error updating donor status', 'error');
         }
     })
     .catch(error => {
@@ -238,7 +233,7 @@ function updateDonorStatus(donorId, status) {
 
 // Function to update recipient status
 function updateRecipientStatus(recipientId, status) {
-    if (!recipientId) return;
+    console.log('Updating recipient status:', recipientId, status);
     
     const formData = new FormData();
     formData.append('recipient_id', recipientId);
@@ -251,11 +246,12 @@ function updateRecipientStatus(recipientId, status) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            updateDashboardStats();
+            showNotification(`Recipient ${status} successfully`, 'success');
+            // Update both the pending recipients table and the total stats
             updatePendingRecipients();
-            showNotification(`Recipient status updated to ${status}`, 'success');
+            updateDashboardStats();
         } else {
-            showNotification('Failed to update recipient status', 'error');
+            showNotification('Error updating recipient status', 'error');
         }
     })
     .catch(error => {

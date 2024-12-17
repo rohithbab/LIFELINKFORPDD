@@ -2,7 +2,7 @@
 require_once 'connection.php';
 
 // Get dashboard statistics
-function getDashboardStats($conn) {
+function getDashboardStats($conn, $tables = ['hospitals', 'donor', 'recipient_registration', 'organ_matches']) {
     $stats = [
         'total_hospitals' => 0,
         'total_donors' => 0,
@@ -19,11 +19,11 @@ function getDashboardStats($conn) {
         $tables = $conn->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
         
         if (in_array('hospitals', $tables)) {
-            // Get total hospitals
-            $stmt = $conn->query("SELECT COUNT(*) FROM hospitals");
+            // Get total hospitals (approved only)
+            $stmt = $conn->query("SELECT COUNT(*) FROM hospitals WHERE status = 'approved'");
             $stats['total_hospitals'] = $stmt->fetchColumn();
             
-            // Get pending hospital approvals
+            // Get pending hospitals count
             $stmt = $conn->query("SELECT COUNT(*) FROM hospitals WHERE status = 'pending'");
             $stats['pending_hospitals'] = $stmt->fetchColumn();
             
@@ -33,18 +33,18 @@ function getDashboardStats($conn) {
         }
         
         if (in_array('donor', $tables)) {
-            // Get total donors (active only)
-            $stmt = $conn->query("SELECT COUNT(*) FROM donor WHERE status = 'active'");
+            // Get total donors (approved only)
+            $stmt = $conn->query("SELECT COUNT(*) FROM donor WHERE status = 'approved'");
             $stats['total_donors'] = $stmt->fetchColumn();
         }
         
         if (in_array('recipient_registration', $tables)) {
-            // Get total recipients (active only)
-            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE request_status = 'active'");
+            // Get total recipients (accepted only)
+            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE request_status = 'accepted'");
             $stats['total_recipients'] = $stmt->fetchColumn();
             
-            // Get urgent recipients count
-            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE urgency_level = 'High' AND request_status = 'active'");
+            // Get urgent recipients count (only from accepted recipients)
+            $stmt = $conn->query("SELECT COUNT(*) FROM recipient_registration WHERE urgency_level = 'High' AND request_status = 'accepted'");
             $stats['urgent_recipients'] = $stmt->fetchColumn();
         }
         
@@ -127,9 +127,9 @@ function getPendingRecipients($conn) {
                 id,
                 full_name as name,
                 email,
-                blood_type,
+                blood_type as blood_type,
                 organ_required as needed_organ,
-                'Normal' as urgency,
+                urgency_level as urgency,
                 DATE_FORMAT(CURRENT_TIMESTAMP, '%Y-%m-%d') as registration_date,
                 request_status as status
             FROM 
@@ -137,6 +137,11 @@ function getPendingRecipients($conn) {
             WHERE 
                 request_status = 'pending'
             ORDER BY 
+                CASE 
+                    WHEN urgency_level = 'High' THEN 1
+                    WHEN urgency_level = 'Medium' THEN 2
+                    ELSE 3
+                END,
                 id DESC
         ");
         $stmt->execute();
@@ -216,7 +221,7 @@ function findPotentialMatches($conn, $donor_id) {
         SELECT r.* FROM recipient_registration r
         JOIN donor d ON d.blood_type = r.blood_type
         WHERE d.donor_id = :donor_id
-        AND d.organ_type = r.needed_organ
+        AND d.organ_type = r.organ_required
         AND r.request_status = 'waiting'
         ORDER BY r.urgency_level DESC, r.registration_date ASC
     ");
@@ -280,17 +285,27 @@ function updateDonorStatus($conn, $donor_id, $status) {
 // Update recipient status
 function updateRecipientStatus($conn, $recipient_id, $status) {
     try {
-        $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ? WHERE id = ?");
-        $result = $stmt->execute([$status, $recipient_id]);
+        $stmt = $conn->prepare("
+            UPDATE recipient_registration 
+            SET request_status = :status 
+            WHERE id = :recipient_id
+        ");
         
+        $result = $stmt->execute([
+            ':status' => $status,
+            ':recipient_id' => $recipient_id
+        ]);
+
         if ($result) {
-            addSystemNotification($conn, 'recipient_status', "Recipient #$recipient_id status updated to $status");
-            return ['success' => true];
+            // Add notification
+            $message = "Recipient registration has been " . $status;
+            addSystemNotification($conn, 'recipient_status', $message);
+            return true;
         }
-        return ['success' => false, 'message' => 'Failed to update status'];
+        return false;
     } catch (PDOException $e) {
         error_log("Error updating recipient status: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Database error'];
+        return false;
     }
 }
 
