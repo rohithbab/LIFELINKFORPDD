@@ -162,8 +162,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ]);
 
         if ($stmt->rowCount() > 0) {
-            $_SESSION['success'] = "Registration successful! Please wait for admin approval.";
-            header("Location: ../../pages/donor_login.php");
+            $_SESSION['registration_success'] = true;
+            $_SESSION['donor_email'] = $email;
+            header("Location: ../../pages/donor/donor_registration_success.php");
             exit();
         } else {
             throw new Exception("Error inserting data into database");

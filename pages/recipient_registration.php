@@ -237,9 +237,11 @@ session_start();
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="medicalRecords">Medical Records Upload *</label>
-                        <input type="file" id="medicalRecords" name="medicalRecords" accept=".pdf,.doc,.docx" required>
-                        <small class="error-message">Supported formats: PDF, DOC, DOCX (Max size: 5MB)</small>
+                        <label for="medicalRecords">Medical Records (PDF, DOC, DOCX, JPG, JPEG, PNG) *</label>
+                        <input type="file" id="medicalRecords" name="medicalRecords" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                        <small class="help-text" style="color: #666; font-size: 0.8rem;">
+                            Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max size: 5MB)
+                        </small>
                     </div>
                 </div>
             </div>

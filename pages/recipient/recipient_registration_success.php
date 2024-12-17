@@ -1,14 +1,14 @@
 <?php
 session_start();
 if (!isset($_SESSION['registration_success'])) {
-    header("Location: ../donor_registration.php");
+    header("Location: ../recipient_registration.php");
     exit();
 }
 
 // Clear the success flag after displaying the page
-$email = isset($_SESSION['donor_email']) ? $_SESSION['donor_email'] : '';
+$email = isset($_SESSION['recipient_email']) ? $_SESSION['recipient_email'] : '';
 unset($_SESSION['registration_success']);
-unset($_SESSION['donor_email']);
+unset($_SESSION['recipient_email']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -106,7 +106,7 @@ unset($_SESSION['donor_email']);
     <div class="success-container">
         <i class="fas fa-check-circle success-icon"></i>
         <h1 class="success-title">Registration Successful!</h1>
-        <p>Thank you for registering as a donor with LifeLink. Your application is now being processed.</p>
+        <p>Thank you for registering as a recipient with LifeLink. Your application is now being processed.</p>
         
         <?php if ($email): ?>
             <p>A confirmation email will be sent to: <strong><?php echo htmlspecialchars($email); ?></strong></p>
@@ -116,34 +116,34 @@ unset($_SESSION['donor_email']);
             <div class="timeline-item active">
                 <div class="timeline-content">
                     <div class="timeline-title">Registration Submitted</div>
-                    <p>Your donor registration has been successfully submitted.</p>
+                    <p>Your recipient registration has been successfully submitted.</p>
                 </div>
             </div>
             
             <div class="timeline-item">
                 <div class="timeline-content">
-                    <div class="timeline-title">Under Review</div>
-                    <p>Our team will review your application and verify the provided information.</p>
+                    <div class="timeline-title">Document Verification</div>
+                    <p>Our team will verify your medical records and ID proof.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-title">Medical Review</div>
+                    <p>Medical professionals will review your case and assess urgency.</p>
                 </div>
             </div>
             
             <div class="timeline-item">
                 <div class="timeline-content">
                     <div class="timeline-title">Application Decision</div>
-                    <p>The admin will review and make a decision on your application.</p>
-                </div>
-            </div>
-            
-            <div class="timeline-item">
-                <div class="timeline-content">
-                    <div class="timeline-title">Email Notification</div>
-                    <p>You will receive an email with your ODML ID and next steps.</p>
+                    <p>You will be notified about your application status.</p>
                 </div>
             </div>
         </div>
 
         <p><strong>What's Next?</strong></p>
-        <p>Please check your email regularly. We will send you updates about your application status and your ODML ID once approved.</p>
+        <p>Please check your email regularly. We will contact you with updates about your application status and next steps.</p>
         
         <a href="../../index.php" class="back-button">Back to Home</a>
     </div>

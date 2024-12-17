@@ -4932,3 +4932,36 @@ Data: [
     }
 ]
 -------------------
+2024-12-17 09:06:32 - Fetching pending donors
+-------------------
+2024-12-17 09:06:32 - Pending donors result
+Data: [
+    {
+        "id": 10,
+        "name": "withguardian",
+        "email": "verifyguardian123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "liver",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 9,
+        "name": "unknown",
+        "email": "tharash123@gmail.com",
+        "blood_type": "AB+",
+        "organ_type": "heart",
+        "registration_date": "2024-12-17",
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "name": "mist",
+        "email": "mist123@gmail.com",
+        "blood_type": "B-",
+        "organ_type": "liver",
+        "registration_date": "2024-12-14",
+        "status": "Pending"
+    }
+]
+-------------------

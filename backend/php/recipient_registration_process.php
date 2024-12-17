@@ -47,6 +47,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             throw new Exception("ID document is required.");
         }
 
+        // Handle file upload for medical records
+        $medical_records = '';
+        if(isset($_FILES['medicalRecords']) && $_FILES['medicalRecords']['error'] === UPLOAD_ERR_OK) {
+            $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+            $file_extension = strtolower(pathinfo($_FILES['medicalRecords']['name'], PATHINFO_EXTENSION));
+            
+            if (!in_array($file_extension, $allowed_types)) {
+                throw new Exception("Invalid file type for medical records. Allowed types: PDF, DOC, DOCX, JPG, JPEG, PNG");
+            }
+            
+            if ($_FILES['medicalRecords']['size'] > 5 * 1024 * 1024) { // 5MB limit
+                throw new Exception("Medical records file size must be less than 5MB");
+            }
+            
+            $upload_dir = '../../uploads/medical_records/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            $new_filename = uniqid() . '.' . $file_extension;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if(move_uploaded_file($_FILES['medicalRecords']['tmp_name'], $upload_path)) {
+                $medical_records = $new_filename;
+            } else {
+                throw new Exception("Failed to upload medical records. Please try again.");
+            }
+        } else {
+            throw new Exception("Medical records are required.");
+        }
+
         // Generate username from email (part before @)
         $username = explode('@', $email)[0];
         // Add random number if username exists
@@ -77,12 +108,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "INSERT INTO recipient_registration (
             full_name, date_of_birth, gender, phone_number, email, address,
             medical_condition, blood_type, organ_required, organ_reason, urgency_level,
-            id_proof_type, id_proof_number, id_document,
+            id_proof_type, id_proof_number, id_document, medical_records,
             username, password, request_status
         ) VALUES (
             :full_name, :date_of_birth, :gender, :phone_number, :email, :address,
             :medical_condition, :blood_type, :organ_required, :organ_reason, :urgency_level,
-            :id_proof_type, :id_proof_number, :id_document,
+            :id_proof_type, :id_proof_number, :id_document, :medical_records,
             :username, :password, 'pending'
         )";
 
@@ -104,22 +135,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':id_proof_type' => $id_proof_type,
             ':id_proof_number' => $id_proof_number,
             ':id_document' => $id_document,
+            ':medical_records' => $medical_records,
             ':username' => $username,
             ':password' => $password
         ];
         
-        $stmt->execute($params);
-
-        // Commit transaction
-        $conn->commit();
-
-        // Set success message and session variables
-        $_SESSION['success'] = "Registration successful! Your username is: $username";
-        $_SESSION['recipient_email'] = $email;
-
-        // Redirect to success page
-        header("Location: ../../pages/recipient_registration_success.php");
-        exit();
+        if ($stmt->execute($params)) {
+            $conn->commit();
+            $_SESSION['registration_success'] = true;
+            $_SESSION['recipient_email'] = $email;
+            header("Location: ../../pages/recipient/recipient_registration_success.php");
+            exit();
+        }
 
     } catch(Exception $e) {
         // Rollback transaction on error
