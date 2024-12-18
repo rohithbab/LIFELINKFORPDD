@@ -90,6 +90,7 @@ if ($result) {
     <title>Manage Hospitals - LifeLink Admin</title>
     <link rel="stylesheet" href="../../assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Existing styles remain... */
         
@@ -158,6 +159,12 @@ if ($result) {
             -webkit-text-fill-color: transparent;
             margin: 0;
             padding: 0;
+        }
+
+        .sidebar-header h3 {
+            color: #333;
+            margin-top: 10px;
+            font-size: 1.2em;
         }
 
         .sidebar-nav {
@@ -367,6 +374,47 @@ if ($result) {
             margin-left: 5px;
             font-weight: bold;
         }
+        
+        .analytics-container {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .analytics-title {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .analytics-title i {
+            margin-right: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -381,6 +429,7 @@ if ($result) {
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>LifeLink</h2>
+            <h3>Admin Hospital Management</h3>
         </div>
         <nav class="sidebar-nav">
             <ul>
@@ -409,13 +458,41 @@ if ($result) {
                     </a>
                 </li>
                 <li>
-                    <a href="#reports">
-                        <i class="fas fa-chart-bar"></i>
-                        Hospital Reports
+                    <a href="manage_hospitals_analytics.php" onclick="window.location.href='manage_hospitals_analytics.php'; return false;">
+                        <i class="fas fa-chart-pie"></i>
+                        Hospital Analytics
                     </a>
                 </li>
             </ul>
         </nav>
+        
+        <!-- Analytics Section -->
+        <div class="analytics-container" id="analyticsContainer" style="display: none;">
+            <div class="analytics-title">
+                <i class="fas fa-chart-pie"></i>
+                Hospital Statistics
+            </div>
+            <div class="chart-container">
+                <canvas id="totalHospitalsChart"></canvas>
+                <div class="stat-label">Total Hospitals</div>
+                <div class="stat-value" id="totalHospitals">0</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="pendingHospitalsChart"></canvas>
+                <div class="stat-label">Pending Hospitals</div>
+                <div class="stat-value" id="pendingHospitals">0</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="approvedHospitalsChart"></canvas>
+                <div class="stat-label">Approved Hospitals</div>
+                <div class="stat-value" id="approvedHospitals">0</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="rejectedHospitalsChart"></canvas>
+                <div class="stat-label">Rejected Hospitals</div>
+                <div class="stat-value" id="rejectedHospitals">0</div>
+            </div>
+        </div>
     </div>
 
     <!-- Dark Overlay -->
@@ -603,6 +680,84 @@ if ($result) {
             // This will show detailed hospital information
             window.location.href = `view_hospital.php?id=${hospitalId}`;
         }
+
+        // Analytics functionality
+        const analyticsLink = document.getElementById('analyticsLink');
+        const analyticsContainer = document.getElementById('analyticsContainer');
+        let charts = {};
+
+        function createRingChart(canvasId, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [0, 100],
+                        backgroundColor: [color, '#f0f0f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(hospitals) {
+            const total = hospitals.length;
+            const pending = hospitals.filter(h => h.status === 'pending').length;
+            const approved = hospitals.filter(h => h.status === 'approved').length;
+            const rejected = hospitals.filter(h => h.status === 'rejected').length;
+
+            // Update values
+            document.getElementById('totalHospitals').textContent = total;
+            document.getElementById('pendingHospitals').textContent = pending;
+            document.getElementById('approvedHospitals').textContent = approved;
+            document.getElementById('rejectedHospitals').textContent = rejected;
+
+            // Update charts
+            charts.total.data.datasets[0].data = [total, Math.max(0, 100 - total)];
+            charts.pending.data.datasets[0].data = [pending, total - pending];
+            charts.approved.data.datasets[0].data = [approved, total - approved];
+            charts.rejected.data.datasets[0].data = [rejected, total - rejected];
+
+            Object.values(charts).forEach(chart => chart.update());
+        }
+
+        analyticsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Toggle analytics container
+            const isHidden = analyticsContainer.style.display === 'none';
+            analyticsContainer.style.display = isHidden ? 'block' : 'none';
+            
+            if (isHidden) {
+                // Initialize charts if not already done
+                if (!charts.total) {
+                    charts.total = createRingChart('totalHospitalsChart', '#1a73e8');
+                    charts.pending = createRingChart('pendingHospitalsChart', '#ffd700');
+                    charts.approved = createRingChart('approvedHospitalsChart', '#34a853');
+                    charts.rejected = createRingChart('rejectedHospitalsChart', '#dc3545');
+                }
+                
+                // Update charts with current data
+                updateCharts(<?php echo json_encode($hospitals); ?>);
+            }
+        });
     </script>
 </body>
 </html>
