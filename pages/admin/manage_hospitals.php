@@ -91,6 +91,131 @@ if ($result) {
     <link rel="stylesheet" href="../../assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* Existing styles remain... */
+        
+        /* Hamburger Menu & Sidebar Styles */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            background: linear-gradient(135deg, #1a73e8, #34a853);
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-menu:hover {
+            transform: scale(1.1);
+        }
+
+        .hamburger-menu .bar {
+            width: 25px;
+            height: 3px;
+            background: white;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 999;
+            padding-top: 80px;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .content-wrapper {
+            transition: all 0.3s ease;
+            margin-left: 0;
+        }
+
+        .content-wrapper.shifted {
+            margin-left: 300px;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 2.2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #1a73e8, #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-nav {
+            padding: 20px;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: linear-gradient(135deg, #1a73e8, #34a853);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 998;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper.shifted {
+                margin-left: 0;
+                transform: translateX(300px);
+            }
+        }
+        
         .admin-container {
             display: flex;
             min-height: 100vh;
@@ -245,66 +370,120 @@ if ($result) {
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <main class="admin-main">
-            <a href="admin_dashboard.php" class="back-button">
-                <i class="fas fa-arrow-left"></i>&nbsp; Back to Dashboard
-            </a>
-            
-            <h1 class="page-title">Manage Hospitals</h1>
-            
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-status="all">All</button>
-                <button class="filter-btn" data-status="pending">Pending</button>
-                <button class="filter-btn" data-status="approved">Approved</button>
-                <button class="filter-btn" data-status="rejected">Rejected</button>
-            </div>
-            
-            <table class="hospital-table">
-                <thead>
-                    <tr>
-                        <th>Hospital Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>License Number</th>
-                        <th>Registration Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($hospitals as $hospital): ?>
-                        <tr class="hospital-row <?php echo $hospital['status']; ?>">
-                            <td>
-                                <?php echo htmlspecialchars($hospital['name']); ?>
-                                <?php if ($hospital['is_new']): ?>
-                                    <span class="new-badge">New</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo htmlspecialchars($hospital['email']); ?></td>
-                            <td><?php echo htmlspecialchars($hospital['phone']); ?></td>
-                            <td><?php echo htmlspecialchars($hospital['license_number']); ?></td>
-                            <td><?php echo date('Y-m-d', strtotime($hospital['created_at'])); ?></td>
-                            <td>
-                                <span class="status-badge <?php echo $hospital['status']; ?>">
-                                    <?php echo ucfirst($hospital['status']); ?>
-                                </span>
-                            </td>
-                            <td class="action-buttons">
-                                <button class="view-btn" onclick="viewHospital(<?php echo $hospital['hospital_id']; ?>)">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <?php if ($hospital['status'] !== 'rejected'): ?>
-                                    <button class="reject-btn" onclick="showRejectModal(<?php echo $hospital['hospital_id']; ?>)">
-                                        <i class="fas fa-times"></i> Reject
-                                    </button>
-                                <?php endif; ?>
-                            </td>
+    <!-- Hamburger Menu -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>LifeLink</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="#all" class="active">
+                        <i class="fas fa-hospital"></i>
+                        All Hospitals
+                    </a>
+                </li>
+                <li>
+                    <a href="#pending">
+                        <i class="fas fa-clock"></i>
+                        Pending Approvals
+                    </a>
+                </li>
+                <li>
+                    <a href="#approved">
+                        <i class="fas fa-check-circle"></i>
+                        Approved Hospitals
+                    </a>
+                </li>
+                <li>
+                    <a href="#rejected">
+                        <i class="fas fa-times-circle"></i>
+                        Rejected Hospitals
+                    </a>
+                </li>
+                <li>
+                    <a href="#reports">
+                        <i class="fas fa-chart-bar"></i>
+                        Hospital Reports
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Dark Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="admin-container">
+            <main class="admin-main">
+                <a href="admin_dashboard.php" class="back-button">
+                    <i class="fas fa-arrow-left"></i>&nbsp; Back to Dashboard
+                </a>
+                
+                <h1 class="page-title">Manage Hospitals</h1>
+                
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-status="all">All</button>
+                    <button class="filter-btn" data-status="pending">Pending</button>
+                    <button class="filter-btn" data-status="approved">Approved</button>
+                    <button class="filter-btn" data-status="rejected">Rejected</button>
+                </div>
+                
+                <table class="hospital-table">
+                    <thead>
+                        <tr>
+                            <th>Hospital Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>License Number</th>
+                            <th>Registration Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </main>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($hospitals as $hospital): ?>
+                            <tr class="hospital-row <?php echo $hospital['status']; ?>">
+                                <td>
+                                    <?php echo htmlspecialchars($hospital['name']); ?>
+                                    <?php if ($hospital['is_new']): ?>
+                                        <span class="new-badge">New</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                                <td><?php echo htmlspecialchars($hospital['phone']); ?></td>
+                                <td><?php echo htmlspecialchars($hospital['license_number']); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($hospital['created_at'])); ?></td>
+                                <td>
+                                    <span class="status-badge <?php echo $hospital['status']; ?>">
+                                        <?php echo ucfirst($hospital['status']); ?>
+                                    </span>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="view-btn" onclick="viewHospital(<?php echo $hospital['hospital_id']; ?>)">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    <?php if ($hospital['status'] !== 'rejected'): ?>
+                                        <button class="reject-btn" onclick="showRejectModal(<?php echo $hospital['hospital_id']; ?>)">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </main>
+        </div>
     </div>
 
     <!-- Reject Hospital Modal -->
@@ -326,6 +505,61 @@ if ($result) {
     </div>
 
     <script>
+        // Existing script content...
+
+        // Hamburger Menu Functionality
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.getElementById('contentWrapper');
+        const overlay = document.getElementById('overlay');
+
+        hamburgerMenu.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            contentWrapper.classList.toggle('shifted');
+            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+            
+            // Animate hamburger to X
+            const bars = hamburgerMenu.getElementsByClassName('bar');
+            hamburgerMenu.classList.toggle('active');
+            if (hamburgerMenu.classList.contains('active')) {
+                bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                bars[1].style.opacity = '0';
+                bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+            } else {
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+        }
+
+        // Handle sidebar links
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const status = this.getAttribute('href').replace('#', '');
+                
+                // Update active link
+                document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Filter table
+                if (status !== 'reports') {
+                    const filterBtn = document.querySelector(`.filter-btn[data-status="${status}"]`);
+                    if (filterBtn) {
+                        filterBtn.click();
+                    }
+                }
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
         // Filter functionality
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
