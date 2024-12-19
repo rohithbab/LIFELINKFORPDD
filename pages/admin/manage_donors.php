@@ -178,6 +178,8 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
             margin-top: 20px;
             background: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .donor-table th {
@@ -193,6 +195,33 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
             border-bottom: 1px solid #eee;
             color: #333;
             font-weight: 500;
+        }
+
+        .donor-table tr.status-approved {
+            background-color: #d4edda;
+            transition: background-color 0.3s ease;
+        }
+
+        .donor-table tr.status-approved:hover {
+            background-color: #c3e6cb;
+        }
+
+        .donor-table tr.status-rejected {
+            background-color: #f8d7da;
+            transition: background-color 0.3s ease;
+        }
+
+        .donor-table tr.status-rejected:hover {
+            background-color: #f5c6cb;
+        }
+
+        .donor-table tr.status-pending {
+            background-color: #fff3cd;
+            transition: background-color 0.3s ease;
+        }
+
+        .donor-table tr.status-pending:hover {
+            background-color: #ffeeba;
         }
 
         /* Status Buttons */
@@ -459,20 +488,25 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
                 </li>
                 <li>
                     <a href="?status=Pending" class="filter-btn <?php echo $status_filter === 'Pending' ? 'active' : ''; ?>">
-                        Pending
+                        Pending Donors
                         <span class="status-count"><?php echo $status_counts['Pending']; ?></span>
                     </a>
                 </li>
                 <li>
                     <a href="?status=Approved" class="filter-btn <?php echo $status_filter === 'Approved' ? 'active' : ''; ?>">
-                        Approved
+                        Approved Donors
                         <span class="status-count"><?php echo $status_counts['Approved']; ?></span>
                     </a>
                 </li>
                 <li>
                     <a href="?status=Rejected" class="filter-btn <?php echo $status_filter === 'Rejected' ? 'active' : ''; ?>">
-                        Rejected
+                        Rejected Donors
                         <span class="status-count"><?php echo $status_counts['Rejected']; ?></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="donor_analytics.php" class="filter-btn">
+                        <i class="fas fa-chart-pie"></i> Donor Analytics
                     </a>
                 </li>
             </ul>
@@ -495,13 +529,13 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
                         All Donors <span class="status-count"><?php echo $status_counts['all']; ?></span>
                     </a>
                     <a href="?status=Pending" class="filter-btn <?php echo $status_filter === 'Pending' ? 'active' : ''; ?>">
-                        Pending <span class="status-count"><?php echo $status_counts['Pending']; ?></span>
+                        Pending Donors <span class="status-count"><?php echo $status_counts['Pending']; ?></span>
                     </a>
                     <a href="?status=Approved" class="filter-btn <?php echo $status_filter === 'Approved' ? 'active' : ''; ?>">
-                        Approved <span class="status-count"><?php echo $status_counts['Approved']; ?></span>
+                        Approved Donors <span class="status-count"><?php echo $status_counts['Approved']; ?></span>
                     </a>
                     <a href="?status=Rejected" class="filter-btn <?php echo $status_filter === 'Rejected' ? 'active' : ''; ?>">
-                        Rejected <span class="status-count"><?php echo $status_counts['Rejected']; ?></span>
+                        Rejected Donors <span class="status-count"><?php echo $status_counts['Rejected']; ?></span>
                     </a>
                 </div>
 
@@ -520,7 +554,7 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
                     </thead>
                     <tbody>
                         <?php foreach ($donors as $donor): ?>
-                        <tr>
+                        <tr class="status-<?php echo strtolower($donor['d_status']); ?>">
                             <td><?php echo htmlspecialchars($donor['d_name']); ?></td>
                             <td><?php echo htmlspecialchars($donor['d_email']); ?></td>
                             <td><?php echo htmlspecialchars($donor['d_gender']); ?></td>
