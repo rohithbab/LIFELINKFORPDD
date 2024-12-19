@@ -11,13 +11,13 @@ if (!isset($_SESSION['admin_id'])) {
 // Fetch required donor information
 $query = "
     SELECT 
-        donor_id,
-        name,
-        email,
-        gender,
-        blood_group,
-        organs_to_donate,
-        status,
+        donor_id as d_id,
+        name as d_name,
+        email as d_email,
+        gender as d_gender,
+        blood_group as d_blood_group,
+        organs_to_donate as d_organs,
+        status as d_status,
         created_at
     FROM donor 
     ORDER BY 
@@ -446,17 +446,17 @@ if ($result) {
                     <tbody>
                         <?php foreach ($donors as $donor): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($donor['name']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['email']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['gender']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['blood_group']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['organs_to_donate']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['d_name']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['d_email']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['d_gender']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['d_blood_group']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['d_organs']); ?></td>
                             <td>
                                 <?php 
                                 $statusIcon = '';
                                 $statusClass = '';
                                 
-                                switch($donor['status']) {
+                                switch($donor['d_status']) {
                                     case 'Approved':
                                         $statusIcon = '<i class="fas fa-check-circle"></i>';
                                         $statusClass = 'approved';
@@ -486,16 +486,16 @@ if ($result) {
                                             echo 'linear-gradient(135deg, #ffc107, #ffdb4d)';
                                     }
                                 ?>; color: <?php echo $statusClass === 'pending' ? '#000' : '#fff'; ?>;">
-                                    <?php echo $statusIcon . ' ' . $donor['status']; ?>
+                                    <?php echo $statusIcon . ' ' . $donor['d_status']; ?>
                                 </button>
                             </td>
                             <td>
-                                <button class="reject-btn" onclick="showRejectModal(<?php echo $donor['donor_id']; ?>)">
+                                <button class="reject-btn" onclick="showRejectModal(<?php echo $donor['d_id']; ?>)">
                                     <i class="fas fa-times-circle"></i> Reject
                                 </button>
                             </td>
                             <td>
-                                <button class="view-btn" onclick="viewDonor(<?php echo $donor['donor_id']; ?>)">
+                                <button class="view-btn" onclick="viewDonor(<?php echo $donor['d_id']; ?>)">
                                     <i class="fas fa-eye"></i> View
                                 </button>
                             </td>
