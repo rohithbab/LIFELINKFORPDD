@@ -218,6 +218,11 @@ session_start();
                         <textarea id="organReason" name="organReason" rows="3" required placeholder="Please explain your medical condition and why you need this organ"></textarea>
                     </div>
                     <div class="form-group">
+                        <label for="medicalReports">Medical Reports * <small>(Max 5MB - Images/PDF/DOC)</small></label>
+                        <input type="file" id="medicalReports" name="medicalReports" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required onchange="validateFileSize(this, 5)">
+                        <div id="fileError" class="error-message"></div>
+                    </div>
+                    <div class="form-group">
                         <label for="urgencyLevel">Urgency Level *</label>
                         <select id="urgencyLevel" name="urgencyLevel" required>
                             <option value="">Select Urgency Level</option>
@@ -344,6 +349,7 @@ session_start();
             // File size validation
             const medicalRecords = document.getElementById('medicalRecords').files[0];
             const idDocument = document.getElementById('idDocument').files[0];
+            const medicalReports = document.getElementById('medicalReports').files[0];
 
             if (medicalRecords && medicalRecords.size > 5 * 1024 * 1024) {
                 e.preventDefault();
@@ -356,7 +362,31 @@ session_start();
                 alert('ID document file size must be less than 2MB!');
                 return;
             }
+
+            if (medicalReports && medicalReports.size > 5 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Medical reports file size must be less than 5MB!');
+                return;
+            }
         });
+
+        // File size validation
+        function validateFileSize(input, maxSize) {
+            const fileError = document.getElementById('fileError');
+            const file = input.files[0];
+            
+            if (file) {
+                // Convert maxSize from MB to bytes
+                const maxBytes = maxSize * 1024 * 1024;
+                
+                if (file.size > maxBytes) {
+                    fileError.textContent = `File size must be less than ${maxSize}MB`;
+                    input.value = ''; // Clear the file input
+                } else {
+                    fileError.textContent = '';
+                }
+            }
+        }
     </script>
 </body>
 </html>

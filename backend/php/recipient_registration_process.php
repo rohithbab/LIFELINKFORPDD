@@ -49,19 +49,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Handle file upload for medical records
         $medical_records = '';
-        if(isset($_FILES['medicalRecords']) && $_FILES['medicalRecords']['error'] === UPLOAD_ERR_OK) {
+        if(isset($_FILES['medicalReports']) && $_FILES['medicalReports']['error'] === UPLOAD_ERR_OK) {
             $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-            $file_extension = strtolower(pathinfo($_FILES['medicalRecords']['name'], PATHINFO_EXTENSION));
+            $file_extension = strtolower(pathinfo($_FILES['medicalReports']['name'], PATHINFO_EXTENSION));
             
             if (!in_array($file_extension, $allowed_types)) {
-                throw new Exception("Invalid file type for medical records. Allowed types: PDF, DOC, DOCX, JPG, JPEG, PNG");
+                throw new Exception("Invalid file type for medical reports. Allowed types: PDF, DOC, DOCX, JPG, JPEG, PNG");
             }
             
-            if ($_FILES['medicalRecords']['size'] > 5 * 1024 * 1024) { // 5MB limit
-                throw new Exception("Medical records file size must be less than 5MB");
+            if ($_FILES['medicalReports']['size'] > 5 * 1024 * 1024) { // 5MB limit
+                throw new Exception("Medical reports file size must be less than 5MB");
             }
             
-            $upload_dir = '../../uploads/medical_records/';
+            $upload_dir = '../../uploads/medical_reports/';
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
@@ -69,13 +69,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $new_filename = uniqid() . '.' . $file_extension;
             $upload_path = $upload_dir . $new_filename;
             
-            if(move_uploaded_file($_FILES['medicalRecords']['tmp_name'], $upload_path)) {
+            if(move_uploaded_file($_FILES['medicalReports']['tmp_name'], $upload_path)) {
                 $medical_records = $new_filename;
             } else {
-                throw new Exception("Failed to upload medical records. Please try again.");
+                throw new Exception("Failed to upload medical reports. Please try again.");
             }
         } else {
-            throw new Exception("Medical records are required.");
+            throw new Exception("Medical reports are required.");
         }
 
         // Generate username from email (part before @)
@@ -106,41 +106,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert into recipient_registration table
         $sql = "INSERT INTO recipient_registration (
-            full_name, date_of_birth, gender, phone_number, email, address,
-            medical_condition, blood_type, organ_required, organ_reason, urgency_level,
-            id_proof_type, id_proof_number, id_document, medical_records,
-            username, password, request_status
+            username, password, full_name, date_of_birth, gender, phone_number, 
+            email, address, medical_condition, blood_type, organ_required, 
+            organ_reason, urgency_level, id_proof_type, id_proof_number, 
+            id_document, recipient_medical_reports
         ) VALUES (
-            :full_name, :date_of_birth, :gender, :phone_number, :email, :address,
-            :medical_condition, :blood_type, :organ_required, :organ_reason, :urgency_level,
-            :id_proof_type, :id_proof_number, :id_document, :medical_records,
-            :username, :password, 'pending'
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )";
 
         $stmt = $conn->prepare($sql);
-        
-        // Bind parameters
-        $params = [
-            ':full_name' => $full_name,
-            ':date_of_birth' => $date_of_birth,
-            ':gender' => $gender,
-            ':phone_number' => $phone_number,
-            ':email' => $email,
-            ':address' => $address,
-            ':medical_condition' => $medical_condition,
-            ':blood_type' => $blood_type,
-            ':organ_required' => $organ_required,
-            ':organ_reason' => $organ_reason,
-            ':urgency_level' => $urgency_level,
-            ':id_proof_type' => $id_proof_type,
-            ':id_proof_number' => $id_proof_number,
-            ':id_document' => $id_document,
-            ':medical_records' => $medical_records,
-            ':username' => $username,
-            ':password' => $password
-        ];
-        
-        if ($stmt->execute($params)) {
+        $stmt->execute([
+            $username, $password, $full_name, $date_of_birth, $gender, $phone_number,
+            $email, $address, $medical_condition, $blood_type, $organ_required,
+            $organ_reason, $urgency_level, $id_proof_type, $id_proof_number,
+            $id_document, $medical_records
+        ]);
+
+        if ($stmt->rowCount() > 0) {
             $conn->commit();
             $_SESSION['registration_success'] = true;
             $_SESSION['recipient_email'] = $email;
