@@ -82,16 +82,27 @@ if (!$donor) {
         .status-rejected { background: #f8d7da; color: #721c24; }
         .status-pending { background: #fff3cd; color: #856404; }
         .back-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #007bff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1a73e8, #34a853);
             color: white;
             text-decoration: none;
-            border-radius: 4px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         .back-btn:hover {
-            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .back-btn i {
+            font-size: 1.1em;
         }
         .document-link {
             display: inline-flex;

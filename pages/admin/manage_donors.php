@@ -8,7 +8,10 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-// Fetch required donor information
+// Get status filter from URL parameter
+$status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
+
+// Build the SQL query based on status filter
 $query = "
     SELECT 
         donor_id as d_id,
@@ -19,15 +22,21 @@ $query = "
         organs_to_donate as d_organs,
         status as d_status,
         created_at
-    FROM donor 
-    ORDER BY 
-        CASE status
-            WHEN 'Approved' THEN 1
-            WHEN 'Rejected' THEN 2
-            WHEN 'Pending' THEN 3
-        END,
-        created_at DESC
-";
+    FROM donor ";
+
+// Add WHERE clause for status filtering
+if ($status_filter !== 'all') {
+    $query .= " WHERE status = '" . $conn->real_escape_string($status_filter) . "'";
+}
+
+// Add ORDER BY clause
+$query .= " ORDER BY 
+    CASE status
+        WHEN 'Approved' THEN 1
+        WHEN 'Rejected' THEN 2
+        WHEN 'Pending' THEN 3
+    END,
+    created_at DESC";
 
 $result = $conn->query($query);
 $donors = [];
@@ -36,6 +45,23 @@ if ($result) {
         $donors[] = $row;
     }
 }
+
+// Count donors by status
+$status_counts = [
+    'all' => 0,
+    'Pending' => 0,
+    'Approved' => 0,
+    'Rejected' => 0
+];
+
+$count_query = "SELECT status, COUNT(*) as count FROM donor GROUP BY status";
+$count_result = $conn->query($count_query);
+if ($count_result) {
+    while ($row = $count_result->fetch_assoc()) {
+        $status_counts[$row['status']] = $row['count'];
+    }
+}
+$status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Approved'], $status_counts['Rejected']]);
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +95,19 @@ if ($result) {
             height: 3px;
             background: white;
             margin: 5px 0;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease-in-out, opacity 0.2s ease-in-out;
+        }
+
+        .hamburger-menu.active .bar:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .hamburger-menu.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active .bar:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
         }
 
         .sidebar {
@@ -82,16 +120,42 @@ if ($result) {
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             z-index: 999;
-            padding-top: 80px;
+            padding-top: 20px;
+            overflow-y: auto;
         }
 
         .sidebar.active {
             left: 0;
         }
 
+        .sidebar-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 2.5em;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #1a73e8, #34a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.2em;
+            color: #333;
+            margin: 0;
+            font-weight: 500;
+        }
+
         .content-wrapper {
             transition: all 0.3s ease;
             margin-left: 0;
+            padding: 20px;
+            padding-top: 80px; /* Added to prevent content from going under hamburger */
         }
 
         .content-wrapper.shifted {
@@ -196,11 +260,29 @@ if ($result) {
             color: #333;
             font-weight: 500;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
         }
 
         .filter-btn.active {
             background: linear-gradient(135deg, #1a73e8, #34a853);
             color: white;
+        }
+        
+        .status-count {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+        .active .status-count {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .back-button {
@@ -222,13 +304,6 @@ if ($result) {
 
         .back-button:hover {
             transform: translateY(-2px);
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            background: linear-gradient(to bottom, #1a73e8, #34a853);
-            color: white;
-            text-align: center;
         }
 
         .sidebar-nav ul {
@@ -377,41 +452,32 @@ if ($result) {
         <nav class="sidebar-nav">
             <ul>
                 <li>
-                    <a href="#all" class="active">
-                        <i class="fas fa-users"></i>
+                    <a href="?status=all" class="filter-btn <?php echo $status_filter === 'all' ? 'active' : ''; ?>">
                         All Donors
+                        <span class="status-count"><?php echo $status_counts['all']; ?></span>
                     </a>
                 </li>
                 <li>
-                    <a href="#pending">
-                        <i class="fas fa-clock"></i>
-                        Pending Approvals
+                    <a href="?status=Pending" class="filter-btn <?php echo $status_filter === 'Pending' ? 'active' : ''; ?>">
+                        Pending
+                        <span class="status-count"><?php echo $status_counts['Pending']; ?></span>
                     </a>
                 </li>
                 <li>
-                    <a href="#approved">
-                        <i class="fas fa-check-circle"></i>
-                        Approved Donors
+                    <a href="?status=Approved" class="filter-btn <?php echo $status_filter === 'Approved' ? 'active' : ''; ?>">
+                        Approved
+                        <span class="status-count"><?php echo $status_counts['Approved']; ?></span>
                     </a>
                 </li>
                 <li>
-                    <a href="#rejected">
-                        <i class="fas fa-times-circle"></i>
-                        Rejected Donors
-                    </a>
-                </li>
-                <li>
-                    <a href="manage_donors_analytics.php">
-                        <i class="fas fa-chart-pie"></i>
-                        Donor Analytics
+                    <a href="?status=Rejected" class="filter-btn <?php echo $status_filter === 'Rejected' ? 'active' : ''; ?>">
+                        Rejected
+                        <span class="status-count"><?php echo $status_counts['Rejected']; ?></span>
                     </a>
                 </li>
             </ul>
         </nav>
     </div>
-
-    <!-- Dark Overlay -->
-    <div class="overlay" id="overlay"></div>
 
     <!-- Main Content -->
     <div class="content-wrapper" id="contentWrapper">
@@ -423,11 +489,20 @@ if ($result) {
 
                 <h1 class="page-title">Manage Donors</h1>
 
+                <!-- Top Filter Buttons -->
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-status="all">All</button>
-                    <button class="filter-btn" data-status="pending">Pending</button>
-                    <button class="filter-btn" data-status="approved">Approved</button>
-                    <button class="filter-btn" data-status="rejected">Rejected</button>
+                    <a href="?status=all" class="filter-btn <?php echo $status_filter === 'all' ? 'active' : ''; ?>">
+                        All Donors <span class="status-count"><?php echo $status_counts['all']; ?></span>
+                    </a>
+                    <a href="?status=Pending" class="filter-btn <?php echo $status_filter === 'Pending' ? 'active' : ''; ?>">
+                        Pending <span class="status-count"><?php echo $status_counts['Pending']; ?></span>
+                    </a>
+                    <a href="?status=Approved" class="filter-btn <?php echo $status_filter === 'Approved' ? 'active' : ''; ?>">
+                        Approved <span class="status-count"><?php echo $status_counts['Approved']; ?></span>
+                    </a>
+                    <a href="?status=Rejected" class="filter-btn <?php echo $status_filter === 'Rejected' ? 'active' : ''; ?>">
+                        Rejected <span class="status-count"><?php echo $status_counts['Rejected']; ?></span>
+                    </a>
                 </div>
 
                 <table class="donor-table">
@@ -529,47 +604,36 @@ if ($result) {
         const hamburgerMenu = document.getElementById('hamburgerMenu');
         const contentWrapper = document.getElementById('contentWrapper');
         const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
 
-        hamburgerMenu.addEventListener('click', function() {
-            this.classList.toggle('active');
-            contentWrapper.classList.toggle('shifted');
+        // Check if sidebar state is stored in localStorage
+        const sidebarState = localStorage.getItem('sidebarState');
+        if (sidebarState === 'open') {
+            sidebar.classList.add('active');
+            contentWrapper.classList.add('shifted');
+            hamburgerMenu.classList.add('active');
+        }
+
+        hamburgerMenu.addEventListener('click', () => {
             sidebar.classList.toggle('active');
-            overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+            contentWrapper.classList.toggle('shifted');
+            hamburgerMenu.classList.toggle('active');
             
-            // Animate hamburger to X
-            const bars = this.getElementsByClassName('bar');
-            if (this.classList.contains('active')) {
-                bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-                bars[1].style.opacity = '0';
-                bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+            // Store sidebar state in localStorage
+            if (sidebar.classList.contains('active')) {
+                localStorage.setItem('sidebarState', 'open');
             } else {
-                bars[0].style.transform = 'none';
-                bars[1].style.opacity = '1';
-                bars[2].style.transform = 'none';
+                localStorage.setItem('sidebarState', 'closed');
             }
         });
 
-        overlay.addEventListener('click', function() {
-            hamburgerMenu.click();
-        });
-
-        // Filter functionality
-        document.querySelectorAll('.filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active button
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Filter table rows
-                const status = this.dataset.status;
-                document.querySelectorAll('.donor-row').forEach(row => {
-                    if (status === 'all' || row.classList.contains(status)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+        // Prevent sidebar from closing when clicking links
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Don't prevent default - let the link work normally
+                // Just make sure we keep the sidebar state
+                if (sidebar.classList.contains('active')) {
+                    localStorage.setItem('sidebarState', 'open');
+                }
             });
         });
 
