@@ -24,7 +24,8 @@ try {
     
     if ($row = $result->fetch_assoc()) {
         $license_file = $row['license_file'];
-        $file_path = "../uploads/licenses/" . $license_file;
+        // Use the new directory structure
+        $file_path = __DIR__ . '/../uploads/hospitals/license_file/' . basename($license_file);
         
         // Check if file exists
         if (!file_exists($file_path)) {

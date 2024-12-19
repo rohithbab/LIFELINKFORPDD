@@ -10,6 +10,42 @@ function sanitize_input($data) {
     return $data;
 }
 
+// Function to handle file upload
+function handle_file_upload($file, $target_dir) {
+    // Create directory if it doesn't exist
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+    
+    // Check if file was actually uploaded
+    if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
+        throw new Exception("No file uploaded.");
+    }
+    
+    $imageFileType = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+    
+    // Generate unique filename
+    $filename = uniqid() . '.' . $imageFileType;
+    $target_file = $target_dir . $filename;
+    
+    // Check file size (5MB max)
+    if ($file["size"] > 5000000) {
+        throw new Exception("File is too large. Maximum size is 5MB.");
+    }
+    
+    // Allow certain file formats
+    if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "pdf") {
+        throw new Exception("Only JPG, JPEG, PNG & PDF files are allowed.");
+    }
+    
+    if (move_uploaded_file($file["tmp_name"], $target_file)) {
+        chmod($target_file, 0666); // Set proper permissions
+        return $filename;
+    } else {
+        throw new Exception("Error uploading file: " . error_get_last()['message']);
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         // Get and sanitize input
@@ -27,55 +63,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $id_proof_type = sanitize_input($_POST['idType']);
         $id_proof_number = sanitize_input($_POST['idNumber']);
         
-        // Handle file upload for ID document
-        $id_document = '';
-        if(isset($_FILES['idDocument']) && $_FILES['idDocument']['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = '../../uploads/id_documents/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            $file_extension = strtolower(pathinfo($_FILES['idDocument']['name'], PATHINFO_EXTENSION));
-            $new_filename = uniqid() . '.' . $file_extension;
-            $upload_path = $upload_dir . $new_filename;
-            
-            if(move_uploaded_file($_FILES['idDocument']['tmp_name'], $upload_path)) {
-                $id_document = $new_filename;
-            } else {
-                throw new Exception("Failed to upload ID document. Please try again.");
-            }
-        } else {
-            throw new Exception("ID document is required.");
+        // Handle file uploads with new directory structure
+        $base_upload_dir = __DIR__ . '/../../uploads/recipient_registration/';
+        
+        // Handle medical reports
+        $recipient_medical_reports = null;
+        if (isset($_FILES['medical_reports'])) {
+            $recipient_medical_reports = handle_file_upload(
+                $_FILES['medical_reports'], 
+                $base_upload_dir . 'recipient_medical_reports/'
+            );
         }
-
-        // Handle file upload for medical records
-        $medical_records = '';
-        if(isset($_FILES['medicalReports']) && $_FILES['medicalReports']['error'] === UPLOAD_ERR_OK) {
-            $allowed_types = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-            $file_extension = strtolower(pathinfo($_FILES['medicalReports']['name'], PATHINFO_EXTENSION));
-            
-            if (!in_array($file_extension, $allowed_types)) {
-                throw new Exception("Invalid file type for medical reports. Allowed types: PDF, DOC, DOCX, JPG, JPEG, PNG");
-            }
-            
-            if ($_FILES['medicalReports']['size'] > 5 * 1024 * 1024) { // 5MB limit
-                throw new Exception("Medical reports file size must be less than 5MB");
-            }
-            
-            $upload_dir = '../../uploads/medical_reports/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-            
-            $new_filename = uniqid() . '.' . $file_extension;
-            $upload_path = $upload_dir . $new_filename;
-            
-            if(move_uploaded_file($_FILES['medicalReports']['tmp_name'], $upload_path)) {
-                $medical_records = $new_filename;
-            } else {
-                throw new Exception("Failed to upload medical reports. Please try again.");
-            }
-        } else {
-            throw new Exception("Medical reports are required.");
+        
+        // Handle ID document
+        $id_document = null;
+        if (isset($_FILES['id_document'])) {
+            $id_document = handle_file_upload(
+                $_FILES['id_document'], 
+                $base_upload_dir . 'id_document/'
+            );
         }
 
         // Generate username from email (part before @)
@@ -119,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username, $password, $full_name, $date_of_birth, $gender, $phone_number,
             $email, $address, $medical_condition, $blood_type, $organ_required,
             $organ_reason, $urgency_level, $id_proof_type, $id_proof_number,
-            $id_document, $medical_records
+            $id_document, $recipient_medical_reports
         ]);
 
         if ($stmt->rowCount() > 0) {

@@ -14,29 +14,33 @@ $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 // Build the SQL query based on status filter
 $query = "
     SELECT 
-        donor_id as d_id,
-        name as d_name,
-        email as d_email,
-        gender as d_gender,
-        blood_group as d_blood_group,
-        organs_to_donate as d_organs,
-        status as d_status,
-        created_at
-    FROM donor ";
+        d.*,
+        d.donor_id,
+        d.name,
+        d.email,
+        d.gender,
+        d.blood_group,
+        d.organs_to_donate,
+        d.status,
+        d.created_at,
+        d.id_proof_path,
+        d.medical_reports_path,
+        d.guardian_id_proof_path
+    FROM donor d";
 
 // Add WHERE clause for status filtering
 if ($status_filter !== 'all') {
-    $query .= " WHERE status = '" . $conn->real_escape_string($status_filter) . "'";
+    $query .= " WHERE d.status = '" . $conn->real_escape_string($status_filter) . "'";
 }
 
 // Add ORDER BY clause
 $query .= " ORDER BY 
-    CASE status
+    CASE d.status
         WHEN 'Approved' THEN 1
         WHEN 'Rejected' THEN 2
         WHEN 'Pending' THEN 3
     END,
-    created_at DESC";
+    d.created_at DESC";
 
 $result = $conn->query($query);
 $donors = [];
@@ -548,24 +552,27 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
                             <th>Blood Group</th>
                             <th>Organs to Donate</th>
                             <th>Status</th>
+                            <th>ID Proof</th>
+                            <th>Medical Reports</th>
+                            <th>Guardian ID</th>
                             <th>Actions</th>
                             <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($donors as $donor): ?>
-                        <tr class="status-<?php echo strtolower($donor['d_status']); ?>">
-                            <td><?php echo htmlspecialchars($donor['d_name']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['d_email']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['d_gender']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['d_blood_group']); ?></td>
-                            <td><?php echo htmlspecialchars($donor['d_organs']); ?></td>
+                        <tr class="status-<?php echo strtolower($donor['status']); ?>">
+                            <td><?php echo htmlspecialchars($donor['name']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['email']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['gender']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['blood_group']); ?></td>
+                            <td><?php echo htmlspecialchars($donor['organs_to_donate']); ?></td>
                             <td>
                                 <?php 
                                 $statusIcon = '';
                                 $statusClass = '';
                                 
-                                switch($donor['d_status']) {
+                                switch($donor['status']) {
                                     case 'Approved':
                                         $statusIcon = '<i class="fas fa-check-circle"></i>';
                                         $statusClass = 'approved';
@@ -595,16 +602,46 @@ $status_counts['all'] = array_sum([$status_counts['Pending'], $status_counts['Ap
                                             echo 'linear-gradient(135deg, #ffc107, #ffdb4d)';
                                     }
                                 ?>; color: <?php echo $statusClass === 'pending' ? '#000' : '#fff'; ?>;">
-                                    <?php echo $statusIcon . ' ' . $donor['d_status']; ?>
+                                    <?php echo $statusIcon . ' ' . $donor['status']; ?>
                                 </button>
                             </td>
                             <td>
-                                <button class="reject-btn" onclick="showRejectModal(<?php echo $donor['d_id']; ?>)">
+                                <?php if (!empty($donor['id_proof_path'])): ?>
+                                    <a href="view_id_proof.php?donor_id=<?php echo $donor['donor_id']; ?>&type=donor" 
+                                       target="_blank" class="view-button">
+                                        <i class="fas fa-eye"></i> View ID
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">No ID proof</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($donor['medical_reports_path'])): ?>
+                                    <a href="view_medical_report.php?type=donor&id=<?php echo $donor['donor_id']; ?>" 
+                                       target="_blank" class="view-button">
+                                        <i class="fas fa-file-medical"></i> View Reports
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">No reports</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($donor['guardian_id_proof_path'])): ?>
+                                    <a href="view_id_proof.php?donor_id=<?php echo $donor['donor_id']; ?>&type=guardian" 
+                                       target="_blank" class="view-button">
+                                        <i class="fas fa-id-card"></i> View Guardian ID
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">No guardian ID</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <button class="reject-btn" onclick="showRejectModal(<?php echo $donor['donor_id']; ?>)">
                                     <i class="fas fa-times-circle"></i> Reject
                                 </button>
                             </td>
                             <td>
-                                <button class="view-btn" onclick="viewDonor(<?php echo $donor['d_id']; ?>)">
+                                <button class="view-btn" onclick="viewDonor(<?php echo $donor['donor_id']; ?>)">
                                     <i class="fas fa-eye"></i> View
                                 </button>
                             </td>

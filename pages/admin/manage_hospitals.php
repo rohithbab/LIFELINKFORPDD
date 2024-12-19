@@ -525,34 +525,45 @@ if ($result) {
                             <th>Registration Date</th>
                             <th>Status</th>
                             <th>Actions</th>
+                            <th>License Document</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($hospitals as $hospital): ?>
-                            <tr class="hospital-row <?php echo $hospital['status']; ?>">
+                        <?php foreach ($hospitals as $row): ?>
+                            <tr class="hospital-row <?php echo $row['status']; ?>">
                                 <td>
-                                    <?php echo htmlspecialchars($hospital['name']); ?>
-                                    <?php if ($hospital['is_new']): ?>
+                                    <?php echo htmlspecialchars($row['name']); ?>
+                                    <?php if ($row['is_new']): ?>
                                         <span class="new-badge">New</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo htmlspecialchars($hospital['email']); ?></td>
-                                <td><?php echo htmlspecialchars($hospital['phone']); ?></td>
-                                <td><?php echo htmlspecialchars($hospital['license_number']); ?></td>
-                                <td><?php echo date('Y-m-d', strtotime($hospital['created_at'])); ?></td>
+                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td><?php echo htmlspecialchars($row['phone']); ?></td>
+                                <td><?php echo htmlspecialchars($row['license_number']); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($row['created_at'])); ?></td>
                                 <td>
-                                    <span class="status-badge <?php echo $hospital['status']; ?>">
-                                        <?php echo ucfirst($hospital['status']); ?>
+                                    <span class="status-badge <?php echo $row['status']; ?>">
+                                        <?php echo ucfirst($row['status']); ?>
                                     </span>
                                 </td>
                                 <td class="action-buttons">
-                                    <button class="view-btn" onclick="viewHospital(<?php echo $hospital['hospital_id']; ?>)">
+                                    <button class="view-btn" onclick="viewHospital(<?php echo $row['hospital_id']; ?>)">
                                         <i class="fas fa-eye"></i> View
                                     </button>
-                                    <?php if ($hospital['status'] !== 'rejected'): ?>
-                                        <button class="reject-btn" onclick="showRejectModal(<?php echo $hospital['hospital_id']; ?>)">
+                                    <?php if ($row['status'] !== 'rejected'): ?>
+                                        <button class="reject-btn" onclick="showRejectModal(<?php echo $row['hospital_id']; ?>)">
                                             <i class="fas fa-times"></i> Reject
                                         </button>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($row['license_document'])): ?>
+                                        <a href="../../uploads/hospitals/license_file/<?php echo htmlspecialchars($row['license_document']); ?>" 
+                                           target="_blank" class="view-button">
+                                            View License
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted">No license uploaded</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>

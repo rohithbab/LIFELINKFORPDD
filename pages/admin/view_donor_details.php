@@ -28,6 +28,9 @@ if (!$donor) {
     header("Location: manage_donors.php");
     exit();
 }
+
+// Debug: Print donor data
+error_log("Donor data: " . print_r($donor, true));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -179,7 +182,10 @@ if (!$donor) {
                 <?php if (!empty($donor['medical_reports_path'])): ?>
                 <div class="info-item">
                     <span class="info-label">Medical Reports:</span>
-                    <a href="../../uploads/medical_reports/<?php echo htmlspecialchars(basename($donor['medical_reports_path'])); ?>" class="document-link" target="_blank">
+                    <?php
+                    error_log("Medical Reports Path: " . $donor['medical_reports_path']);
+                    ?>
+                    <a href="view_medical_report.php?type=donor&id=<?php echo htmlspecialchars($donor['donor_id']); ?>" class="document-link" target="_blank">
                         <i class="fas fa-file-medical"></i> View Medical Reports
                     </a>
                 </div>
@@ -188,8 +194,23 @@ if (!$donor) {
                 <?php if (!empty($donor['id_proof_path'])): ?>
                 <div class="info-item">
                     <span class="info-label">ID Proof:</span>
-                    <a href="../view_id_proof.php?donor_id=<?php echo htmlspecialchars($donor['donor_id']); ?>" class="document-link" target="_blank">
+                    <?php
+                    error_log("ID Proof Path: " . $donor['id_proof_path']);
+                    ?>
+                    <a href="view_id_proof.php?donor_id=<?php echo htmlspecialchars($donor['donor_id']); ?>&type=donor" class="document-link" target="_blank">
                         <i class="fas fa-id-card"></i> View ID Proof
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($donor['guardian_id_proof_path'])): ?>
+                <div class="info-item">
+                    <span class="info-label">Guardian ID Proof:</span>
+                    <?php
+                    error_log("Guardian ID Proof Path: " . $donor['guardian_id_proof_path']);
+                    ?>
+                    <a href="view_id_proof.php?donor_id=<?php echo htmlspecialchars($donor['donor_id']); ?>&type=guardian" class="document-link" target="_blank">
+                        <i class="fas fa-id-card"></i> View Guardian ID Proof
                     </a>
                 </div>
                 <?php endif; ?>

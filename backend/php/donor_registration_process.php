@@ -25,8 +25,7 @@ function handle_file_upload($file, $target_dir) {
         throw new Exception("No file uploaded.");
     }
     
-    $target_file = $target_dir . basename($file["name"]);
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $imageFileType = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
     
     // Generate unique filename
     $filename = uniqid() . '.' . $imageFileType;
@@ -43,6 +42,7 @@ function handle_file_upload($file, $target_dir) {
     }
     
     if (move_uploaded_file($file["tmp_name"], $target_file)) {
+        chmod($target_file, 0666); // Set proper permissions
         return $filename;
     } else {
         throw new Exception("Error uploading file: " . error_get_last()['message']);
@@ -103,29 +103,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $reason = isset($_POST['reason']) ? sanitize_input($_POST['reason']) : null;
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        // Handle file uploads
-        $upload_dir = __DIR__ . '/../../uploads/';
-        $medical_reports_dir = $upload_dir . 'medical_reports/';
-        $id_proofs_dir = $upload_dir . 'id_proofs/';
-        $guardian_proofs_dir = $upload_dir . 'guardian_proofs/';
-
-        // Handle ID proof upload (required)
-        $id_proof_path = handle_file_upload($_FILES['idProof'], $id_proofs_dir);
-
-        // Handle medical reports upload (optional)
-        $medical_reports_path = isset($_FILES['medicalReports']) ? handle_multiple_file_uploads($_FILES['medicalReports'], $medical_reports_dir) : null;
+        // Handle file uploads with new directory structure
+        $base_upload_dir = __DIR__ . '/../../uploads/donors/';
+        
+        // Handle medical reports
+        $medical_reports_path = null;
+        if (isset($_FILES['medical_reports'])) {
+            $medical_reports_path = handle_file_upload(
+                $_FILES['medical_reports'], 
+                $base_upload_dir . 'medical_reports_path/'
+            );
+        }
+        
+        // Handle ID proof
+        $id_proof_path = null;
+        if (isset($_FILES['id_proof'])) {
+            $id_proof_path = handle_file_upload(
+                $_FILES['id_proof'], 
+                $base_upload_dir . 'id_proof_path/'
+            );
+        }
+        
+        // Handle guardian ID proof
+        $guardian_id_proof_path = null;
+        if (isset($_FILES['guardian_id_proof'])) {
+            $guardian_id_proof_path = handle_file_upload(
+                $_FILES['guardian_id_proof'], 
+                $base_upload_dir . 'guardian_id_proof_path/'
+            );
+        }
 
         // Handle guardian details (optional)
         $guardian_name = !empty($_POST['guardianName']) ? sanitize_input($_POST['guardianName']) : null;
         $guardian_email = !empty($_POST['guardianEmail']) ? filter_var($_POST['guardianEmail'], FILTER_SANITIZE_EMAIL) : null;
         $guardian_phone = !empty($_POST['guardianPhone']) ? sanitize_input($_POST['guardianPhone']) : null;
-        $guardian_id_proof_path = null;
-        
-        // Only process guardian ID proof if guardian details are provided
-        if (isset($_FILES['guardianIdProof']) && $_FILES['guardianIdProof']['size'] > 0) {
-            $guardian_id_proof_path = handle_file_upload($_FILES['guardianIdProof'], $guardian_proofs_dir);
-        }
-
         $guardian_confirmation = isset($_POST['guardianConfirmation']) ? 1 : 0;
 
         // Insert into database

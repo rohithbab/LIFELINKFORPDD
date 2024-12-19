@@ -25,8 +25,13 @@ try {
     if ($row = $result->fetch_assoc()) {
         $id_proof_file = $row['id_proof_path'];
         
-        // Use donor_documents directory where the files are actually stored
-        $file_path = __DIR__ . '/../uploads/donor_documents/' . basename($id_proof_file);
+        // Use the new directory structure
+        $base_path = __DIR__ . '/../uploads/';
+        if (isset($_GET['type']) && $_GET['type'] === 'guardian') {
+            $file_path = $base_path . 'donors/guardian_id_proof_path/' . basename($id_proof_file);
+        } else {
+            $file_path = $base_path . 'donors/id_proof_path/' . basename($id_proof_file);
+        }
         
         // Check if file exists
         if (!file_exists($file_path)) {

@@ -91,7 +91,7 @@ try {
         throw new Exception("Please upload your license document");
     }
 
-    $upload_dir = '../../uploads/licenses/';
+    $upload_dir = __DIR__ . '/../../uploads/hospitals/license_file/';
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -99,23 +99,22 @@ try {
     $file = $_FILES['license_document'];
     $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     
-    // Validate file type
-    $allowed_types = ['jpg', 'jpeg', 'png', 'pdf'];
-    if (!in_array($file_extension, $allowed_types)) {
-        throw new Exception("Invalid file type. Please upload JPG, PNG or PDF");
+    // Validate file extension
+    $allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png'];
+    if (!in_array($file_extension, $allowed_extensions)) {
+        throw new Exception("Only PDF, JPG, JPEG, and PNG files are allowed");
     }
-
+    
     // Generate unique filename
-    $license_file = $license_number . '_' . time() . '.' . $file_extension;
-    $file_path = $upload_dir . $license_file;
-
-    debug_log("Attempting to upload file to: $file_path");
-
+    $filename = uniqid() . '_' . time() . '.' . $file_extension;
+    $target_path = $upload_dir . $filename;
+    
     // Move uploaded file
-    if (!move_uploaded_file($file['tmp_name'], $file_path)) {
-        throw new Exception("Failed to upload license file");
+    if (!move_uploaded_file($file['tmp_name'], $target_path)) {
+        throw new Exception("Failed to upload license document");
     }
-    debug_log("File uploaded successfully");
+    
+    chmod($target_path, 0666); // Set proper permissions
 
     // Hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -146,7 +145,7 @@ try {
             $address,
             $region,
             $license_number,
-            $license_file,
+            $filename,
             $hashed_password
         );
 
@@ -174,8 +173,8 @@ try {
         debug_log("Transaction rolled back: " . $e->getMessage());
         
         // Delete uploaded file if exists
-        if (isset($file_path) && file_exists($file_path)) {
-            unlink($file_path);
+        if (isset($target_path) && file_exists($target_path)) {
+            unlink($target_path);
             debug_log("Uploaded file deleted due to error");
         }
         
