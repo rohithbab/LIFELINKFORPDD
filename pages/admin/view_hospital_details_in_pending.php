@@ -95,43 +95,59 @@ try {
         }
 
         .back-btn {
-            padding: 10px 20px;
-            background: #6c757d;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
             color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             text-decoration: none;
-            transition: background-color 0.3s;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-        }
-
-        .approve-btn, .reject-btn {
-            padding: 10px 20px;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
         }
 
         .approve-btn {
-            background: #28a745;
-        }
-
-        .approve-btn:hover {
-            background: #218838;
+            background: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .reject-btn {
-            background: #dc3545;
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        .reject-btn:hover {
-            background: #c82333;
+        .approve-btn:hover { background: #27ae60; }
+        .reject-btn:hover { background: #c0392b; }
+        .back-btn:hover { opacity: 0.9; }
+
+        .view-license {
+            color: #2196F3;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+        
+        .view-license:hover {
+            color: #1976D2;
+        }
+        
+        .view-license i {
+            font-size: 14px;
         }
     </style>
 </head>
@@ -163,7 +179,7 @@ try {
                 <div class="details-grid">
                     <div class="detail-item">
                         <h3>Hospital Name</h3>
-                        <p><?php echo htmlspecialchars($hospital['hospital_name']); ?></p>
+                        <p><?php echo htmlspecialchars($hospital['name']); ?></p>
                     </div>
                     <div class="detail-item">
                         <h3>Email</h3>
@@ -178,12 +194,8 @@ try {
                         <p><?php echo htmlspecialchars($hospital['address']); ?></p>
                     </div>
                     <div class="detail-item">
-                        <h3>City</h3>
-                        <p><?php echo htmlspecialchars($hospital['city']); ?></p>
-                    </div>
-                    <div class="detail-item">
-                        <h3>State</h3>
-                        <p><?php echo htmlspecialchars($hospital['state']); ?></p>
+                        <h3>License</h3>
+                        <p><a href="../../uploads/hospitals/license_file/<?php echo htmlspecialchars($hospital['license_file']); ?>" target="_blank" class="view-license">View License <i class="fas fa-external-link-alt"></i></a></p>
                     </div>
                     <div class="detail-item">
                         <h3>ODML ID</h3>

@@ -140,6 +140,25 @@ $urgentRecipients = getUrgentRecipients($conn);
         .reject-btn:hover {
             background: #c82333;
         }
+        
+        /* Update gradient header for pending hospitals table */
+        .table-container h2 {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+            margin: 0;
+        }
+        
+        #pending-hospitals-table thead tr {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+        }
+        
+        #pending-hospitals-table thead th {
+            padding: 12px;
+            font-weight: 600;
+        }
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -210,7 +229,7 @@ $urgentRecipients = getUrgentRecipients($conn);
             <div class="table-container">
                 <h2>Pending Hospital Approvals (<span id="pending-hospitals-count"><?php echo count($pendingHospitals); ?></span>)</h2>
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" id="pending-hospitals-table">
                         <thead>
                             <tr>
                                 <th>Hospital Name</th>
