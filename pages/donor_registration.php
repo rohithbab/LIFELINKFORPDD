@@ -328,13 +328,15 @@ session_start();
             <div class="form-section">
                 <h3 class="section-title">ID Proof</h3>
                 <div class="form-group">
-                    <label for="idProof">Upload ID Proof * (Passport/Driver's License/Aadhaar Card)</label>
+                    <label for="id_proof">Upload ID Proof * (Passport/Driver's License/Aadhaar Card)</label>
                     <div class="file-upload">
-                        <label for="idProof">
+                        <label for="id_proof">
                             <i class="fas fa-upload"></i> Choose File
                         </label>
-                        <input type="file" id="idProof" name="idProof" required accept=".pdf,.jpg,.jpeg,.png">
+                        <input type="file" id="id_proof" name="id_proof" required accept=".pdf,.jpg,.jpeg,.png">
+                        <span class="file-name"></span>
                     </div>
+                    <small class="form-text text-muted">Maximum file size: 5MB. Accepted formats: PDF, JPG, JPEG, PNG</small>
                 </div>
             </div>
 

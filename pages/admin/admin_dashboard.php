@@ -419,25 +419,40 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Blood Type</th>
-                                <th>Status</th>
+                                <th>ODML ID</th>
                                 <th>Actions</th>
                                 <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($pendingDonors as $donor): ?>
-                            <tr>
+                            <tr data-donor-id="<?php echo htmlspecialchars($donor['id']); ?>">
                                 <td><?php echo htmlspecialchars($donor['name']); ?></td>
                                 <td><?php echo htmlspecialchars($donor['email']); ?></td>
                                 <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
-                                <td><?php echo htmlspecialchars($donor['status']); ?></td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'approved')">Approve</button>
-                                    <button class="reject-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'rejected')">Reject</button>
+                                    <div class="odml-container">
+                                        <input type="text" class="odml-input" 
+                                               value="<?php echo htmlspecialchars($donor['odml_id'] ?? ''); ?>" 
+                                               placeholder="Enter ODML ID">
+                                        <button class="update-btn" onclick="updateDonorODMLID(<?php echo htmlspecialchars($donor['id']); ?>, this)">
+                                            <i class="fas fa-save"></i> Update
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
-                                    <a href="view_all_details.php?type=donor&id=<?php echo $donor['donor_id']; ?>" 
-                                       class="details-btn">View Details</a>
+                                    <button class="approve-btn" onclick="updateDonorStatus(<?php echo htmlspecialchars($donor['id']); ?>, 'Approved')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="reject-btn" onclick="updateDonorStatus(<?php echo htmlspecialchars($donor['id']); ?>, 'Rejected')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                                <td>
+                                    <a href="view_donor_details_in_pending.php?id=<?php echo htmlspecialchars($donor['id']); ?>" 
+                                       class="view-btn">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -630,6 +645,115 @@ $urgentRecipients = getUrgentRecipients($conn);
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
                         alert('Error updating hospital status');
+                    }
+                });
+            }
+        }
+        
+        function updateDonorODMLID(donorId, button) {
+            const odmlId = $(button).prev('input').val();
+            
+            if (confirm('Are you sure you want to update the ODML ID?')) {
+                $.ajax({
+                    url: '../../backend/php/update_odml_id.php',
+                    method: 'POST',
+                    data: {
+                        type: 'donor',
+                        id: donorId,
+                        odml_id: odmlId
+                    },
+                    success: function(response) {
+                        try {
+                            const data = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (data.success) {
+                                alert('ODML ID updated successfully');
+                            } else {
+                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('Error updating ODML ID');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Error updating ODML ID');
+                    }
+                });
+            }
+        }
+
+        function updateDonorStatus(donorId, status) {
+            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
+                $.ajax({
+                    url: '../../backend/php/update_donor_status.php',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        donor_id: donorId,
+                        status: status
+                    }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        try {
+                            const data = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (data.success) {
+                                $(`tr[data-donor-id="${donorId}"]`).fadeOut(400, function() {
+                                    $(this).remove();
+                                    // Update counter
+                                    const counter = $('#pending-donors-count');
+                                    counter.text(parseInt(counter.text()) - 1);
+                                });
+                                alert(`Donor ${status.toLowerCase()} successfully`);
+                            } else {
+                                alert('Failed to update status: ' + (data.message || 'Unknown error'));
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('Error updating status');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Error updating status');
+                    }
+                });
+            }
+        }
+
+        function updateDonorODMLID(donorId, button) {
+            const input = $(button).prev('.odml-input');
+            const odmlId = input.val().trim();
+            
+            if (!odmlId) {
+                alert('Please enter an ODML ID');
+                return;
+            }
+
+            if (confirm('Are you sure you want to update the ODML ID?')) {
+                $.ajax({
+                    url: '../../backend/php/update_donor_odml.php',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        donor_id: donorId,
+                        odml_id: odmlId
+                    }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        try {
+                            const data = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (data.success) {
+                                alert('ODML ID updated successfully');
+                            } else {
+                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('Error updating ODML ID');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Error updating ODML ID');
                     }
                 });
             }

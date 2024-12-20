@@ -78,9 +78,27 @@ function handle_multiple_file_uploads($files, $target_dir) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        // Debug: Print POST data
+        // Debug: Print all data
         error_log("POST data: " . print_r($_POST, true));
         error_log("FILES data: " . print_r($_FILES, true));
+        
+        // Debug file upload paths
+        $base_upload_dir = __DIR__ . '/../../uploads/donors/';
+        error_log("Base upload directory: " . $base_upload_dir);
+        
+        // Create upload directories if they don't exist
+        $upload_dirs = [
+            $base_upload_dir . 'id_proof_path/',
+            $base_upload_dir . 'medical_reports_path/',
+            $base_upload_dir . 'guardian_id_proof_path/'
+        ];
+        
+        foreach ($upload_dirs as $dir) {
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+                error_log("Created directory: " . $dir);
+            }
+        }
 
         // Validate required fields
         $required_fields = ['fullName', 'gender', 'dob', 'bloodGroup', 'email', 'phone', 'address', 'organs', 'password'];
@@ -103,34 +121,72 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $reason = isset($_POST['reason']) ? sanitize_input($_POST['reason']) : null;
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        // Handle file uploads with new directory structure
-        $base_upload_dir = __DIR__ . '/../../uploads/donors/';
-        
-        // Handle medical reports
-        $medical_reports_path = null;
-        if (isset($_FILES['medical_reports'])) {
-            $medical_reports_path = handle_file_upload(
-                $_FILES['medical_reports'], 
-                $base_upload_dir . 'medical_reports_path/'
-            );
-        }
-        
         // Handle ID proof
         $id_proof_path = null;
-        if (isset($_FILES['id_proof'])) {
+        error_log("Checking ID proof upload...");
+        error_log("ID proof file data: " . print_r($_FILES['id_proof'], true));
+        
+        if (!isset($_FILES['id_proof'])) {
+            throw new Exception("No ID proof file was sent");
+        }
+        
+        if ($_FILES['id_proof']['error'] === UPLOAD_ERR_NO_FILE) {
+            throw new Exception("No ID proof file was selected");
+        }
+        
+        if ($_FILES['id_proof']['error'] !== UPLOAD_ERR_OK) {
+            $upload_errors = [
+                UPLOAD_ERR_INI_SIZE => "The file is larger than PHP's upload_max_filesize",
+                UPLOAD_ERR_FORM_SIZE => "The file is larger than the form's MAX_FILE_SIZE",
+                UPLOAD_ERR_PARTIAL => "The file was only partially uploaded",
+                UPLOAD_ERR_NO_TMP_DIR => "Missing a temporary folder",
+                UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk",
+                UPLOAD_ERR_EXTENSION => "A PHP extension stopped the file upload"
+            ];
+            $error_message = isset($upload_errors[$_FILES['id_proof']['error']]) 
+                ? $upload_errors[$_FILES['id_proof']['error']]
+                : "Unknown upload error";
+            throw new Exception("ID proof upload error: " . $error_message);
+        }
+        
+        try {
             $id_proof_path = handle_file_upload(
                 $_FILES['id_proof'], 
                 $base_upload_dir . 'id_proof_path/'
             );
+            error_log("ID proof uploaded successfully: " . $id_proof_path);
+        } catch (Exception $e) {
+            throw new Exception("Error processing ID proof: " . $e->getMessage());
         }
         
-        // Handle guardian ID proof
+        // Handle medical reports (optional)
+        $medical_reports_path = null;
+        if (isset($_FILES['medical_reports']) && $_FILES['medical_reports']['error'] !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $medical_reports_path = handle_file_upload(
+                    $_FILES['medical_reports'], 
+                    $base_upload_dir . 'medical_reports_path/'
+                );
+                error_log("Medical reports uploaded successfully: " . $medical_reports_path);
+            } catch (Exception $e) {
+                // Medical reports are optional, so just log the error
+                error_log("Error uploading medical reports: " . $e->getMessage());
+            }
+        }
+        
+        // Handle guardian ID proof (optional)
         $guardian_id_proof_path = null;
-        if (isset($_FILES['guardian_id_proof'])) {
-            $guardian_id_proof_path = handle_file_upload(
-                $_FILES['guardian_id_proof'], 
-                $base_upload_dir . 'guardian_id_proof_path/'
-            );
+        if (isset($_FILES['guardian_id_proof']) && $_FILES['guardian_id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $guardian_id_proof_path = handle_file_upload(
+                    $_FILES['guardian_id_proof'], 
+                    $base_upload_dir . 'guardian_id_proof_path/'
+                );
+                error_log("Guardian ID proof uploaded successfully: " . $guardian_id_proof_path);
+            } catch (Exception $e) {
+                // Guardian ID proof is optional, so just log the error
+                error_log("Error uploading guardian ID proof: " . $e->getMessage());
+            }
         }
 
         // Handle guardian details (optional)
