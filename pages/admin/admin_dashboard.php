@@ -159,6 +159,82 @@ $urgentRecipients = getUrgentRecipients($conn);
             padding: 12px;
             font-weight: 600;
         }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+        }
+
+        .stat-card:nth-child(1) i { /* Total Hospitals */
+            color: #2196F3; /* Blue */
+        }
+        
+        .stat-card:nth-child(2) i { /* Total Donors */
+            color: #4CAF50; /* Green */
+        }
+        
+        .stat-card:nth-child(3) i { /* Total Recipients */
+            color: #9C27B0; /* Purple */
+        }
+        
+        .stat-card:nth-child(4) i { /* Pending Hospitals */
+            color: #FF9800; /* Orange */
+        }
+        
+        .stat-card:nth-child(5) i { /* Successful Matches */
+            color: #00BCD4; /* Cyan */
+        }
+        
+        .stat-card:nth-child(6) i { /* Pending Matches */
+            color: #F44336; /* Red */
+        }
+        
+        .stat-card:nth-child(7) i { /* Urgent Recipients */
+            color: #E91E63; /* Pink */
+        }
+
+        .stat-card:nth-child(1):hover { border-left: 4px solid #2196F3; }
+        .stat-card:nth-child(2):hover { border-left: 4px solid #4CAF50; }
+        .stat-card:nth-child(3):hover { border-left: 4px solid #9C27B0; }
+        .stat-card:nth-child(4):hover { border-left: 4px solid #FF9800; }
+        .stat-card:nth-child(5):hover { border-left: 4px solid #00BCD4; }
+        .stat-card:nth-child(6):hover { border-left: 4px solid #F44336; }
+        .stat-card:nth-child(7):hover { border-left: 4px solid #E91E63; }
+
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .stat-info p {
+            margin: 5px 0 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -225,6 +301,59 @@ $urgentRecipients = getUrgentRecipients($conn);
 
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Stats Cards Section -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-hospital"></i>
+                    <div class="stat-info">
+                        <h3>Total Hospitals</h3>
+                        <p><?php echo $stats['total_hospitals']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user-plus"></i>
+                    <div class="stat-info">
+                        <h3>Total Donors</h3>
+                        <p><?php echo $stats['total_donors']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-procedures"></i>
+                    <div class="stat-info">
+                        <h3>Total Recipients</h3>
+                        <p><?php echo $stats['total_recipients']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <div class="stat-info">
+                        <h3>Pending Hospitals</h3>
+                        <p><?php echo $stats['pending_hospitals']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-info">
+                        <h3>Successful Matches</h3>
+                        <p><?php echo $stats['successful_matches']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-hourglass-half"></i>
+                    <div class="stat-info">
+                        <h3>Pending Matches</h3>
+                        <p><?php echo $stats['pending_matches']; ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="stat-info">
+                        <h3>Urgent Recipients</h3>
+                        <p><?php echo $stats['urgent_recipients']; ?></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Pending Hospitals Section -->
             <div class="table-container">
                 <h2>Pending Hospital Approvals (<span id="pending-hospitals-count"><?php echo count($pendingHospitals); ?></span>)</h2>

@@ -228,9 +228,12 @@ try {
                 fetch('../../backend/php/update_hospital_status.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                     },
-                    body: `hospital_id=${hospitalId}&status=${status}`
+                    body: JSON.stringify({
+                        hospital_id: hospitalId,
+                        status: status
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {

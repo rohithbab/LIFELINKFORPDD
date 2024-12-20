@@ -11,7 +11,13 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
+$contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+
+if ($contentType === 'application/json') {
+    $data = json_decode(file_get_contents('php://input'), true);
+} else {
+    $data = $_POST;
+}
 
 if (!isset($data['hospital_id']) || !isset($data['status'])) {
     http_response_code(400);
