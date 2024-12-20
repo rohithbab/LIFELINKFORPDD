@@ -21,7 +21,6 @@ $stmt = $conn->prepare("SELECT COUNT(*) FROM hospitals WHERE status = 'pending'"
 $stmt->execute();
 $pending_count = $stmt->fetchColumn();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -387,6 +386,19 @@ $pending_count = $stmt->fetchColumn();
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
+
+        .details-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .details-btn:hover {
+            background: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -506,8 +518,9 @@ $pending_count = $stmt->fetchColumn();
                                     <tr>
                                         <th>Hospital Name</th>
                                         <th>Email</th>
-                                        <th>Registration Date</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
+                                        <th>Details</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -515,14 +528,14 @@ $pending_count = $stmt->fetchColumn();
                                     <tr>
                                         <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
                                         <td><?php echo htmlspecialchars($hospital['email']); ?></td>
-                                        <td><?php echo date('M d, Y', strtotime($hospital['registration_date'])); ?></td>
+                                        <td><?php echo htmlspecialchars($hospital['status']); ?></td>
                                         <td>
-                                            <button class="btn-action btn-approve" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'approved')">
-                                                <i class="fas fa-check"></i> Approve
-                                            </button>
-                                            <button class="btn-action btn-reject" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'rejected')">
-                                                <i class="fas fa-times"></i> Reject
-                                            </button>
+                                            <button class="approve-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'approved')">Approve</button>
+                                            <button class="reject-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'rejected')">Reject</button>
+                                        </td>
+                                        <td>
+                                            <a href="view_all_details.php?type=hospital&id=<?php echo $hospital['hospital_id']; ?>" 
+                                               class="details-btn">View Details</a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -541,9 +554,9 @@ $pending_count = $stmt->fetchColumn();
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Blood Type</th>
-                                        <th>Organ Type</th>
-                                        <th>Registration Date</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
+                                        <th>Details</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -552,15 +565,14 @@ $pending_count = $stmt->fetchColumn();
                                         <td><?php echo htmlspecialchars($donor['name']); ?></td>
                                         <td><?php echo htmlspecialchars($donor['email']); ?></td>
                                         <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($donor['organ_type']); ?></td>
-                                        <td><?php echo $donor['formatted_date']; ?></td>
+                                        <td><?php echo htmlspecialchars($donor['status']); ?></td>
                                         <td>
-                                            <button class="btn-action btn-approve" onclick="updateDonorStatus(<?php echo $donor['id']; ?>, 'approved')">
-                                                <i class="fas fa-check"></i> Approve
-                                            </button>
-                                            <button class="btn-action btn-reject" onclick="updateDonorStatus(<?php echo $donor['id']; ?>, 'rejected')">
-                                                <i class="fas fa-times"></i> Reject
-                                            </button>
+                                            <button class="approve-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'approved')">Approve</button>
+                                            <button class="reject-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'rejected')">Reject</button>
+                                        </td>
+                                        <td>
+                                            <a href="view_all_details.php?type=donor&id=<?php echo $donor['donor_id']; ?>" 
+                                               class="details-btn">View Details</a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -579,10 +591,9 @@ $pending_count = $stmt->fetchColumn();
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Blood Type</th>
-                                        <th>Needed Organ</th>
-                                        <th>Urgency</th>
-                                        <th>Registration Date</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
+                                        <th>Details</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -591,20 +602,14 @@ $pending_count = $stmt->fetchColumn();
                                         <td><?php echo htmlspecialchars($recipient['name']); ?></td>
                                         <td><?php echo htmlspecialchars($recipient['email']); ?></td>
                                         <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($recipient['organ_needed']); ?></td>
+                                        <td><?php echo htmlspecialchars($recipient['request_status']); ?></td>
                                         <td>
-                                            <span class="urgency-badge urgency-<?php echo strtolower($recipient['urgency_level']); ?>">
-                                                <?php echo $recipient['urgency_level']; ?>
-                                            </span>
+                                            <button class="approve-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">Approve</button>
+                                            <button class="reject-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">Reject</button>
                                         </td>
-                                        <td><?php echo $recipient['formatted_date']; ?></td>
                                         <td>
-                                            <button class="btn-action btn-approve" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">
-                                                <i class="fas fa-check"></i> Approve
-                                            </button>
-                                            <button class="btn-action btn-reject" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">
-                                                <i class="fas fa-times"></i> Reject
-                                            </button>
+                                            <a href="view_all_details.php?type=recipient&id=<?php echo $recipient['id']; ?>" 
+                                               class="details-btn">View Details</a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>

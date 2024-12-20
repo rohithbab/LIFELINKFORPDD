@@ -249,6 +249,22 @@ function addNotification($conn, $type, $message, $user_id = null) {
 
 // Get admin notifications
 function getAdminNotifications($conn, $limit = 10) {
+    // Check if notifications table exists
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) 
+        FROM information_schema.tables 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'notifications'
+    ");
+    $stmt->execute();
+    $exists = $stmt->fetchColumn();
+
+    if (!$exists) {
+        // Return empty array if table doesn't exist
+        return [];
+    }
+
+    // If table exists, get notifications
     $stmt = $conn->prepare("
         SELECT 
             *,
@@ -265,16 +281,31 @@ function getAdminNotifications($conn, $limit = 10) {
 
 // Function to add system notification
 function addSystemNotification($conn, $type, $message) {
+    // Check if notifications table exists
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) 
+        FROM information_schema.tables 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'notifications'
+    ");
+    $stmt->execute();
+    $exists = $stmt->fetchColumn();
+
+    if (!$exists) {
+        // Silently return if table doesn't exist
+        return;
+    }
+
     try {
         $stmt = $conn->prepare("
             INSERT INTO notifications (type, message, created_at, is_read) 
             VALUES (:type, :message, NOW(), 0)
         ");
-        return $stmt->execute([
-            'type' => $type,
-            'message' => $message
-        ]);
+        $stmt->bindParam(':type', $type);
+        $stmt->bindParam(':message', $message);
+        return $stmt->execute();
     } catch (PDOException $e) {
+        // Log error but don't throw exception
         error_log("Error adding notification: " . $e->getMessage());
         return false;
     }
@@ -418,4 +449,38 @@ function getRegionalStats($conn) {
     ");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Function to update hospital ODML ID
+function updateHospitalODMLID($conn, $hospital_id, $odml_id) {
+    try {
+        $stmt = $conn->prepare("UPDATE hospitals SET odml_id = ? WHERE hospital_id = ?");
+        return $stmt->execute([$odml_id, $hospital_id]);
+    } catch (PDOException $e) {
+        error_log("Error updating hospital ODML ID: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to update donor ODML ID
+function updateDonorODMLID($conn, $donor_id, $odml_id) {
+    try {
+        $stmt = $conn->prepare("UPDATE donor SET odml_id = ? WHERE donor_id = ?");
+        return $stmt->execute([$odml_id, $donor_id]);
+    } catch (PDOException $e) {
+        error_log("Error updating donor ODML ID: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to update recipient ODML ID
+function updateRecipientODMLID($conn, $recipient_id, $odml_id) {
+    try {
+        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ? WHERE id = ?");
+        return $stmt->execute([$odml_id, $recipient_id]);
+    } catch (PDOException $e) {
+        error_log("Error updating recipient ODML ID: " . $e->getMessage());
+        return false;
+    }
+}
+
 ?>
