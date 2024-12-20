@@ -15,11 +15,6 @@ $pendingHospitals = getPendingHospitals($conn);
 $pendingDonors = getPendingDonors($conn);
 $pendingRecipients = getPendingRecipients($conn);
 $urgentRecipients = getUrgentRecipients($conn);
-
-// Get pending hospitals count using PDO
-$stmt = $conn->prepare("SELECT COUNT(*) FROM hospitals WHERE status = 'pending'");
-$stmt->execute();
-$pending_count = $stmt->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,379 +22,128 @@ $pending_count = $stmt->fetchColumn();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - LifeLink</title>
+    
+    <!-- CSS Files -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
+    
+    <!-- Custom Styles -->
     <style>
-        /* Logo and Navigation Styles */
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 1rem 2rem;
+        .odml-input {
+            width: 150px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            transition: border-color 0.3s ease;
+            font-size: 14px;
+            margin-right: 8px;
         }
 
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
+        .odml-input:focus {
+            border-color: #1a73e8;
+            outline: none;
+            box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
         }
 
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-
-        .logo-gradient {
-            background: linear-gradient(45deg, #28a745, #007bff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:not(.btn)::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background: linear-gradient(45deg, #28a745, #007bff);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:not(.btn):hover::after {
-            width: 100%;
-        }
-
-        .nav-links .btn-logout {
-            background: linear-gradient(45deg, #28a745, #007bff);
+        .update-btn {
+            padding: 6px 12px;
+            background: #1a73e8;
             color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 500;
-            transition: transform 0.3s ease;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
         }
 
-        .nav-links .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .update-btn:hover {
+            background: #1557b0;
         }
 
-        .nav-links a.active {
-            color: #007bff;
+        .view-btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
         }
 
-        /* New Grid Layout */
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1800px;
-            margin: 0 auto;
+        .view-btn:hover {
+            background: #388E3C;
+            text-decoration: none;
+            color: white;
         }
 
-        .tables-section {
+        .action-cell {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            gap: 8px;
+            align-items: center;
         }
 
         .table-container {
             background: white;
-            border-radius: 10px;
             padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .table-container h2 {
-            color: #1a73e8;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #1a73e8, #34a853);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid .stat-card:nth-last-child(-n+3) {
-            grid-column: span 1;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-            padding-left: 60px;
-            text-align: left;
-        }
-
-        .stat-card h3 {
-            color: #1a73e8;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-            background: linear-gradient(135deg, #1a73e8, #34a853);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-card i {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            color: #007bff;
-        }
-
-        .stat-card.urgent i {
-            color: #dc3545;
-        }
-
-        .stat-card.success i {
-            color: #28a745;
-        }
-
-        .stat-card.pending i {
-            color: #ffc107;
-        }
-
-        .pending-list, .urgent-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .pending-item, .urgent-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .new-badge {
-            background: #28a745;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-left: 8px;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
 
-        .table th, .table td {
+        .table th {
+            background: #f8f9fa;
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
         }
 
-        .btn {
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        .approve-btn, .reject-btn {
             padding: 8px 16px;
-            border-radius: 4px;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s ease;
+            color: white;
         }
 
-        .btn-success {
+        .approve-btn {
             background: #28a745;
-            color: white;
         }
 
-        .btn-danger {
+        .approve-btn:hover {
+            background: #218838;
+        }
+
+        .reject-btn {
             background: #dc3545;
-            color: white;
         }
 
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        /* Notification Bell Styles */
-        .notification-bell {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .notification-bell i {
-            font-size: 24px;
-            color: #007bff;
-        }
-
-        .notification-bell .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        .notification-popup {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
-            overflow-y: auto;
-        }
-
-        .notification-popup.show {
-            display: block;
-        }
-
-        /* Stats Cards with Icons */
-        .stat-card {
-            position: relative;
-            padding-left: 60px;
-            text-align: left;
-        }
-
-        .stat-card i {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            color: #007bff;
-        }
-
-        .stat-card.urgent i {
-            color: #dc3545;
-        }
-
-        .stat-card.success i {
-            color: #28a745;
-        }
-
-        .stat-card.pending i {
-            color: #ffc107;
-        }
-
-        /* Remove Recent Notifications section */
-        .notifications-section {
-            display: none;
-        }
-
-        /* Add this to your existing styles */
-        .table thead th {
-            background: linear-gradient(135deg, #1a73e8, #34a853);
-            color: white;
-            padding: 15px;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            border: none;
-        }
-
-        .table thead tr {
-            background: none;
-            border: none;
-        }
-
-        .table {
-            border-collapse: separate;
-            border-spacing: 0 5px;
-            margin-top: -5px;
-        }
-
-        .table tbody tr {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-radius: 8px;
-            margin-bottom: 5px;
-        }
-
-        .table tbody td {
-            padding: 15px;
-            vertical-align: middle;
-            border: none;
-        }
-
-        .table tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .details-btn {
-            display: inline-block;
-            padding: 6px 12px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .details-btn:hover {
-            background: #2980b9;
+        .reject-btn:hover {
+            background: #c82333;
         }
     </style>
+
+    <!-- JavaScript Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="admin-container">
@@ -462,211 +206,182 @@ $pending_count = $stmt->fetchColumn();
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="content-header">
-                <h1>Dashboard Overview</h1>
+            <!-- Pending Hospitals Section -->
+            <div class="table-container">
+                <h2>Pending Hospital Approvals (<span id="pending-hospitals-count"><?php echo count($pendingHospitals); ?></span>)</h2>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Email</th>
+                                <th>ODML ID</th>
+                                <th>Actions</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingHospitals as $hospital): ?>
+                            <tr id="hospital_row_<?php echo $hospital['hospital_id']; ?>">
+                                <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
+                                <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                                <td>
+                                    <div class="action-cell">
+                                        <input type="text" 
+                                               class="odml-input"
+                                               id="odml_id_<?php echo $hospital['hospital_id']; ?>"
+                                               value="<?php echo htmlspecialchars($hospital['odml_id'] ?? ''); ?>"
+                                               placeholder="Enter ODML ID">
+                                        <button class="update-btn" 
+                                                data-hospital-id="<?php echo $hospital['hospital_id']; ?>">
+                                            <i class="fas fa-save"></i> Update
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        <button class="approve-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'Approved')">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="reject-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'Rejected')">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="view_hospital_details_in_pending.php?id=<?php echo $hospital['hospital_id']; ?>" 
+                                       class="view-btn">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pending Donors Table -->
+            <div class="table-container">
+                <h2>Pending Donor Approvals (<span id="pending-donors-count"><?php echo count($pendingDonors); ?></span>)</h2>
+                <div class="table-responsive">
+                    <table class="table" id="pending-donors-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Blood Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingDonors as $donor): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($donor['name']); ?></td>
+                                <td><?php echo htmlspecialchars($donor['email']); ?></td>
+                                <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
+                                <td><?php echo htmlspecialchars($donor['status']); ?></td>
+                                <td>
+                                    <button class="approve-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'approved')">Approve</button>
+                                    <button class="reject-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'rejected')">Reject</button>
+                                </td>
+                                <td>
+                                    <a href="view_all_details.php?type=donor&id=<?php echo $donor['donor_id']; ?>" 
+                                       class="details-btn">View Details</a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-hospital"></i>
-                    <h3>Total Hospitals</h3>
-                    <div class="number" data-stat="total_hospitals"><?php echo $stats['total_hospitals']; ?></div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-user-plus"></i>
-                    <h3>Total Donors</h3>
-                    <div class="number" data-stat="total_donors"><?php echo $stats['total_donors']; ?></div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-users"></i>
-                    <h3>Total Recipients</h3>
-                    <div class="number" data-stat="total_recipients"><?php echo $stats['total_recipients']; ?></div>
-                </div>
-                <div class="stat-card pending">
-                    <i class="fas fa-clock"></i>
-                    <h3>Pending Hospitals</h3>
-                    <div class="number" data-stat="pending_hospitals"><?php echo $stats['pending_hospitals']; ?></div>
-                </div>
-                <div class="stat-card success">
-                    <i class="fas fa-handshake"></i>
-                    <h3>Successful Matches</h3>
-                    <div class="number" data-stat="successful_matches"><?php echo $stats['successful_matches']; ?></div>
-                </div>
-                <div class="stat-card pending">
-                    <i class="fas fa-sync"></i>
-                    <h3>Pending Matches</h3>
-                    <div class="number" data-stat="pending_matches"><?php echo $stats['pending_matches']; ?></div>
-                </div>
-                <div class="stat-card urgent">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>Urgent Cases</h3>
-                    <div class="number" data-stat="urgent_matches"><?php echo $stats['urgent_matches']; ?></div>
+            <!-- Pending Recipients Table -->
+            <div class="table-container">
+                <h2>Pending Recipient Approvals (<span id="pending-recipients-count"><?php echo count($pendingRecipients); ?></span>)</h2>
+                <div class="table-responsive">
+                    <table class="table" id="pending-recipients-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Blood Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingRecipients as $recipient): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($recipient['name']); ?></td>
+                                <td><?php echo htmlspecialchars($recipient['email']); ?></td>
+                                <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
+                                <td><?php echo htmlspecialchars($recipient['request_status']); ?></td>
+                                <td>
+                                    <button class="approve-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">Approve</button>
+                                    <button class="reject-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">Reject</button>
+                                </td>
+                                <td>
+                                    <a href="view_all_details.php?type=recipient&id=<?php echo $recipient['id']; ?>" 
+                                       class="details-btn">View Details</a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <!-- Main Dashboard Layout -->
-            <div class="dashboard-layout">
-                <!-- Tables Section -->
-                <div class="tables-section">
-                    <!-- Pending Hospitals Table -->
-                    <div class="table-container">
-                        <h2>Pending Hospital Approvals (<span id="pending-hospitals-count"><?php echo count($pendingHospitals); ?></span>)</h2>
-                        <div class="table-responsive">
-                            <table class="table" id="pending-hospitals-table">
-                                <thead>
-                                    <tr>
-                                        <th>Hospital Name</th>
-                                        <th>Email</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingHospitals as $hospital): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($hospital['email']); ?></td>
-                                        <td><?php echo htmlspecialchars($hospital['status']); ?></td>
-                                        <td>
-                                            <button class="approve-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'approved')">Approve</button>
-                                            <button class="reject-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'rejected')">Reject</button>
-                                        </td>
-                                        <td>
-                                            <a href="view_all_details.php?type=hospital&id=<?php echo $hospital['hospital_id']; ?>" 
-                                               class="details-btn">View Details</a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Pending Donors Table -->
-                    <div class="table-container">
-                        <h2>Pending Donor Approvals (<span id="pending-donors-count"><?php echo count($pendingDonors); ?></span>)</h2>
-                        <div class="table-responsive">
-                            <table class="table" id="pending-donors-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Blood Type</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingDonors as $donor): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($donor['name']); ?></td>
-                                        <td><?php echo htmlspecialchars($donor['email']); ?></td>
-                                        <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($donor['status']); ?></td>
-                                        <td>
-                                            <button class="approve-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'approved')">Approve</button>
-                                            <button class="reject-btn" onclick="updateDonorStatus(<?php echo $donor['donor_id']; ?>, 'rejected')">Reject</button>
-                                        </td>
-                                        <td>
-                                            <a href="view_all_details.php?type=donor&id=<?php echo $donor['donor_id']; ?>" 
-                                               class="details-btn">View Details</a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Pending Recipients Table -->
-                    <div class="table-container">
-                        <h2>Pending Recipient Approvals (<span id="pending-recipients-count"><?php echo count($pendingRecipients); ?></span>)</h2>
-                        <div class="table-responsive">
-                            <table class="table" id="pending-recipients-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Blood Type</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($pendingRecipients as $recipient): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($recipient['name']); ?></td>
-                                        <td><?php echo htmlspecialchars($recipient['email']); ?></td>
-                                        <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($recipient['request_status']); ?></td>
-                                        <td>
-                                            <button class="approve-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">Approve</button>
-                                            <button class="reject-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">Reject</button>
-                                        </td>
-                                        <td>
-                                            <a href="view_all_details.php?type=recipient&id=<?php echo $recipient['id']; ?>" 
-                                               class="details-btn">View Details</a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- Recent Matches Table -->
-                    <div class="table-container">
-                        <h2>Recent Organ Match Activities</h2>
-                        <div class="table-responsive">
-                            <table class="table" id="recent-matches-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Donor</th>
-                                        <th>Recipient</th>
-                                        <th>Hospital</th>
-                                        <th>Organ Type</th>
-                                        <th>Status</th>
-                                        <th>Urgency</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    require_once '../../backend/php/organ_matches.php';
-                                    $recent_matches = getOrganMatches($conn, ['limit' => 5]);
-                                    foreach ($recent_matches as $match): 
-                                    ?>
-                                    <tr>
-                                        <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
-                                        <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($match['hospital_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
-                                        <td>
-                                            <span class="status-badge status-<?php echo strtolower($match['status']); ?>">
-                                                <?php echo $match['status']; ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="urgency-badge urgency-<?php echo strtolower($match['urgency_level']); ?>">
-                                                <?php echo $match['urgency_level']; ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button class="btn-action btn-view" onclick="viewMatch(<?php echo $match['match_id']; ?>)">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <!-- Recent Matches Table -->
+            <div class="table-container">
+                <h2>Recent Organ Match Activities</h2>
+                <div class="table-responsive">
+                    <table class="table" id="recent-matches-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Donor</th>
+                                <th>Recipient</th>
+                                <th>Hospital</th>
+                                <th>Organ Type</th>
+                                <th>Status</th>
+                                <th>Urgency</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            require_once '../../backend/php/organ_matches.php';
+                            $recent_matches = getOrganMatches($conn, ['limit' => 5]);
+                            foreach ($recent_matches as $match): 
+                            ?>
+                            <tr>
+                                <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
+                                <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                <td><?php echo htmlspecialchars($match['hospital_name']); ?></td>
+                                <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
+                                <td>
+                                    <span class="status-badge status-<?php echo strtolower($match['status']); ?>">
+                                        <?php echo $match['status']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="urgency-badge urgency-<?php echo strtolower($match['urgency_level']); ?>">
+                                        <?php echo $match['urgency_level']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn-action btn-view" onclick="viewMatch(<?php echo $match['match_id']; ?>)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -693,46 +408,83 @@ $pending_count = $stmt->fetchColumn();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../../assets/js/admin-dashboard.js"></script>
+    <!-- JavaScript Code -->
     <script>
-        // Notification Bell Functions
-        function toggleNotifications() {
-            const popup = document.getElementById('notification-popup');
-            popup.classList.toggle('show');
-        }
+        $(document).ready(function() {
+            // Add event listeners for all dynamic elements
+            $('.update-btn').on('click', function(e) {
+                e.preventDefault();
+                const hospitalId = $(this).data('hospital-id');
+                updateHospitalODMLID(hospitalId);
+            });
+        });
 
-        // Close notification popup when clicking outside
-        document.addEventListener('click', function(event) {
-            const bell = document.querySelector('.notification-bell');
-            const popup = document.getElementById('notification-popup');
+        function updateHospitalODMLID(hospitalId) {
+            const odmlId = $(`#odml_id_${hospitalId}`).val();
             
-            if (!bell.contains(event.target) && !popup.contains(event.target)) {
-                popup.classList.remove('show');
+            if (confirm('Are you sure you want to update the ODML ID?')) {
+                $.ajax({
+                    url: '../../backend/php/update_odml_id.php',
+                    method: 'POST',
+                    data: {
+                        type: 'hospital',
+                        id: hospitalId,
+                        odml_id: odmlId
+                    },
+                    success: function(response) {
+                        try {
+                            const data = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (data.success) {
+                                alert('ODML ID updated successfully');
+                            } else {
+                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('Error updating ODML ID');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Error updating ODML ID');
+                    }
+                });
             }
-        });
-
-        // Update notification count
-        function updateNotificationCount() {
-            const count = document.querySelectorAll('.notification-item').length;
-            document.getElementById('notification-count').textContent = count;
         }
 
-        // Call this when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            updateNotificationCount();
-        });
-
-        // Update notifications with new data
-        function updateNotifications(notifications) {
-            const container = document.getElementById('notifications-container');
-            container.innerHTML = notifications.map(notification => `
-                <div class="notification-item">
-                    <span class="notification-time">${notification.formatted_time}</span>
-                    <p>${notification.message}</p>
-                </div>
-            `).join('');
-            updateNotificationCount();
+        function updateHospitalStatus(hospitalId, status) {
+            if (confirm(`Are you sure you want to ${status.toLowerCase()} this hospital?`)) {
+                $.ajax({
+                    url: '../../backend/php/update_hospital_status.php',
+                    method: 'POST',
+                    data: {
+                        hospital_id: hospitalId,
+                        status: status
+                    },
+                    success: function(response) {
+                        try {
+                            const data = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (data.success) {
+                                alert(`Hospital ${status.toLowerCase()} successfully`);
+                                $(`#hospital_row_${hospitalId}`).fadeOut(400, function() {
+                                    $(this).remove();
+                                    const counter = $('#pending-hospitals-count');
+                                    counter.text(parseInt(counter.text()) - 1);
+                                });
+                            } else {
+                                alert('Failed to update status: ' + (data.message || 'Unknown error'));
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('Error updating hospital status');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Error updating hospital status');
+                    }
+                });
+            }
         }
     </script>
 </body>

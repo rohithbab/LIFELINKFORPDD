@@ -24,7 +24,7 @@ function getDashboardStats($conn, $tables = ['hospitals', 'donor', 'recipient_re
             $stats['total_hospitals'] = $stmt->fetchColumn();
             
             // Get pending hospitals count
-            $stmt = $conn->query("SELECT COUNT(*) FROM hospitals WHERE status = 'pending'");
+            $stmt = $conn->query("SELECT COUNT(*) FROM hospitals WHERE status = 'Pending'");
             $stats['pending_hospitals'] = $stmt->fetchColumn();
             
             // Get approved hospitals
@@ -68,20 +68,7 @@ function getDashboardStats($conn, $tables = ['hospitals', 'donor', 'recipient_re
 // Get pending hospitals
 function getPendingHospitals($conn) {
     try {
-        $stmt = $conn->prepare("
-            SELECT 
-                hospital_id as id,
-                name as hospital_name,
-                email,
-                DATE_FORMAT(registration_date, '%Y-%m-%d') as registration_date,
-                status
-            FROM 
-                hospitals 
-            WHERE 
-                status = 'pending'
-            ORDER BY 
-                registration_date DESC
-        ");
+        $stmt = $conn->prepare("SELECT hospital_id, name as hospital_name, email, odml_id FROM hospitals WHERE status = 'Pending'");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -157,24 +144,22 @@ function getPendingRecipients($conn) {
 // Update hospital status
 function updateHospitalStatus($conn, $hospital_id, $status) {
     try {
-        // First get the hospital's email
-        $stmt = $conn->prepare("SELECT email FROM hospitals WHERE hospital_id = ?");
-        $stmt->execute([$hospital_id]);
-        $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
-        $hospital_email = $hospital ? $hospital['email'] : 'Unknown';
-
-        // Update the status
+        // Convert status to proper case
+        $status = ucfirst(strtolower($status)); // This will convert 'approved' to 'Approved', 'rejected' to 'Rejected'
+        
         $stmt = $conn->prepare("UPDATE hospitals SET status = ? WHERE hospital_id = ?");
         $result = $stmt->execute([$status, $hospital_id]);
         
         if ($result) {
-            addSystemNotification($conn, 'hospital_status', "Hospital ($hospital_email) status updated to $status");
-            return ['success' => true];
+            // Add notification
+            $message = "Hospital #$hospital_id has been " . strtolower($status);
+            addSystemNotification($conn, 'hospital_status', $message);
         }
-        return ['success' => false, 'message' => 'Failed to update status'];
+        
+        return $result;
     } catch (PDOException $e) {
         error_log("Error updating hospital status: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Database error'];
+        return false;
     }
 }
 
@@ -454,7 +439,8 @@ function getRegionalStats($conn) {
 function updateHospitalODMLID($conn, $hospital_id, $odml_id) {
     try {
         $stmt = $conn->prepare("UPDATE hospitals SET odml_id = ? WHERE hospital_id = ?");
-        return $stmt->execute([$odml_id, $hospital_id]);
+        $result = $stmt->execute([$odml_id, $hospital_id]);
+        return $result;
     } catch (PDOException $e) {
         error_log("Error updating hospital ODML ID: " . $e->getMessage());
         return false;

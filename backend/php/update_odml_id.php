@@ -5,42 +5,40 @@ require_once 'queries.php';
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Get POST data
-$type = $_POST['type'] ?? '';
-$id = $_POST['id'] ?? '';
-$odml_id = $_POST['odml_id'] ?? '';
-
-if (empty($type) || empty($id) || empty($odml_id)) {
-    http_response_code(400);
+// Check if required parameters are set
+if (!isset($_POST['type']) || !isset($_POST['id']) || !isset($_POST['odml_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
     exit();
 }
 
+$type = $_POST['type'];
+$id = $_POST['id'];
+$odml_id = $_POST['odml_id'];
+
+// Update ODML ID based on type
 $success = false;
 $message = '';
 
-switch ($type) {
-    case 'hospital':
-        $success = updateHospitalODMLID($conn, $id, $odml_id);
-        $message = $success ? 'Hospital ODML ID updated successfully' : 'Failed to update hospital ODML ID';
-        break;
-    case 'donor':
-        $success = updateDonorODMLID($conn, $id, $odml_id);
-        $message = $success ? 'Donor ODML ID updated successfully' : 'Failed to update donor ODML ID';
-        break;
-    case 'recipient':
-        $success = updateRecipientODMLID($conn, $id, $odml_id);
-        $message = $success ? 'Recipient ODML ID updated successfully' : 'Failed to update recipient ODML ID';
-        break;
-    default:
-        $message = 'Invalid type specified';
-        break;
-}
+try {
+    switch ($type) {
+        case 'hospital':
+            $success = updateHospitalODMLID($conn, $id, $odml_id);
+            break;
+        default:
+            $message = 'Invalid type specified';
+    }
 
-echo json_encode(['success' => $success, 'message' => $message]);
+    if ($success) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => $message ?: 'Failed to update ODML ID']);
+    }
+} catch (Exception $e) {
+    error_log("Error in update_odml_id.php: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An error occurred']);
+}
 ?>
