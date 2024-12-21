@@ -218,8 +218,8 @@ session_start();
                         <textarea id="organReason" name="organReason" rows="3" required placeholder="Please explain your medical condition and why you need this organ"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="medicalReports">Medical Reports * <small>(Max 5MB - Images/PDF/DOC)</small></label>
-                        <input type="file" id="medicalReports" name="medicalReports" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required onchange="validateFileSize(this, 5)">
+                        <label for="medical_reports">Medical Reports * <small>(Max 5MB - Images/PDF/DOC)</small></label>
+                        <input type="file" id="medical_reports" name="medical_reports" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required onchange="validateFileSize(this, 5)">
                         <div id="fileError" class="error-message"></div>
                     </div>
                     <div class="form-group">
@@ -240,13 +240,6 @@ session_start();
                             <p><em>Note: Please be ethical in your selection as it affects the priority of other recipients. 
                             False urgency claims may delay critical cases.</em></p>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="medicalRecords">Medical Records (PDF, DOC, DOCX, JPG, JPEG, PNG) *</label>
-                        <input type="file" id="medicalRecords" name="medicalRecords" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
-                        <small class="help-text" style="color: #666; font-size: 0.8rem;">
-                            Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max size: 5MB)
-                        </small>
                     </div>
                 </div>
             </div>
@@ -270,8 +263,8 @@ session_start();
                         <input type="text" id="idNumber" name="idNumber" required>
                     </div>
                     <div class="form-group">
-                        <label for="idDocument">ID Document Upload *</label>
-                        <input type="file" id="idDocument" name="idDocument" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <label for="id_document">ID Document Upload *</label>
+                        <input type="file" id="id_document" name="id_document" accept=".pdf,.jpg,.jpeg,.png" required onchange="validateFileSize(this, 2)">
                         <small class="error-message">Supported formats: PDF, JPG, JPEG, PNG (Max size: 2MB)</small>
                     </div>
                 </div>
@@ -347,25 +340,18 @@ session_start();
             }
 
             // File size validation
-            const medicalRecords = document.getElementById('medicalRecords').files[0];
-            const idDocument = document.getElementById('idDocument').files[0];
-            const medicalReports = document.getElementById('medicalReports').files[0];
+            const medicalReports = document.getElementById('medical_reports').files[0];
+            const idDocument = document.getElementById('id_document').files[0];
 
-            if (medicalRecords && medicalRecords.size > 5 * 1024 * 1024) {
+            if (medicalReports && medicalReports.size > 5 * 1024 * 1024) {
                 e.preventDefault();
-                alert('Medical records file size must be less than 5MB!');
+                alert('Medical reports file size must be less than 5MB!');
                 return;
             }
 
             if (idDocument && idDocument.size > 2 * 1024 * 1024) {
                 e.preventDefault();
                 alert('ID document file size must be less than 2MB!');
-                return;
-            }
-
-            if (medicalReports && medicalReports.size > 5 * 1024 * 1024) {
-                e.preventDefault();
-                alert('Medical reports file size must be less than 5MB!');
                 return;
             }
         });

@@ -235,6 +235,79 @@ $urgentRecipients = getUrgentRecipients($conn);
             font-weight: bold;
             color: #333;
         }
+        
+        /* Added styles for smaller buttons */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .btn-sm .fas {
+            font-size: 1rem;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reject:hover {
+            background: linear-gradient(135deg, #e53935, #d32f2f);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .odml-input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 120px;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .odml-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+            outline: none;
+        }
+
+        .update-odml-btn {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .update-odml-btn:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .update-odml-btn i {
+            margin-right: 4px;
+        }
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -471,7 +544,8 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Blood Type</th>
-                                <th>Status</th>
+                                <th>ODML ID</th>
+                                <th>Urgency Level</th>
                                 <th>Actions</th>
                                 <th>Details</th>
                             </tr>
@@ -482,14 +556,31 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 <td><?php echo htmlspecialchars($recipient['name']); ?></td>
                                 <td><?php echo htmlspecialchars($recipient['email']); ?></td>
                                 <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
-                                <td><?php echo htmlspecialchars($recipient['request_status']); ?></td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'approved')">Approve</button>
-                                    <button class="reject-btn" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">Reject</button>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="text" class="odml-input" 
+                                               value="<?php echo htmlspecialchars($recipient['odml_id'] ?? ''); ?>" 
+                                               placeholder="Enter ODML ID"
+                                               id="odml-<?php echo $recipient['id']; ?>">
+                                        <button class="update-odml-btn" onclick="updateRecipientODML(<?php echo $recipient['id']; ?>)">
+                                            <i class="fas fa-sync-alt"></i> Update
+                                        </button>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($recipient['urgency'] ?? 'Not Set'); ?></td>
+                                <td class="action-cell">
+                                    <button class="btn btn-sm btn-approve" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'accepted')" style="margin-right: 5px;">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-reject" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
                                 </td>
                                 <td>
-                                    <a href="view_all_details.php?type=recipient&id=<?php echo $recipient['id']; ?>" 
-                                       class="details-btn">View Details</a>
+                                    <a href="view_recipient_details_in_pending.php?id=<?php echo htmlspecialchars($recipient['id']); ?>" 
+                                       class="view-btn">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -717,6 +808,73 @@ $urgentRecipients = getUrgentRecipients($conn);
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
                         alert('Error updating ODML ID');
+                    }
+                });
+            }
+        }
+
+        function updateRecipientStatus(recipientId, status) {
+            // Capitalize first letter of status
+            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            
+            if (confirm(`Are you sure you want to ${status.toLowerCase()} this recipient?`)) {
+                $.ajax({
+                    url: '../../backend/php/update_recipient_status.php',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        recipient_id: recipientId,
+                        status: status
+                    }),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response:', response);
+                        if (response.success) {
+                            alert(`Recipient ${status.toLowerCase()} successfully`);
+                            location.reload();
+                        } else {
+                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error updating recipient status. Please check the console for details.');
+                    }
+                });
+            }
+        }
+
+        function updateRecipientODML(recipientId) {
+            const odmlId = document.getElementById(`odml-${recipientId}`).value.trim();
+            
+            if (!odmlId) {
+                alert('Please enter an ODML ID');
+                return;
+            }
+
+            if (confirm('Are you sure you want to update the ODML ID?')) {
+                $.ajax({
+                    url: '../../backend/php/update_recipient_odml.php',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        recipient_id: recipientId,
+                        odml_id: odmlId
+                    }),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response:', response);
+                        if (response.success) {
+                            alert('ODML ID updated successfully');
+                        } else {
+                            alert('Failed to update ODML ID: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        alert('Error updating ODML ID. Please check the console for details.');
                     }
                 });
             }
