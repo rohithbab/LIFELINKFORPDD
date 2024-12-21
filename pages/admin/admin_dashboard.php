@@ -426,7 +426,7 @@ $urgentRecipients = getUrgentRecipients($conn);
                         </thead>
                         <tbody>
                             <?php foreach ($pendingDonors as $donor): ?>
-                            <tr data-donor-id="<?php echo htmlspecialchars($donor['id']); ?>">
+                            <tr>
                                 <td><?php echo htmlspecialchars($donor['name']); ?></td>
                                 <td><?php echo htmlspecialchars($donor['email']); ?></td>
                                 <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
@@ -435,23 +435,23 @@ $urgentRecipients = getUrgentRecipients($conn);
                                         <input type="text" class="odml-input" 
                                                value="<?php echo htmlspecialchars($donor['odml_id'] ?? ''); ?>" 
                                                placeholder="Enter ODML ID">
-                                        <button class="update-btn" onclick="updateDonorODMLID(<?php echo htmlspecialchars($donor['id']); ?>, this)">
+                                        <button class="update-btn" onclick="updateDonorODMLID('<?php echo htmlspecialchars($donor['donor_id']); ?>', this)">
                                             <i class="fas fa-save"></i> Update
                                         </button>
                                     </div>
                                 </td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateDonorStatus(<?php echo htmlspecialchars($donor['id']); ?>, 'Approved')">
+                                    <button class="approve-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Approved')">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
-                                    <button class="reject-btn" onclick="updateDonorStatus(<?php echo htmlspecialchars($donor['id']); ?>, 'Rejected')">
+                                    <button class="reject-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Rejected')">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </td>
                                 <td>
-                                    <a href="view_donor_details_in_pending.php?id=<?php echo htmlspecialchars($donor['id']); ?>" 
+                                    <a href="view_donor_details_in_pending.php?id=<?php echo htmlspecialchars($donor['donor_id']); ?>" 
                                        class="view-btn">
-                                        <i class="fas fa-eye"></i> View
+                                        <i class="fas fa-eye"></i> View Details
                                     </a>
                                 </td>
                             </tr>

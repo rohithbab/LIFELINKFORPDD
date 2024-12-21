@@ -82,7 +82,7 @@ function getPendingDonors($conn) {
     try {
         $stmt = $conn->prepare("
             SELECT 
-                donor_id as id,
+                donor_id,
                 name,
                 email,
                 blood_group as blood_type,
