@@ -525,7 +525,7 @@ if ($result) {
                             <th>Registration Date</th>
                             <th>Status</th>
                             <th>Actions</th>
-                            <th>License Document</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -547,9 +547,6 @@ if ($result) {
                                     </span>
                                 </td>
                                 <td class="action-buttons">
-                                    <button class="view-btn" onclick="viewHospital(<?php echo $row['hospital_id']; ?>)">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
                                     <?php if ($row['status'] !== 'rejected'): ?>
                                         <button class="reject-btn" onclick="showRejectModal(<?php echo $row['hospital_id']; ?>)">
                                             <i class="fas fa-times"></i> Reject
@@ -557,14 +554,9 @@ if ($result) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if (!empty($row['license_document'])): ?>
-                                        <a href="../../uploads/hospitals/license_file/<?php echo htmlspecialchars($row['license_document']); ?>" 
-                                           target="_blank" class="view-button">
-                                            View License
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="text-muted">No license uploaded</span>
-                                    <?php endif; ?>
+                                    <button class="view-btn" onclick="viewHospital(<?php echo $row['hospital_id']; ?>)">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
