@@ -19,23 +19,26 @@ $type = $_POST['type'];
 $id = $_POST['id'];
 $odml_id = $_POST['odml_id'];
 
-// Update ODML ID based on type
-$success = false;
-$message = '';
-
 try {
     switch ($type) {
+        case 'donor':
+            $success = updateDonorODMLID($conn, $id, $odml_id);
+            break;
         case 'hospital':
             $success = updateHospitalODMLID($conn, $id, $odml_id);
             break;
+        case 'recipient':
+            $success = updateRecipientODMLID($conn, $id, $odml_id);
+            break;
         default:
-            $message = 'Invalid type specified';
+            echo json_encode(['success' => false, 'message' => 'Invalid type specified']);
+            exit();
     }
 
     if ($success) {
         echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'message' => $message ?: 'Failed to update ODML ID']);
+        echo json_encode(['success' => false, 'message' => 'Failed to update ODML ID']);
     }
 } catch (Exception $e) {
     error_log("Error in update_odml_id.php: " . $e->getMessage());

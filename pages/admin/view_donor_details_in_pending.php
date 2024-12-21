@@ -284,20 +284,32 @@ try {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function updateDonorStatus(donorId, status) {
-            if (confirm('Are you sure you want to ' + status.toLowerCase() + ' this donor?')) {
+            // Capitalize first letter of status
+            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            
+            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
                 $.ajax({
                     url: '../../backend/php/update_donor_status.php',
-                    type: 'POST',
-                    data: {
+                    method: 'POST',
+                    data: JSON.stringify({
                         donor_id: donorId,
                         status: status
-                    },
+                    }),
+                    contentType: 'application/json',
+                    dataType: 'json',
                     success: function(response) {
-                        alert('Donor has been ' + status.toLowerCase() + ' successfully');
-                        window.location.href = 'admin_dashboard.php';
+                        console.log('Response:', response); // Debug log
+                        if (response.success) {
+                            alert(`Donor ${status.toLowerCase()} successfully`);
+                            window.location.href = 'admin_dashboard.php';
+                        } else {
+                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                        }
                     },
-                    error: function() {
-                        alert('Error updating donor status');
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.error('Response:', xhr.responseText); // Debug log
+                        alert('Error updating donor status. Please check the console for details.');
                     }
                 });
             }

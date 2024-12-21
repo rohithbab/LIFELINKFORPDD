@@ -650,8 +650,45 @@ $urgentRecipients = getUrgentRecipients($conn);
             }
         }
         
+        function updateDonorStatus(donorId, status) {
+            // Capitalize first letter of status
+            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            
+            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
+                $.ajax({
+                    url: '../../backend/php/update_donor_status.php',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        donor_id: donorId,
+                        status: status
+                    }),
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response:', response); // Debug log
+                        if (response.success) {
+                            alert(`Donor ${status.toLowerCase()} successfully`);
+                            location.reload();
+                        } else {
+                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.error('Response:', xhr.responseText); // Debug log
+                        alert('Error updating donor status. Please check the console for details.');
+                    }
+                });
+            }
+        }
+
         function updateDonorODMLID(donorId, button) {
             const odmlId = $(button).prev('input').val();
+            
+            if (!odmlId) {
+                alert('Please enter an ODML ID');
+                return;
+            }
             
             if (confirm('Are you sure you want to update the ODML ID?')) {
                 $.ajax({
@@ -667,82 +704,8 @@ $urgentRecipients = getUrgentRecipients($conn);
                             const data = typeof response === 'string' ? JSON.parse(response) : response;
                             if (data.success) {
                                 alert('ODML ID updated successfully');
-                            } else {
-                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                            alert('Error updating ODML ID');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error updating ODML ID');
-                    }
-                });
-            }
-        }
-
-        function updateDonorStatus(donorId, status) {
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_donor_status.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        donor_id: donorId,
-                        status: status
-                    }),
-                    contentType: 'application/json',
-                    success: function(response) {
-                        try {
-                            const data = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (data.success) {
-                                $(`tr[data-donor-id="${donorId}"]`).fadeOut(400, function() {
-                                    $(this).remove();
-                                    // Update counter
-                                    const counter = $('#pending-donors-count');
-                                    counter.text(parseInt(counter.text()) - 1);
-                                });
-                                alert(`Donor ${status.toLowerCase()} successfully`);
-                            } else {
-                                alert('Failed to update status: ' + (data.message || 'Unknown error'));
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                            alert('Error updating status');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error updating status');
-                    }
-                });
-            }
-        }
-
-        function updateDonorODMLID(donorId, button) {
-            const input = $(button).prev('.odml-input');
-            const odmlId = input.val().trim();
-            
-            if (!odmlId) {
-                alert('Please enter an ODML ID');
-                return;
-            }
-
-            if (confirm('Are you sure you want to update the ODML ID?')) {
-                $.ajax({
-                    url: '../../backend/php/update_donor_odml.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        donor_id: donorId,
-                        odml_id: odmlId
-                    }),
-                    contentType: 'application/json',
-                    success: function(response) {
-                        try {
-                            const data = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (data.success) {
-                                alert('ODML ID updated successfully');
+                                $(button).prev('input').prop('disabled', true);
+                                $(button).prop('disabled', true);
                             } else {
                                 alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
                             }
