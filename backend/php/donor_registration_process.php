@@ -17,7 +17,10 @@ function sanitize_input($data) {
 function handle_file_upload($file, $target_dir) {
     // Create directory if it doesn't exist
     if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0777, true);
+        if (!mkdir($target_dir, 0777, true)) {
+            error_log("Failed to create directory: " . $target_dir);
+            throw new Exception("Failed to create upload directory");
+        }
     }
     
     // Check if file was actually uploaded
@@ -95,8 +98,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         foreach ($upload_dirs as $dir) {
             if (!file_exists($dir)) {
-                mkdir($dir, 0777, true);
-                error_log("Created directory: " . $dir);
+                if (!mkdir($dir, 0777, true)) {
+                    error_log("Failed to create directory: " . $dir);
+                    throw new Exception("Failed to create upload directory");
+                }
             }
         }
 
@@ -121,42 +126,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $reason = isset($_POST['reason']) ? sanitize_input($_POST['reason']) : null;
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        // Handle ID proof
+        // Handle ID proof (required)
         $id_proof_path = null;
-        error_log("Checking ID proof upload...");
-        error_log("ID proof file data: " . print_r($_FILES['id_proof'], true));
-        
-        if (!isset($_FILES['id_proof'])) {
-            throw new Exception("No ID proof file was sent");
-        }
-        
-        if ($_FILES['id_proof']['error'] === UPLOAD_ERR_NO_FILE) {
-            throw new Exception("No ID proof file was selected");
-        }
-        
-        if ($_FILES['id_proof']['error'] !== UPLOAD_ERR_OK) {
-            $upload_errors = [
-                UPLOAD_ERR_INI_SIZE => "The file is larger than PHP's upload_max_filesize",
-                UPLOAD_ERR_FORM_SIZE => "The file is larger than the form's MAX_FILE_SIZE",
-                UPLOAD_ERR_PARTIAL => "The file was only partially uploaded",
-                UPLOAD_ERR_NO_TMP_DIR => "Missing a temporary folder",
-                UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk",
-                UPLOAD_ERR_EXTENSION => "A PHP extension stopped the file upload"
-            ];
-            $error_message = isset($upload_errors[$_FILES['id_proof']['error']]) 
-                ? $upload_errors[$_FILES['id_proof']['error']]
-                : "Unknown upload error";
-            throw new Exception("ID proof upload error: " . $error_message);
-        }
-        
-        try {
-            $id_proof_path = handle_file_upload(
-                $_FILES['id_proof'], 
-                $base_upload_dir . 'id_proof_path/'
-            );
-            error_log("ID proof uploaded successfully: " . $id_proof_path);
-        } catch (Exception $e) {
-            throw new Exception("Error processing ID proof: " . $e->getMessage());
+        if (isset($_FILES['id_proof']) && $_FILES['id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $id_proof_path = handle_file_upload(
+                    $_FILES['id_proof'], 
+                    $base_upload_dir . 'id_proof_path/'
+                );
+            } catch (Exception $e) {
+                throw new Exception("Error uploading ID proof: " . $e->getMessage());
+            }
+        } else {
+            throw new Exception("ID proof is required. Please upload a valid document.");
         }
         
         // Handle medical reports (optional)
@@ -169,8 +151,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
                 error_log("Medical reports uploaded successfully: " . $medical_reports_path);
             } catch (Exception $e) {
-                // Medical reports are optional, so just log the error
                 error_log("Error uploading medical reports: " . $e->getMessage());
+                // Don't throw exception as it's optional
             }
         }
         
@@ -184,8 +166,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
                 error_log("Guardian ID proof uploaded successfully: " . $guardian_id_proof_path);
             } catch (Exception $e) {
-                // Guardian ID proof is optional, so just log the error
                 error_log("Error uploading guardian ID proof: " . $e->getMessage());
+                // Don't throw exception as it's optional
             }
         }
 
@@ -200,33 +182,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             name, gender, dob, blood_group, email, phone, address,
             medical_conditions, organs_to_donate, medical_reports_path,
             id_proof_path, reason_for_donation, password,
-            guardian_name, guardian_email, guardian_phone, guardian_id_proof_path
+            guardian_name, guardian_email, guardian_phone, guardian_id_proof_path,
+            status
         ) VALUES (
             :name, :gender, :dob, :blood_group, :email, :phone, :address,
             :medical_conditions, :organs_to_donate, :medical_reports_path,
             :id_proof_path, :reason_for_donation, :password,
-            :guardian_name, :guardian_email, :guardian_phone, :guardian_id_proof_path
+            :guardian_name, :guardian_email, :guardian_phone, :guardian_id_proof_path,
+            'pending'
         )");
 
-        $stmt->execute([
-            ':name' => $name,
-            ':gender' => $gender,
-            ':dob' => $dob,
-            ':blood_group' => $blood_group,
-            ':email' => $email,
-            ':phone' => $phone,
-            ':address' => $address,
-            ':medical_conditions' => $medical_conditions,
-            ':organs_to_donate' => $organs,
-            ':medical_reports_path' => $medical_reports_path,
-            ':id_proof_path' => $id_proof_path,
-            ':reason_for_donation' => $reason,
-            ':password' => $password,
-            ':guardian_name' => $guardian_name,
-            ':guardian_email' => $guardian_email,
-            ':guardian_phone' => $guardian_phone,
-            ':guardian_id_proof_path' => $guardian_id_proof_path
-        ]);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':gender', $gender);
+        $stmt->bindParam(':dob', $dob);
+        $stmt->bindParam(':blood_group', $blood_group);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':phone', $phone);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':medical_conditions', $medical_conditions);
+        $stmt->bindParam(':organs_to_donate', $organs);
+        $stmt->bindParam(':medical_reports_path', $medical_reports_path);
+        $stmt->bindParam(':id_proof_path', $id_proof_path);
+        $stmt->bindParam(':reason_for_donation', $reason);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':guardian_name', $guardian_name);
+        $stmt->bindParam(':guardian_email', $guardian_email);
+        $stmt->bindParam(':guardian_phone', $guardian_phone);
+        $stmt->bindParam(':guardian_id_proof_path', $guardian_id_proof_path);
+
+        $stmt->execute();
 
         if ($stmt->rowCount() > 0) {
             $_SESSION['registration_success'] = true;

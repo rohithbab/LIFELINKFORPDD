@@ -319,7 +319,7 @@ session_start();
                         <label for="medicalReports">
                             <i class="fas fa-upload"></i> Choose Files
                         </label>
-                        <input type="file" id="medicalReports" name="medicalReports[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                        <input type="file" id="medicalReports" name="medical_reports" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
                 </div>
             </div>
@@ -344,8 +344,8 @@ session_start();
             <div class="form-section">
                 <h3 class="section-title">Reason for Organ Donation</h3>
                 <div class="form-group">
-                    <label for="donationReason">Please explain your motivation *</label>
-                    <textarea id="donationReason" name="donationReason" required></textarea>
+                    <label for="reason">Why do you want to donate your organs? *</label>
+                    <textarea id="reason" name="reason" required></textarea>
                 </div>
             </div>
 
@@ -368,12 +368,12 @@ session_start();
                     <input type="tel" id="guardianPhone" name="guardianPhone">
                 </div>
                 <div class="form-group">
-                    <label for="guardianIdProof">Upload Guardian's ID Proof</label>
+                    <label for="guardian_id_proof">Upload Guardian's ID Proof</label>
                     <div class="file-upload">
-                        <label for="guardianIdProof">
+                        <label for="guardian_id_proof">
                             <i class="fas fa-upload"></i> Choose File
                         </label>
-                        <input type="file" id="guardianIdProof" name="guardianIdProof" accept=".pdf,.jpg,.jpeg,.png">
+                        <input type="file" id="guardian_id_proof" name="guardian_id_proof" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
                 </div>
                 <div class="checkbox-group">
@@ -445,7 +445,7 @@ session_start();
             document.getElementById('guardianName').value = '';
             document.getElementById('guardianEmail').value = '';
             document.getElementById('guardianPhone').value = '';
-            document.getElementById('guardianIdProof').value = '';
+            document.getElementById('guardian_id_proof').value = '';
             document.getElementById('guardianConfirmation').checked = false;
         }
 
