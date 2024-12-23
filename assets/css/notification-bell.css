@@ -28,13 +28,20 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #ff4444;
+    background: #dc3545;
     color: white;
     border-radius: 50%;
     padding: 4px 8px;
-    font-size: 14px;
-    min-width: 22px;
+    font-size: 12px;
+    min-width: 20px;
+    min-height: 20px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border: 2px solid #fff;
+    font-weight: bold;
 }
 
 .notification-dropdown {

@@ -155,6 +155,23 @@ $notifications = getAdminNotifications($conn, 50);
             padding: 40px;
             color: #666;
         }
+
+        .mark-read-mini-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .mark-read-mini-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -182,15 +199,25 @@ $notifications = getAdminNotifications($conn, 50);
             <?php else: ?>
                 <?php foreach ($notifications as $notification): ?>
                     <div class="notification-card <?php echo !$notification['is_read'] ? 'unread' : ''; ?>" 
-                         data-status="<?php echo !$notification['is_read'] ? 'unread' : 'read'; ?>">
-                        <span class="notification-type type-<?php echo $notification['type']; ?>">
-                            <?php echo ucfirst($notification['type']); ?>
-                        </span>
-                        <div class="notification-content">
-                            <?php echo $notification['message']; ?>
-                            <div class="notification-time">
-                                <?php echo $notification['formatted_time']; ?>
+                         data-status="<?php echo !$notification['is_read'] ? 'unread' : 'read'; ?>"
+                         data-id="<?php echo $notification['notification_id']; ?>">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="notification-type type-<?php echo $notification['type']; ?>">
+                                    <?php echo ucfirst($notification['type']); ?>
+                                </span>
+                                <div class="notification-content">
+                                    <?php echo $notification['message']; ?>
+                                    <div class="notification-time">
+                                        <?php echo $notification['formatted_time']; ?>
+                                    </div>
+                                </div>
                             </div>
+                            <?php if (!$notification['is_read']): ?>
+                                <button class="mark-read-mini-btn" onclick="markAsRead('<?php echo $notification['notification_id']; ?>')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -200,13 +227,11 @@ $notifications = getAdminNotifications($conn, 50);
 
     <script>
         function filterNotifications(filter) {
-            // Update active button
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
 
-            // Filter notifications
             const cards = document.querySelectorAll('.notification-card');
             cards.forEach(card => {
                 if (filter === 'all' || card.dataset.status === filter) {
@@ -215,6 +240,29 @@ $notifications = getAdminNotifications($conn, 50);
                     card.style.display = 'none';
                 }
             });
+        }
+
+        function markAsRead(notificationId) {
+            fetch('../../backend/php/get_notifications.php?action=mark_read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'notification_id=' + notificationId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
+                    if (card) {
+                        card.classList.remove('unread');
+                        card.dataset.status = 'read';
+                        const button = card.querySelector('.mark-read-mini-btn');
+                        if (button) button.remove();
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
     </script>
 </body>
