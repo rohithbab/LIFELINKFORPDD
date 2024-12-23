@@ -148,25 +148,26 @@ try {
             background: linear-gradient(135deg, #4CAF50, #2196F3);
             padding: 8px;
             border-radius: 4px;
-            transition: all 0.3s ease;
             width: 35px;
             height: 35px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
         }
 
         .hamburger span {
             display: block;
-            width: 20px;
+            width: 18px;
             height: 2px;
             background: white;
-            margin: 3px auto;
+            margin: 2px 0;
             transition: all 0.3s ease;
+            transform-origin: center;
         }
 
         .hamburger.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
+            transform: translateY(6px) rotate(45deg);
         }
 
         .hamburger.active span:nth-child(2) {
@@ -174,7 +175,7 @@ try {
         }
 
         .hamburger.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
+            transform: translateY(-6px) rotate(-45deg);
         }
 
         .sidebar {
@@ -228,22 +229,40 @@ try {
             font-weight: 600;
         }
 
-        .sidebar-item {
+        .sidebar-nav {
+            padding: 20px;
             display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .sidebar-item:hover, .sidebar-item.active {
+        .filter-button {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #333;
+            font-size: 1rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .filter-button:hover {
             background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
             color: #4CAF50;
         }
 
-        .sidebar-item i {
-            margin-right: 10px;
+        .filter-button.active {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+        }
+
+        .filter-button i {
             width: 20px;
             text-align: center;
         }
@@ -462,33 +481,33 @@ try {
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h1 class="sidebar-title">LifeLink</h1>
-            <div class="sidebar-subtitle">Admin Recipient Management</div>
+            <h2>LifeLink</h2>
+            <h3>Admin Recipient Management</h3>
         </div>
-        <div class="sidebar-menu">
-            <a href="?filter=all" class="sidebar-item <?php echo $filter === 'all' ? 'active' : ''; ?>">
+        <div class="sidebar-nav">
+            <a href="?filter=all" class="filter-button <?php echo $filter === 'all' ? 'active' : ''; ?>">
                 <i class="fas fa-users"></i>
                 All Recipients
                 <span class="count-badge"><?php echo $counts['all']; ?></span>
             </a>
-            <a href="?filter=pending" class="sidebar-item <?php echo $filter === 'pending' ? 'active' : ''; ?>">
+            <a href="?filter=pending" class="filter-button <?php echo $filter === 'pending' ? 'active' : ''; ?>">
                 <i class="fas fa-clock"></i>
-                Pending Recipients
+                Pending
                 <span class="count-badge"><?php echo $counts['pending']; ?></span>
             </a>
-            <a href="?filter=accepted" class="sidebar-item <?php echo $filter === 'accepted' ? 'active' : ''; ?>">
+            <a href="?filter=accepted" class="filter-button <?php echo $filter === 'accepted' ? 'active' : ''; ?>">
                 <i class="fas fa-check-circle"></i>
-                Accepted Recipients
+                Accepted
                 <span class="count-badge"><?php echo $counts['accepted']; ?></span>
             </a>
-            <a href="?filter=rejected" class="sidebar-item <?php echo $filter === 'rejected' ? 'active' : ''; ?>">
+            <a href="?filter=rejected" class="filter-button <?php echo $filter === 'rejected' ? 'active' : ''; ?>">
                 <i class="fas fa-times-circle"></i>
-                Rejected Recipients
+                Rejected
                 <span class="count-badge"><?php echo $counts['rejected']; ?></span>
             </a>
-            <a href="admin_recipient_analytics.php" class="sidebar-item">
+            <a href="admin_recipient_analytics.php" class="filter-button">
                 <i class="fas fa-chart-pie"></i>
-                Recipient Analytics
+                Analytics
             </a>
         </div>
     </div>
@@ -606,40 +625,28 @@ try {
     </div>
 
     <script>
-        // Sidebar toggle functionality
-        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        // Store sidebar state in session storage
+        if (sessionStorage.getItem('sidebarOpen') === 'true') {
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('mainContent').classList.add('shifted');
+            document.getElementById('hamburgerMenu').classList.add('active');
+        }
+
+        // Hamburger Menu Functionality
+        const hamburger = document.getElementById('hamburgerMenu');
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
-        let sidebarOpen = false;
 
-        hamburgerMenu.addEventListener('click', function() {
-            if (this.classList.contains('active')) {
-                // Only close if X is clicked
-                this.classList.remove('active');
-                sidebar.classList.remove('active');
-                mainContent.classList.remove('shifted');
-                sidebarOpen = false;
-            } else {
-                // Open sidebar
-                this.classList.add('active');
-                sidebar.classList.add('active');
-                mainContent.classList.add('shifted');
-                sidebarOpen = true;
-            }
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('shifted');
+            
+            // Store sidebar state
+            sessionStorage.setItem('sidebarOpen', sidebar.classList.contains('active'));
         });
 
-        // Keep sidebar open when clicking links
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                if (sidebarOpen) {
-                    e.preventDefault(); // Prevent default only if we need to keep sidebar open
-                    const href = this.getAttribute('href');
-                    setTimeout(() => {
-                        window.location.href = href;
-                    }, 10);
-                }
-            });
-        });
+        // Don't add any click handlers to sidebar links - let them work normally
 
         function viewRecipient(id) {
             window.location.href = `view_recipient_details.php?id=${id}`;

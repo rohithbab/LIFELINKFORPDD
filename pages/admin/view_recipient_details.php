@@ -192,6 +192,21 @@ if (!empty($recipient['recipient_medical_reports'])) {
             text-align: center;
             word-break: break-word;
         }
+
+        .document-preview {
+            margin-top: 1rem;
+        }
+
+        .document-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .document-frame {
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -279,17 +294,15 @@ if (!empty($recipient['recipient_medical_reports'])) {
                 
                 <!-- ID Proof -->
                 <div class="info-item">
-                    <div class="info-label">ID Proof (<?php echo htmlspecialchars($recipient['id_proof_type']); ?>)</div>
-                    <div class="info-value">
-                        <?php if (!empty($recipient['id_document'])): ?>
-                            <a href="../../uploads/recipient_registration/id_documents/<?php echo htmlspecialchars($recipient['id_document']); ?>" 
-                               class="document-link" target="_blank">
-                                <i class="fas fa-id-card"></i> View ID Document
-                            </a>
-                        <?php else: ?>
-                            <span class="text-muted">No ID document uploaded</span>
-                        <?php endif; ?>
-                    </div>
+                    <h3>ID Proof</h3>
+                    <?php if (!empty($recipient['id_document'])): ?>
+                        <a href="../../uploads/recipient_registration/id_document/<?php echo htmlspecialchars($recipient['id_document']); ?>" 
+                           target="_blank" class="document-link">
+                            <i class="fas fa-id-card"></i> View ID Document
+                        </a>
+                    <?php else: ?>
+                        <p>No ID proof uploaded</p>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Medical Reports -->

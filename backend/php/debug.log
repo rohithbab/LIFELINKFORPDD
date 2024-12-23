@@ -14070,3 +14070,56 @@ Data: []
 2024-12-20 05:10:48 - Pending donors result
 Data: []
 -------------------
+2024-12-21 15:54:36: Registration process started
+2024-12-21 15:54:36: POST data: Array
+(
+    [hospital_name] => dhanush hospitals
+    [hospital_email] => dhanush@gmail.com
+    [hospital_phone] => 4325678765
+    [street] => no 30
+    [city] => tirupati
+    [state] => andhra
+    [postal_code] => 600982
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => dhanush
+    [designation] => dean
+    [contact_phone] => 8976543456
+    [contact_email] => dhanushm@gmail.com
+    [license_number] => L00002
+    [username] => dhanush
+    [password] => @Dhanush123
+    [confirm_password] => @Dhanush123
+    [terms] => on
+)
+
+2024-12-21 15:54:36: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => 83121ef44ccde7792f873754f8127068.jpg
+            [full_path] => 83121ef44ccde7792f873754f8127068.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\phpCC7C.tmp
+            [error] => 0
+            [size] => 66197
+        )
+
+)
+
+2024-12-21 15:54:36: Database connection successful
+2024-12-21 15:54:36: Sanitized inputs: name=dhanush hospitals, email=dhanush@gmail.com, phone=4325678765
+2024-12-21 15:54:36: Address: no 30, tirupati, andhra, 600982, India
+2024-12-21 15:54:36: Region: andhra
+2024-12-21 15:54:36: Transaction started
+2024-12-21 15:54:36: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2024-12-21 15:54:36: SQL executed successfully
+2024-12-21 15:54:36: Transaction committed

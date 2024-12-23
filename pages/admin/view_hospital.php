@@ -169,11 +169,14 @@ $rejection_details = isset($_SESSION['rejection_details'][$hospital_id]) ? $_SES
                     <div class="detail-item">
                         <div class="detail-label">License Document</div>
                         <div>
-                            <a href="../../uploads/licenses/<?php echo $hospital['license_file']; ?>" 
-                               target="_blank" 
-                               class="view-btn">
-                                <i class="fas fa-file-pdf"></i> View License
-                            </a>
+                            <?php if (!empty($hospital['license_file'])): ?>
+                                <a href="../../uploads/hospitals/license_file/<?php echo htmlspecialchars($hospital['license_file']); ?>" 
+                                   target="_blank" class="view-btn">
+                                    <i class="fas fa-file-alt"></i> View License Document
+                                </a>
+                            <?php else: ?>
+                                <span class="text-muted">No license document uploaded</span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
