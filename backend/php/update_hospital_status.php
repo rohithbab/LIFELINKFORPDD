@@ -36,38 +36,50 @@ if (!in_array($status, ['approved', 'rejected'])) {
 }
 
 try {
+    // Begin transaction
+    $conn->beginTransaction();
+
+    // Get hospital details
+    $stmt = $conn->prepare("SELECT hospital_name, email FROM hospitals WHERE hospital_id = ?");
+    $stmt->bind_param("i", $hospital_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $hospital = $result->fetch_assoc();
+
+    if (!$hospital) {
+        throw new Exception("Hospital not found");
+    }
+
     // Update hospital status
     if (updateHospitalStatus($conn, $hospital_id, $status, $_SESSION['admin_id'])) {
-        // Get hospital details
-        $stmt = $conn->prepare("SELECT hospital_name, email FROM hospitals WHERE hospital_id = ?");
-        $stmt->bind_param("i", $hospital_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $hospital = $result->fetch_assoc();
+        // Create notification
+        createNotification(
+            $conn,
+            'hospital',
+            $status,
+            $hospital_id,
+            "Hospital " . $hospital['hospital_name'] . " has been " . $status
+        );
 
-        // Send email notification to hospital
-        $subject = $status === 'approved' 
-            ? "LifeLink: Your Hospital Registration has been Approved"
-            : "LifeLink: Your Hospital Registration Status Update";
-            
-        $message = $status === 'approved'
-            ? "Congratulations! Your hospital registration has been approved. You can now log in to your account."
-            : "Your hospital registration has been reviewed. Unfortunately, we cannot approve your registration at this time.";
-
-        // Send email (you'll need to implement your email sending function)
-        // mail($hospital['email'], $subject, $message);
+        // Commit transaction
+        $conn->commit();
 
         echo json_encode([
             'success' => true,
-            'message' => "Hospital has been " . $status . " successfully"
+            'message' => 'Hospital status updated successfully'
         ]);
     } else {
         throw new Exception("Failed to update hospital status");
     }
+
 } catch (Exception $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollback();
+    }
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'An error occurred while updating hospital status: ' . $e->getMessage()
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
+?>

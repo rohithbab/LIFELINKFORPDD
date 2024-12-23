@@ -234,28 +234,17 @@ function addNotification($conn, $type, $message, $user_id = null) {
 
 // Get admin notifications
 function getAdminNotifications($conn, $limit = 10) {
-    // Check if notifications table exists
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) 
-        FROM information_schema.tables 
-        WHERE table_schema = DATABASE() 
-        AND table_name = 'notifications'
-    ");
-    $stmt->execute();
-    $exists = $stmt->fetchColumn();
-
-    if (!$exists) {
-        // Return empty array if table doesn't exist
-        return [];
-    }
-
-    // If table exists, get notifications
     $stmt = $conn->prepare("
         SELECT 
-            *,
-            DATE_FORMAT(created_at, '%M %d, %Y at %h:%i %p') as formatted_time
+            notification_id,
+            type,
+            action,
+            entity_id,
+            message,
+            is_read,
+            DATE_FORMAT(created_at, '%M %d, %Y at %h:%i %p') as formatted_time,
+            link_url
         FROM notifications 
-        WHERE user_id IS NULL 
         ORDER BY created_at DESC 
         LIMIT :limit
     ");
@@ -465,6 +454,51 @@ function updateRecipientODMLID($conn, $recipient_id, $odml_id) {
         return $stmt->execute([$odml_id, $recipient_id]);
     } catch (PDOException $e) {
         error_log("Error updating recipient ODML ID: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to create notification
+function createNotification($conn, $type, $action, $entity_id, $message = '') {
+    try {
+        // If no custom message provided, create default message
+        if (empty($message)) {
+            $message = ucfirst($type);
+            switch ($action) {
+                case 'registered':
+                    $message .= " has registered";
+                    break;
+                case 'accepted':
+                    $message .= " has been accepted";
+                    break;
+                case 'rejected':
+                    $message .= " has been rejected";
+                    break;
+            }
+        }
+
+        // Generate link URL based on type
+        $link_url = '';
+        switch ($type) {
+            case 'hospital':
+                $link_url = "view_hospital.php?id=" . $entity_id;
+                break;
+            case 'donor':
+                $link_url = "view_donor.php?id=" . $entity_id;
+                break;
+            case 'recipient':
+                $link_url = "view_recipient_details.php?id=" . $entity_id;
+                break;
+        }
+
+        $stmt = $conn->prepare("
+            INSERT INTO notifications (type, action, entity_id, message, link_url)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        
+        return $stmt->execute([$type, $action, $entity_id, $message, $link_url]);
+    } catch (Exception $e) {
+        error_log("Error creating notification: " . $e->getMessage());
         return false;
     }
 }

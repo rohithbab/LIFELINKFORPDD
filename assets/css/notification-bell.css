@@ -1,0 +1,120 @@
+.notification-bell-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    padding: 15px;
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.notification-bell:hover {
+    transform: scale(1.1);
+}
+
+.notification-bell i {
+    color: white;
+    font-size: 24px;
+}
+
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 8px;
+    font-size: 14px;
+    min-width: 22px;
+    text-align: center;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-top: 10px;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-dropdown.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.notification-header {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: #e3f2fd;
+}
+
+.notification-item .time {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.notification-footer {
+    padding: 12px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.notification-footer a {
+    color: #2196F3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-empty {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}

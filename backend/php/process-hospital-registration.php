@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once '../config/connection.php';
+require_once 'connection.php';
+require_once 'queries.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
@@ -28,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Upload license file
-        $upload_dir = '../uploads/licenses/';
+        $upload_dir = '../../uploads/licenses/';
         if (!file_exists($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
@@ -45,71 +46,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Begin transaction
-        $conn->begin_transaction();
+        $conn->beginTransaction();
 
         // Insert into hospitals table
         $stmt = $conn->prepare("
             INSERT INTO hospitals (
                 name, email, password, phone, address,
-                license_number, status, registration_date
-            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())
+                license_number, license_file, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
         ");
 
-        $stmt->bind_param(
-            "ssssss",
+        $stmt->execute([
             $name,
             $email,
             $hashed_password,
             $phone,
             $address,
-            $license_number
-        );
+            $license_number,
+            $license_filename,
+            'pending'
+        ]);
 
-        if (!$stmt->execute()) {
+        if ($stmt->rowCount() > 0) {
+            $hospital_id = $conn->lastInsertId();
+            
+            // Create notification
+            createNotification(
+                $conn,
+                'hospital',
+                'registered',
+                $hospital_id,
+                "New hospital registration: $name"
+            );
+
+            // Store registration data in session for status page
+            $_SESSION['registration_success'] = true;
+            $_SESSION['hospital_data'] = [
+                'name' => $name,
+                'email' => $email,
+                'license_number' => $license_number,
+                'phone' => $phone,
+                'address' => $address,
+                'submitted_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Commit transaction
+            $conn->commit();
+
+            // Redirect to status page
+            header("Location: ../../pages/hospital/hospital_registration_success.php");
+            exit();
+        } else {
             throw new Exception("Error registering hospital");
         }
 
-        $hospital_id = $conn->insert_id;
-
-        // Create notification for admin
-        $notification_stmt = $conn->prepare("
-            INSERT INTO notifications (
-                type, message, created_at
-            ) VALUES (
-                'new_hospital',
-                ?,
-                NOW()
-            )
-        ");
-
-        $notification_message = "New hospital registration: $name (License: $license_number)";
-        $notification_stmt->bind_param("s", $notification_message);
-
-        if (!$notification_stmt->execute()) {
-            throw new Exception("Error creating notification");
-        }
-
-        // Store registration data in session for status page
-        $_SESSION['registration_success'] = true;
-        $_SESSION['hospital_data'] = [
-            'name' => $name,
-            'email' => $email,
-            'license_number' => $license_number,
-            'phone' => $phone,
-            'address' => $address,
-            'submitted_at' => date('Y-m-d H:i:s')
-        ];
-
-        // Commit transaction
-        $conn->commit();
-
-        // Redirect to status page
-        header("Location: ../pages/process-hospital-registration.php");
-        exit();
-
     } catch (Exception $e) {
         // Rollback transaction on error
-        if (isset($conn)) {
+        if ($conn->inTransaction()) {
             $conn->rollback();
         }
 
@@ -119,10 +112,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         $_SESSION['error'] = $e->getMessage();
-        header("Location: ../pages/hospital_registration.php");
+        header("Location: ../../pages/hospital_registration.php");
         exit();
     }
 } else {
-    header("Location: ../pages/hospital_registration.php");
+    header("Location: ../../pages/hospital_registration.php");
     exit();
 }

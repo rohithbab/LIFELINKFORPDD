@@ -4,6 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'connection.php';
+require_once 'queries.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -149,80 +150,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $_FILES['medical_reports'], 
                     $base_upload_dir . 'medical_reports_path/'
                 );
-                error_log("Medical reports uploaded successfully: " . $medical_reports_path);
             } catch (Exception $e) {
-                error_log("Error uploading medical reports: " . $e->getMessage());
-                // Don't throw exception as it's optional
-            }
-        }
-        
-        // Handle guardian ID proof (optional)
-        $guardian_id_proof_path = null;
-        if (isset($_FILES['guardian_id_proof']) && $_FILES['guardian_id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
-            try {
-                $guardian_id_proof_path = handle_file_upload(
-                    $_FILES['guardian_id_proof'], 
-                    $base_upload_dir . 'guardian_id_proof_path/'
-                );
-                error_log("Guardian ID proof uploaded successfully: " . $guardian_id_proof_path);
-            } catch (Exception $e) {
-                error_log("Error uploading guardian ID proof: " . $e->getMessage());
-                // Don't throw exception as it's optional
+                error_log("Warning: Medical reports upload failed: " . $e->getMessage());
             }
         }
 
-        // Handle guardian details (optional)
-        $guardian_name = !empty($_POST['guardianName']) ? sanitize_input($_POST['guardianName']) : null;
-        $guardian_email = !empty($_POST['guardianEmail']) ? filter_var($_POST['guardianEmail'], FILTER_SANITIZE_EMAIL) : null;
-        $guardian_phone = !empty($_POST['guardianPhone']) ? sanitize_input($_POST['guardianPhone']) : null;
-        $guardian_confirmation = isset($_POST['guardianConfirmation']) ? 1 : 0;
+        // Begin transaction
+        $conn->beginTransaction();
 
-        // Insert into database
-        $stmt = $conn->prepare("INSERT INTO donor (
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT id FROM donors WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            throw new Exception("Email already registered");
+        }
+
+        // Insert donor
+        $sql = "INSERT INTO donors (
             name, gender, dob, blood_group, email, phone, address,
-            medical_conditions, organs_to_donate, medical_reports_path,
-            id_proof_path, reason_for_donation, password,
-            guardian_name, guardian_email, guardian_phone, guardian_id_proof_path,
-            status
+            medical_conditions, organs, reason, password, id_proof_path,
+            medical_reports_path, status
         ) VALUES (
-            :name, :gender, :dob, :blood_group, :email, :phone, :address,
-            :medical_conditions, :organs_to_donate, :medical_reports_path,
-            :id_proof_path, :reason_for_donation, :password,
-            :guardian_name, :guardian_email, :guardian_phone, :guardian_id_proof_path,
-            'pending'
-        )");
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+        )";
 
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':gender', $gender);
-        $stmt->bindParam(':dob', $dob);
-        $stmt->bindParam(':blood_group', $blood_group);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':phone', $phone);
-        $stmt->bindParam(':address', $address);
-        $stmt->bindParam(':medical_conditions', $medical_conditions);
-        $stmt->bindParam(':organs_to_donate', $organs);
-        $stmt->bindParam(':medical_reports_path', $medical_reports_path);
-        $stmt->bindParam(':id_proof_path', $id_proof_path);
-        $stmt->bindParam(':reason_for_donation', $reason);
-        $stmt->bindParam(':password', $password);
-        $stmt->bindParam(':guardian_name', $guardian_name);
-        $stmt->bindParam(':guardian_email', $guardian_email);
-        $stmt->bindParam(':guardian_phone', $guardian_phone);
-        $stmt->bindParam(':guardian_id_proof_path', $guardian_id_proof_path);
-
-        $stmt->execute();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([
+            $name, $gender, $dob, $blood_group, $email, $phone, $address,
+            $medical_conditions, $organs, $reason, $password, $id_proof_path,
+            $medical_reports_path
+        ]);
 
         if ($stmt->rowCount() > 0) {
+            $donor_id = $conn->lastInsertId();
+
+            // Create notification
+            createNotification(
+                $conn,
+                'donor',
+                'registered',
+                $donor_id,
+                "New donor registration: $name"
+            );
+
+            // Commit transaction
+            $conn->commit();
+
+            // Set success message and redirect
             $_SESSION['registration_success'] = true;
             $_SESSION['donor_email'] = $email;
             header("Location: ../../pages/donor/donor_registration_success.php");
             exit();
         } else {
-            throw new Exception("Error inserting data into database");
+            throw new Exception("Failed to register donor");
         }
 
     } catch (Exception $e) {
-        error_log("Error in donor registration: " . $e->getMessage());
+        // Rollback transaction on error
+        if ($conn->inTransaction()) {
+            $conn->rollback();
+        }
+
+        // Delete uploaded files if they exist
+        if (isset($id_proof_path)) {
+            @unlink($base_upload_dir . 'id_proof_path/' . $id_proof_path);
+        }
+        if (isset($medical_reports_path)) {
+            @unlink($base_upload_dir . 'medical_reports_path/' . $medical_reports_path);
+        }
+
         $_SESSION['error'] = $e->getMessage();
         header("Location: ../../pages/donor_registration.php");
         exit();

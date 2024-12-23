@@ -27,6 +27,7 @@ $urgentRecipients = getUrgentRecipients($conn);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="../../assets/css/notification-bell.css">
     
     <!-- Custom Styles -->
     <style>
@@ -642,22 +643,20 @@ $urgentRecipients = getUrgentRecipients($conn);
     </div>
 
     <!-- Notification Bell -->
-    <div class="notification-bell" onclick="toggleNotifications()">
-        <i class="fas fa-bell"></i>
-        <span class="badge" id="notification-count">0</span>
-    </div>
-
-    <!-- Notification Popup -->
-    <div class="notification-popup" id="notification-popup">
-        <div class="p-3">
-            <h4>Notifications</h4>
-            <div id="notifications-container">
-                <?php foreach ($notifications as $notification): ?>
-                    <div class="notification-item">
-                        <span class="notification-time"><?php echo isset($notification['formatted_time']) ? $notification['formatted_time'] : date('F d, Y \a\t h:i A', strtotime($notification['created_at'])); ?></span>
-                        <p><?php echo $notification['message']; ?></p>
-                    </div>
-                <?php endforeach; ?>
+    <div class="notification-bell-container">
+        <div class="notification-bell" onclick="toggleNotifications()">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count" style="display: none;">0</span>
+        </div>
+        <div class="notification-dropdown">
+            <div class="notification-header">
+                Notifications
+            </div>
+            <div class="notification-list">
+                <!-- Notifications will be inserted here -->
+            </div>
+            <div class="notification-footer">
+                <a href="notifications.php">See All Notifications</a>
             </div>
         </div>
     </div>
@@ -880,5 +879,6 @@ $urgentRecipients = getUrgentRecipients($conn);
             }
         }
     </script>
+    <script src="../../assets/js/notifications.js"></script>
 </body>
 </html>

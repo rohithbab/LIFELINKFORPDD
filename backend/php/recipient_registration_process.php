@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'connection.php';
+require_once 'queries.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -129,6 +130,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ]);
 
         if ($stmt->rowCount() > 0) {
+            // Get the new recipient's ID
+            $recipient_id = $conn->lastInsertId();
+            
+            // Create notification
+            createNotification(
+                $conn,
+                'recipient',
+                'registered',
+                $recipient_id,
+                "New recipient registration: $full_name"
+            );
+
             $conn->commit();
             $_SESSION['registration_success'] = true;
             $_SESSION['recipient_email'] = $email;
