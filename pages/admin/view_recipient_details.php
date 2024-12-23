@@ -47,118 +47,140 @@ if (!empty($recipient['recipient_medical_reports'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipient Details - LifeLink Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/styles.css">
     <style>
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
         .details-container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 2rem;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-top: 60px;
         }
 
         .page-title {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(to right, #1565C0, #00BCD4);
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
         .section {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
+            margin-bottom: 30px;
+            padding: 20px;
             border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid;
+            border-image: linear-gradient(to bottom, #4CAF50, #2196F3) 1;
         }
 
         .section-title {
-            color: #1565C0;
+            color: #333;
+            margin-bottom: 20px;
             font-size: 1.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            font-weight: 600;
         }
 
         .info-item {
-            margin-bottom: 1rem;
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
         }
 
         .info-label {
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+            width: 200px;
+            flex-shrink: 0;
         }
 
         .info-value {
             color: #333;
-            font-size: 1.1rem;
+            flex-grow: 1;
         }
 
         .document-link {
             display: inline-flex;
             align-items: center;
-            padding: 0.5rem 1rem;
-            background: #e3f2fd;
-            color: #1565C0;
-            border-radius: 4px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
             text-decoration: none;
-            margin: 0.5rem 0;
+            border-radius: 4px;
             transition: all 0.3s ease;
         }
 
         .document-link:hover {
-            background: #1565C0;
-            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
         .document-link i {
-            margin-right: 0.5rem;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            background: #1565C0;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            margin-bottom: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background: #0d47a1;
-            transform: translateY(-2px);
-        }
-
-        .back-btn i {
-            margin-right: 0.5rem;
+            margin-right: 8px;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 0.5rem 1rem;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-weight: bold;
+            font-weight: 500;
+            text-transform: capitalize;
         }
 
-        .status-pending { background: #e3f2fd; color: #1565c0; }
-        .status-accepted { background: #e8f5e9; color: #2e7d32; }
-        .status-rejected { background: #ffebee; color: #c62828; }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
 
         .medical-reports-grid {
             display: grid;
@@ -191,21 +213,6 @@ if (!empty($recipient['recipient_medical_reports'])) {
         .report-name {
             text-align: center;
             word-break: break-word;
-        }
-
-        .document-preview {
-            margin-top: 1rem;
-        }
-
-        .document-image {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .document-frame {
-            border: none;
         }
     </style>
 </head>

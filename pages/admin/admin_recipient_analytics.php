@@ -19,10 +19,10 @@ try {
     $result_pending = $conn->query($sql_pending);
     $pending = $result_pending->fetch_assoc()['pending'];
 
-    // Get approved count
-    $sql_approved = "SELECT COUNT(*) as approved FROM recipient_registration WHERE request_status='approved'";
-    $result_approved = $conn->query($sql_approved);
-    $approved = $result_approved->fetch_assoc()['approved'];
+    // Get accepted count
+    $sql_accepted = "SELECT COUNT(*) as accepted FROM recipient_registration WHERE request_status='accepted'";
+    $result_accepted = $conn->query($sql_accepted);
+    $accepted = $result_accepted->fetch_assoc()['accepted'];
 
     // Get rejected count
     $sql_rejected = "SELECT COUNT(*) as rejected FROM recipient_registration WHERE request_status='rejected'";
@@ -32,7 +32,7 @@ try {
 } catch (Exception $e) {
     error_log("Error in analytics: " . $e->getMessage());
     // Set default values if query fails
-    $total = $pending = $approved = $rejected = 0;
+    $total = $pending = $accepted = $rejected = 0;
 }
 ?>
 
@@ -163,10 +163,10 @@ try {
             </div>
             <div class="analytics-card">
                 <div class="chart-container">
-                    <canvas id="approvedChart"></canvas>
+                    <canvas id="acceptedChart"></canvas>
                 </div>
-                <div class="card-title">Approved Recipients</div>
-                <div class="card-value"><?php echo $approved; ?></div>
+                <div class="card-title">Accepted Recipients</div>
+                <div class="card-value"><?php echo $accepted; ?></div>
             </div>
             <div class="analytics-card">
                 <div class="chart-container">
@@ -215,12 +215,12 @@ try {
         // Initialize charts
         const total = <?php echo $total; ?>;
         const pending = <?php echo $pending; ?>;
-        const approved = <?php echo $approved; ?>;
+        const accepted = <?php echo $accepted; ?>;
         const rejected = <?php echo $rejected; ?>;
 
         createPieChart('totalChart', total, total, '#4CAF50');
         createPieChart('pendingChart', pending, total, '#2196F3');
-        createPieChart('approvedChart', approved, total, '#4CAF50');
+        createPieChart('acceptedChart', accepted, total, '#4CAF50');
         createPieChart('rejectedChart', rejected, total, '#f44336');
     </script>
 </body>
