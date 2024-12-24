@@ -11,7 +11,7 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
-$recipient_id = $data['recipient_id'];
+$donor_id = $data['donor_id'];
 $reason = $data['reason'];
 $hospital_id = $_SESSION['hospital_id'];
 
@@ -20,27 +20,27 @@ try {
     $conn->begin_transaction();
 
     // Update approval status
-    $query = "UPDATE hospital_recipient_approvals 
+    $query = "UPDATE hospital_donor_approvals 
               SET status = 'rejected', 
                   rejection_reason = ?,
                   approval_date = CURRENT_TIMESTAMP 
-              WHERE recipient_id = ? AND hospital_id = ?";
+              WHERE donor_id = ? AND hospital_id = ?";
     
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('sii', $reason, $recipient_id, $hospital_id);
+    $stmt->bind_param('sii', $reason, $donor_id, $hospital_id);
     $stmt->execute();
 
     if ($stmt->affected_rows === 0) {
-        throw new Exception('No matching recipient approval request found');
+        throw new Exception('No matching donor approval request found');
     }
 
     // Create notification
-    $message = "Your recipient registration has been rejected. Reason: " . $reason;
+    $message = "Your donor registration has been rejected. Reason: " . $reason;
     $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id) 
-              VALUES (?, 'recipient_rejection', ?, ?)";
+              VALUES (?, 'donor_rejection', ?, ?)";
     
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('isi', $hospital_id, $message, $recipient_id);
+    $stmt->bind_param('isi', $hospital_id, $message, $donor_id);
     $stmt->execute();
 
     // Commit transaction

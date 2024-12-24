@@ -12,7 +12,6 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
 $recipient_id = $data['recipient_id'];
-$reason = $data['reason'];
 $hospital_id = $_SESSION['hospital_id'];
 
 try {
@@ -21,13 +20,12 @@ try {
 
     // Update approval status
     $query = "UPDATE hospital_recipient_approvals 
-              SET status = 'rejected', 
-                  rejection_reason = ?,
+              SET status = 'approved', 
                   approval_date = CURRENT_TIMESTAMP 
               WHERE recipient_id = ? AND hospital_id = ?";
     
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('sii', $reason, $recipient_id, $hospital_id);
+    $stmt->bind_param('ii', $recipient_id, $hospital_id);
     $stmt->execute();
 
     if ($stmt->affected_rows === 0) {
@@ -35,9 +33,9 @@ try {
     }
 
     // Create notification
-    $message = "Your recipient registration has been rejected. Reason: " . $reason;
+    $message = "Your recipient registration has been approved.";
     $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id) 
-              VALUES (?, 'recipient_rejection', ?, ?)";
+              VALUES (?, 'recipient_approval', ?, ?)";
     
     $stmt = $conn->prepare($query);
     $stmt->bind_param('isi', $hospital_id, $message, $recipient_id);
