@@ -39,12 +39,6 @@ $donor_name = $_SESSION['donor_name'];
                         </a>
                     </li>
                     <li>
-                        <a href="donor_profile.php">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
                         <a href="#" id="searchHospitalLink">
                             <i class="fas fa-hospital"></i>
                             <span>Search Hospital</span>
@@ -61,6 +55,12 @@ $donor_name = $_SESSION['donor_name'];
                             <i class="fas fa-bell"></i>
                             <span>Notifications</span>
                             <span class="notification-badge" id="notificationCount">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="donor_personal_details.php" id="profileLink">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
                         </a>
                     </li>
                     <li>
