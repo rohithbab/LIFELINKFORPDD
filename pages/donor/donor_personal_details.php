@@ -123,9 +123,7 @@ try {
                         <h3>ID Proof</h3>
                         <?php if (!empty($donor['id_proof_path'])): ?>
                             <?php $id_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/id_proof_path/" . $donor['id_proof_path']; ?>
-                            <!-- Debug info -->
-                            <!-- <?php echo debug_file_exists($id_path); ?> -->
-                            <a href="<?php echo $id_path; ?>" class="view-btn" target="_blank">
+                            <a href="javascript:void(0);" onclick="openInNewWindow('<?php echo $id_path; ?>')" class="view-btn">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['id_proof_path']); ?></p>
@@ -143,9 +141,7 @@ try {
                         <h3>Medical Reports</h3>
                         <?php if (!empty($donor['medical_reports_path'])): ?>
                             <?php $medical_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/medical_reports_path/" . $donor['medical_reports_path']; ?>
-                            <!-- Debug info -->
-                            <!-- <?php echo debug_file_exists($medical_path); ?> -->
-                            <a href="<?php echo $medical_path; ?>" class="view-btn" target="_blank">
+                            <a href="javascript:void(0);" onclick="openInNewWindow('<?php echo $medical_path; ?>')" class="view-btn">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['medical_reports_path']); ?></p>
@@ -163,9 +159,7 @@ try {
                         <h3>Guardian ID Proof</h3>
                         <?php if (!empty($donor['guardian_id_proof_path'])): ?>
                             <?php $guardian_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/guardian_id_proof_path/" . $donor['guardian_id_proof_path']; ?>
-                            <!-- Debug info -->
-                            <!-- <?php echo debug_file_exists($guardian_path); ?> -->
-                            <a href="<?php echo $guardian_path; ?>" class="view-btn" target="_blank">
+                            <a href="javascript:void(0);" onclick="openInNewWindow('<?php echo $guardian_path; ?>')" class="view-btn">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['guardian_id_proof_path']); ?></p>
@@ -217,6 +211,12 @@ try {
                 window.open(url, '_blank', 'width=800,height=600');
             });
         });
+    </script>
+    <script>
+        function openInNewWindow(url) {
+            window.open(url, '_blank', 'width=800,height=600');
+            return false;
+        }
     </script>
 </body>
 </html>
