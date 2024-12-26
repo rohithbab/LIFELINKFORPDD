@@ -32,8 +32,8 @@ $donor_name = $_SESSION['donor_name'];
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="active">
-                        <a href="donor_dashboard.php">
+                    <li>
+                        <a href="donor_dashboard.php" id="dashboardLink">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>

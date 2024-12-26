@@ -1,5 +1,10 @@
 $(document).ready(function() {
     // Navigation
+    $('#dashboardLink').click(function(e) {
+        e.preventDefault();
+        showSection('dashboardSection');
+    });
+
     $('#searchHospitalLink').click(function(e) {
         e.preventDefault();
         showSection('searchHospitalSection');
@@ -57,20 +62,45 @@ $(document).ready(function() {
 
     // Initial load
     loadNotificationCount();
-    showSection('searchHospitalSection');
+    showSection('dashboardSection'); // Show dashboard by default
     
     // Periodic updates
-    setInterval(loadNotificationCount, 30000); // Check for new notifications every 30 seconds
-    setInterval(loadMyRequests, 30000); // Update requests status every 30 seconds
+    setInterval(loadNotificationCount, 30000);
+    setInterval(loadDashboardData, 30000);
 });
 
 function showSection(sectionId) {
+    // Hide all sections
     $('.section').addClass('hidden');
+    // Show selected section
     $(`#${sectionId}`).removeClass('hidden');
     
-    // Update active state in sidebar
+    // Remove active class from all nav items
     $('.sidebar-nav li').removeClass('active');
-    $(`a[href="#"][id="${sectionId.replace('Section', 'Link')}"]`).parent('li').addClass('active');
+    
+    // Add active class to current nav item
+    let linkId;
+    switch(sectionId) {
+        case 'dashboardSection':
+            linkId = 'dashboardLink';
+            loadDashboardData();
+            break;
+        case 'searchHospitalSection':
+            linkId = 'searchHospitalLink';
+            break;
+        case 'myRequestsSection':
+            linkId = 'myRequestsLink';
+            loadMyRequests();
+            break;
+        case 'notificationsSection':
+            linkId = 'notificationsLink';
+            loadNotifications();
+            break;
+    }
+    
+    if (linkId) {
+        $(`#${linkId}`).parent('li').addClass('active');
+    }
 }
 
 function searchHospitals(searchTerm) {
@@ -293,5 +323,102 @@ function loadNotificationCount() {
         error: function(xhr, status, error) {
             console.error('Error loading notification count:', error);
         }
+    });
+}
+
+// Dashboard functions
+function loadDashboardData() {
+    $.ajax({
+        url: '../../backend/php/get_dashboard_data.php',
+        method: 'GET',
+        success: function(response) {
+            updateStatistics(response.statistics);
+            updateSuggestion(response.suggestion);
+            updateRecentActivities(response.recent_activities);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    });
+}
+
+function updateStatistics(stats) {
+    // Update numbers with animation
+    animateNumber('totalRequests', stats.total);
+    animateNumber('pendingRequests', stats.pending);
+    animateNumber('approvedRequests', stats.approved);
+    animateNumber('livesImpacted', stats.completed);
+
+    // Update tooltip content
+    $('#completedCount').text(stats.completed);
+    $('#inProgressCount').text(stats.approved - stats.completed);
+
+    // Trigger impact animation if there are completed requests
+    if (stats.completed > 0) {
+        $('.impact-animation').addClass('active');
+    }
+}
+
+function animateNumber(elementId, target) {
+    const element = document.getElementById(elementId);
+    const current = parseInt(element.textContent);
+    const increment = (target - current) / 20;
+    let value = current;
+
+    const animate = () => {
+        if (Math.abs(target - value) > Math.abs(increment)) {
+            value += increment;
+            element.textContent = Math.round(value);
+            requestAnimationFrame(animate);
+        } else {
+            element.textContent = target;
+        }
+    };
+
+    animate();
+}
+
+function updateSuggestion(suggestion) {
+    $('#suggestionText').text(suggestion.message);
+    $('#suggestionAction').text(suggestion.action);
+
+    // Update action button click handler
+    $('#suggestionAction').off('click').on('click', function() {
+        switch(suggestion.action_type) {
+            case 'search':
+                showSection('searchHospitalSection');
+                break;
+            case 'requests':
+                showSection('myRequestsSection');
+                break;
+        }
+    });
+}
+
+function updateRecentActivities(activities) {
+    const container = $('#activityTimeline');
+    container.empty();
+
+    if (activities.length === 0) {
+        container.html('<p class="no-data">No recent activities found.</p>');
+        return;
+    }
+
+    activities.forEach(activity => {
+        const timelineItem = `
+            <div class="timeline-item ${activity.status.toLowerCase()}">
+                <div class="timeline-date">
+                    ${new Date(activity.request_date).toLocaleDateString()}
+                </div>
+                <div class="timeline-content">
+                    <strong>${activity.hospital_name}</strong>
+                    <span class="timeline-status ${activity.status.toLowerCase()}">
+                        ${activity.status}
+                    </span>
+                    <p>Organ Type: ${activity.organ_type}</p>
+                </div>
+            </div>
+        `;
+        container.append(timelineItem);
     });
 }
