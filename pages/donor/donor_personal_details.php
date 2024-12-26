@@ -2,6 +2,12 @@
 session_start();
 require_once '../../config/db_connect.php';
 
+// Add debug output to see the actual file paths
+function debug_file_exists($path) {
+    $full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
+    return file_exists($full_path) ? "File exists" : "File not found";
+}
+
 // Check if user is logged in as donor
 if (!isset($_SESSION['is_donor']) || !$_SESSION['is_donor']) {
     header("Location: ../donor_login.php");
@@ -16,41 +22,17 @@ if (!isset($_SESSION['donor_id'])) {
 // Get donor details
 $donor_id = $_SESSION['donor_id'];
 try {
-    // Debug: Print donor ID
-    echo "<!-- Debug: Donor ID = " . htmlspecialchars($donor_id) . " -->";
-    
-    $stmt = $conn->prepare("
-        SELECT * FROM donor
-        WHERE donor_id = :donor_id
-    ");
+    $stmt = $conn->prepare("SELECT * FROM donor WHERE donor_id = :donor_id");
     $stmt->execute([':donor_id' => $donor_id]);
     $donor = $stmt->fetch();
-
-    // Debug: Print all donor data
-    echo "<!-- Debug: Donor Data = " . print_r($donor, true) . " -->";
 
     if (!$donor) {
         error_log("No donor found with ID: " . $donor_id);
         die("Donor not found");
     }
-
-    // Debug: Check if files exist
-    if (!empty($donor['id_proof_path'])) {
-        $id_proof_path = "../../uploads/donors/" . $donor['id_proof_path'];
-        echo "<!-- Debug: ID Proof Path = " . htmlspecialchars($id_proof_path) . " exists = " . (file_exists($id_proof_path) ? 'yes' : 'no') . " -->";
-    }
-    if (!empty($donor['medical_reports_path'])) {
-        $medical_path = "../../uploads/donors/" . $donor['medical_reports_path'];
-        echo "<!-- Debug: Medical Path = " . htmlspecialchars($medical_path) . " exists = " . (file_exists($medical_path) ? 'yes' : 'no') . " -->";
-    }
-    if (!empty($donor['guardian_id_proof_path'])) {
-        $guardian_path = "../../uploads/donors/" . $donor['guardian_id_proof_path'];
-        echo "<!-- Debug: Guardian Path = " . htmlspecialchars($guardian_path) . " exists = " . (file_exists($guardian_path) ? 'yes' : 'no') . " -->";
-    }
-
 } catch(PDOException $e) {
     error_log("Error fetching donor details: " . $e->getMessage());
-    die("An error occurred while fetching your details: " . $e->getMessage());
+    die("An error occurred while fetching your details");
 }
 ?>
 <!DOCTYPE html>
@@ -140,8 +122,10 @@ try {
                     <div class="document-info">
                         <h3>ID Proof</h3>
                         <?php if (!empty($donor['id_proof_path'])): ?>
-                            <a href="/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/<?php echo htmlspecialchars($donor['id_proof_path']); ?>" 
-                               class="view-btn" target="_blank" onclick="window.open(this.href, '_blank'); return false;">
+                            <?php $id_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/id_proof_path/" . $donor['id_proof_path']; ?>
+                            <!-- Debug info -->
+                            <!-- <?php echo debug_file_exists($id_path); ?> -->
+                            <a href="<?php echo $id_path; ?>" class="view-btn" target="_blank">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['id_proof_path']); ?></p>
@@ -158,8 +142,10 @@ try {
                     <div class="document-info">
                         <h3>Medical Reports</h3>
                         <?php if (!empty($donor['medical_reports_path'])): ?>
-                            <a href="/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/<?php echo htmlspecialchars($donor['medical_reports_path']); ?>" 
-                               class="view-btn" target="_blank" onclick="window.open(this.href, '_blank'); return false;">
+                            <?php $medical_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/medical_reports_path/" . $donor['medical_reports_path']; ?>
+                            <!-- Debug info -->
+                            <!-- <?php echo debug_file_exists($medical_path); ?> -->
+                            <a href="<?php echo $medical_path; ?>" class="view-btn" target="_blank">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['medical_reports_path']); ?></p>
@@ -176,8 +162,10 @@ try {
                     <div class="document-info">
                         <h3>Guardian ID Proof</h3>
                         <?php if (!empty($donor['guardian_id_proof_path'])): ?>
-                            <a href="/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/<?php echo htmlspecialchars($donor['guardian_id_proof_path']); ?>" 
-                               class="view-btn" target="_blank" onclick="window.open(this.href, '_blank'); return false;">
+                            <?php $guardian_path = "/LIFELINKFORPDD-main/LIFELINKFORPDD/uploads/donors/guardian_id_proof_path/" . $donor['guardian_id_proof_path']; ?>
+                            <!-- Debug info -->
+                            <!-- <?php echo debug_file_exists($guardian_path); ?> -->
+                            <a href="<?php echo $guardian_path; ?>" class="view-btn" target="_blank">
                                 <i class="fas fa-eye"></i> View Document
                             </a>
                             <p class="file-name"><?php echo basename($donor['guardian_id_proof_path']); ?></p>
