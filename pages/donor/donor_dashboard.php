@@ -253,30 +253,49 @@ try {
                                 $stmt->execute([$donor_id]);
                                 $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                foreach($requests as $request): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
-                                        <td><span class="blood-badge"><?php echo htmlspecialchars($request['blood_group']); ?></span></td>
-                                        <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['hospital_phone']); ?></td>
-                                        <td><span class="status-badge <?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-view" title="View Details" onclick="viewRequest(<?php echo $request['approval_id']; ?>)">
-                                                    <i class="fas fa-eye"></i>
+                                if (count($requests) > 0) {
+                                    foreach ($requests as $request) {
+                                        $status_class = strtolower($request['status']);
+                                        ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
+                                            <td>
+                                                <span class="blood-type"><?php echo htmlspecialchars($request['blood_group']); ?></span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_phone']); ?></td>
+                                            <td>
+                                                <span class="status-badge <?php echo $status_class; ?>">
+                                                    <?php echo htmlspecialchars($request['status']); ?>
+                                                </span>
+                                            </td>
+                                            <td class="actions">
+                                                <button onclick="rejectRequest(<?php echo $request['approval_id']; ?>)" class="btn-reject">
+                                                    <i class="fas fa-times"></i> Reject
                                                 </button>
-                                                <?php if($request['status'] === 'Approved'): ?>
-                                                    <button class="btn-delete" title="Cancel Request" onclick="cancelRequest(<?php echo $request['approval_id']; ?>, '<?php echo htmlspecialchars($request['hospital_name']); ?>')">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                    }
+                                } else {
+                                    ?>
+                                    <tr>
+                                        <td colspan="9" class="no-data">
+                                            <div class="no-data-message">
+                                                <i class="fas fa-info-circle"></i>
+                                                <p>No hospital requests found</p>
+                                                <a href="search_hospitals_for_donors.php" class="btn-search">
+                                                    <i class="fas fa-search"></i> Search Hospitals
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
+                                    <?php
+                                }
+                                ?>
                             </tbody>
                         </table>
                     </div>
@@ -305,6 +324,49 @@ try {
             if (!isClickInside && profileCard.classList.contains('show')) {
                 profileCard.classList.remove('show');
             }
+        });
+
+        function rejectRequest(approvalId) {
+            if (confirm('Are you sure you want to reject this request? This action cannot be undone.')) {
+                fetch('../../ajax/reject_donor_request.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `approval_id=${approvalId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request rejected successfully');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Error rejecting request');
+                });
+            }
+        }
+
+        // Initialize tooltips for rejection reasons
+        document.querySelectorAll('.rejection-reason').forEach(elem => {
+            elem.addEventListener('mouseover', function(e) {
+                const reason = this.getAttribute('title');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = reason;
+                document.body.appendChild(tooltip);
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.top = rect.bottom + 5 + 'px';
+                tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+                
+                this.addEventListener('mouseout', function() {
+                    tooltip.remove();
+                }, { once: true });
+            });
         });
     </script>
 </body>

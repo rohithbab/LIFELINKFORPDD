@@ -29,6 +29,66 @@ $odml_id = $_SESSION['odml_id'];
     </style>
     <link rel="stylesheet" href="../../assets/css/hospital-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .status-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .status-select option {
+            padding: 8px;
+        }
+
+        .status-select option[value="Pending"] {
+            color: #f0ad4e;
+        }
+
+        .status-select option[value="Approved"] {
+            color: #5cb85c;
+        }
+
+        .status-select option[value="Rejected"] {
+            color: #d9534f;
+        }
+        
+        .btn-approve, .btn-reject {
+            padding: 6px 12px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+
+        .btn-reject:hover {
+            background-color: #c82333;
+        }
+
+        .actions {
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -184,29 +244,12 @@ $odml_id = $_SESSION['odml_id'];
                                                 </span>
                                             </td>
                                             <td class="actions">
-                                                <button onclick="viewDonorDetails(<?php 
-                                                    echo htmlspecialchars(json_encode([
-                                                        'donor_name' => $request['donor_name'],
-                                                        'blood_group' => $request['blood_group'],
-                                                        'organ_type' => $request['organ_type'],
-                                                        'location' => $request['location'],
-                                                        'phone' => $request['donor_phone'],
-                                                        'email' => $request['donor_email'],
-                                                        'medical_conditions' => $request['medical_conditions'],
-                                                        'medical_reports' => $request['medical_reports'],
-                                                        'id_proof' => $request['id_proof']
-                                                    ])); 
-                                                ?>)" class="btn-view">
-                                                    <i class="fas fa-eye"></i>
+                                                <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Approved')" class="btn-approve">
+                                                    <i class="fas fa-check"></i> Approve
                                                 </button>
-                                                <?php if ($request['status'] === 'Pending'): ?>
-                                                    <button onclick="approveDonor(<?php echo $request['approval_id']; ?>)" class="btn-approve">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button onclick="showRejectionModal(<?php echo $request['approval_id']; ?>)" class="btn-reject">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                <?php endif; ?>
+                                                <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Rejected')" class="btn-reject">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
                                             </td>
                                         </tr>
                                         <?php
@@ -514,6 +557,35 @@ $odml_id = $_SESSION['odml_id'];
                 window.onclick = function(event) {
                     if (event.target.className === 'modal') {
                         event.target.remove();
+                    }
+                }
+            </script>
+
+            <script>
+                function updateDonorStatus(approvalId, status) {
+                    const confirmMessage = status === 'Approved' ? 
+                        'Are you sure you want to approve this donor?' : 
+                        'Are you sure you want to reject this donor?';
+                        
+                    if (confirm(confirmMessage)) {
+                        fetch('../../ajax/update_donor_status.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `approval_id=${approvalId}&status=${status}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload(); // Reload to show updated status
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error updating status');
+                        });
                     }
                 }
             </script>
