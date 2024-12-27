@@ -58,9 +58,9 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="searchHospitalBtn">
-                            <i class="fas fa-hospital"></i>
-                            <span>Search Hospitals</span>
+                        <a href="../donor/search_hospitals_for_donors.php" class="sidebar-link">
+                         <i class="fas fa-search"></i>
+                         <span>Search Hospitals</span>
                         </a>
                     </li>
                     <li>
@@ -238,30 +238,45 @@ try {
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Sample row for testing -->
-                                <tr>
-                                    <td>John Doe</td>
-                                    <td><span class="blood-badge">A+</span></td>
-                                    <td>Kidney</td>
-                                    <td>City Hospital</td>
-                                    <td>city@hospital.com</td>
-                                    <td>123 Medical Street</td>
-                                    <td>+1234567890</td>
-                                    <td><span class="status-badge pending">Pending</span></td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" title="Edit Request">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-delete" title="Cancel Request">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php
+                                // Fetch donor's requests from hospital_donor_approvals
+                                $stmt = $conn->prepare("
+                                    SELECT hda.*, h.name as hospital_name, h.email as hospital_email, 
+                                           h.address as hospital_address, h.phone as hospital_phone,
+                                           d.name as donor_name, d.blood_group
+                                    FROM hospital_donor_approvals hda
+                                    JOIN hospitals h ON hda.hospital_id = h.hospital_id
+                                    JOIN donor d ON hda.donor_id = d.donor_id
+                                    WHERE hda.donor_id = ?
+                                    ORDER BY hda.request_date DESC
+                                ");
+                                $stmt->execute([$donor_id]);
+                                $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                foreach($requests as $request): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
+                                        <td><span class="blood-badge"><?php echo htmlspecialchars($request['blood_group']); ?></span></td>
+                                        <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['hospital_phone']); ?></td>
+                                        <td><span class="status-badge <?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-view" title="View Details" onclick="viewRequest(<?php echo $request['approval_id']; ?>)">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <?php if($request['status'] === 'Approved'): ?>
+                                                    <button class="btn-delete" title="Cancel Request" onclick="cancelRequest(<?php echo $request['approval_id']; ?>, '<?php echo htmlspecialchars($request['hospital_name']); ?>')">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
