@@ -47,6 +47,54 @@ try {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-heartbeat"></i>
+            <span>LifeLink</span>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="donor_dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'donor_dashboard.php' ? 'active' : ''; ?>">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="donor_personal_details.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'donor_personal_details.php' ? 'active' : ''; ?>">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="searchHospitalBtn">
+                        <i class="fas fa-hospital"></i>
+                        <span>Search Hospitals</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="myRequestsBtn">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>My Requests</span>
+                        <span class="notification-badge">2</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="notificationsBtn">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        <span class="notification-badge">3</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../donor_login.php">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
     <div class="details-container">
         <!-- Header -->
         <div class="details-header">

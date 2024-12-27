@@ -561,3 +561,43 @@ Data: Array
 )
 
 --------------------------------------------------------------------------------
+[2024-12-26 09:17:29] Attempting to fetch ID proof
+Data: Array
+(
+    [donor_id] => 3
+    [type] => donor
+)
+
+--------------------------------------------------------------------------------
+[2024-12-26 09:17:29] Querying donor ID proof
+--------------------------------------------------------------------------------
+[2024-12-26 09:17:29] Database query result
+Data: Array
+(
+    [proof_path] => 67663304dd4df.png
+)
+
+--------------------------------------------------------------------------------
+[2024-12-26 09:17:29] Constructed file path
+Data: Array
+(
+    [base_path] => C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD\pages\admin/../../uploads/
+    [full_path] => C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD\pages\admin/../../uploads/donors/id_proof_path/67663304dd4df.png
+    [file_exists] => 1
+)
+
+--------------------------------------------------------------------------------
+[2024-12-26 09:17:29] File extension
+Data: Array
+(
+    [extension] => png
+)
+
+--------------------------------------------------------------------------------
+[2024-12-26 09:17:29] Attempting to output file
+Data: Array
+(
+    [path] => C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD\pages\admin/../../uploads/donors/id_proof_path/67663304dd4df.png
+)
+
+--------------------------------------------------------------------------------
