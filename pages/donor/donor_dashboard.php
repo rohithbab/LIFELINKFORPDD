@@ -52,6 +52,12 @@ try {
                         </a>
                     </li>
                     <li>
+                        <a href="my_requests_for_donors.php">
+                            <i class="fas fa-list"></i>
+                            <span>My Requests</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="donor_personal_details.php">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
@@ -61,13 +67,6 @@ try {
                         <a href="../donor/search_hospitals_for_donors.php" class="sidebar-link">
                          <i class="fas fa-search"></i>
                          <span>Search Hospitals</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" id="myRequestsBtn">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>My Requests</span>
-                            <span class="notification-badge">2</span>
                         </a>
                     </li>
                     <li>
@@ -247,7 +246,7 @@ try {
                                     FROM hospital_donor_approvals hda
                                     JOIN hospitals h ON hda.hospital_id = h.hospital_id
                                     JOIN donor d ON hda.donor_id = d.donor_id
-                                    WHERE hda.donor_id = ?
+                                    WHERE hda.donor_id = ? AND hda.status = 'Pending'
                                     ORDER BY hda.request_date DESC
                                 ");
                                 $stmt->execute([$donor_id]);
