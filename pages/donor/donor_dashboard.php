@@ -87,19 +87,22 @@ try {
             </nav>
         </aside>
         <main class="main-content">
-            <div class="dashboard-header">
-                <div class="header-left">
-                    <h1>Welcome, <?php echo htmlspecialchars($donor['name']); ?></h1>
-                </div>
-                <div class="header-right">
-                    <div class="notification-icon">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge" id="headerNotificationCount">0</span>
+            <div class="main-section">
+                <div class="dashboard-header">
+                    <div class="header-left">
+                        <h1>Welcome, <?php echo htmlspecialchars($donor['name']); ?></h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="notification-icon">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="headerNotificationCount">0</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Enhanced Profile Card Section -->
+                <!-- Rest of your main content -->
+            </div>
+            
             <div class="profile-section">
                 <div class="profile-card modern">
                     <div class="profile-header">
@@ -205,7 +208,6 @@ try {
                     </div>
                 </div>
             </div>
-            <!-- Rest of your main content -->
         </main>
     </div>
 
