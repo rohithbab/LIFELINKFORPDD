@@ -176,7 +176,7 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
             <nav class="sidebar-nav">
                 <ul>
                     <li>
-                        <a href="donor_dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'donor_dashboard.php' ? 'active' : ''; ?>">
+                        <a href="donor_dashboard.php">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
@@ -188,27 +188,26 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
                         </a>
                     </li>
                     <li>
-                        <a href="../donor/search_hospitals_for_donors.php" class="sidebar-link active">
+                        <a href="search_hospitals_for_donors.php" class="active">
                             <i class="fas fa-search"></i>
                             <span>Search Hospitals</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="myRequestsBtn">
-                            <i class="fas fa-clipboard-list"></i>
+                        <a href="my_requests_for_donors.php">
+                            <i class="fas fa-list"></i>
                             <span>My Requests</span>
-                            <span class="notification-badge">2</span>
                         </a>
                     </li>
                     <li>
                         <a href="#" id="notificationsBtn">
                             <i class="fas fa-bell"></i>
                             <span>Notifications</span>
-                            <span class="notification-badge">3</span>
+                            <span class="notification-badge">2</span>
                         </a>
                     </li>
                     <li>
-                        <a href="../donor_login.php">
+                        <a href="../logout.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>

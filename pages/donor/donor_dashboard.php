@@ -52,12 +52,6 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="my_requests_for_donors.php">
-                            <i class="fas fa-list"></i>
-                            <span>My Requests</span>
-                        </a>
-                    </li>
-                    <li>
                         <a href="donor_personal_details.php">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
@@ -67,6 +61,12 @@ try {
                         <a href="../donor/search_hospitals_for_donors.php" class="sidebar-link">
                          <i class="fas fa-search"></i>
                          <span>Search Hospitals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my_requests_for_donors.php">
+                            <i class="fas fa-list"></i>
+                            <span>My Requests</span>
                         </a>
                     </li>
                     <li>

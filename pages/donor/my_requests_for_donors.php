@@ -105,9 +105,9 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="my_requests_for_donors.php" class="active">
-                            <i class="fas fa-list"></i>
-                            <span>My Requests</span>
+                        <a href="donor_personal_details.php">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
                         </a>
                     </li>
                     <li>
@@ -117,9 +117,16 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="donor_personal_details.php">
-                            <i class="fas fa-user"></i>
-                            <span>Personal Details</span>
+                        <a href="my_requests_for_donors.php" class="active">
+                            <i class="fas fa-list"></i>
+                            <span>My Requests</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="notification-badge">2</span>
                         </a>
                     </li>
                     <li>
