@@ -270,7 +270,7 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
             });
         });
 
-        // Search input handler
+        // Search input handler with debounce
         document.getElementById('searchInput').addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
@@ -280,57 +280,95 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
 
         function searchHospitals() {
             const searchTerm = document.getElementById('searchInput').value;
+            const grid = document.getElementById('hospitalsGrid');
+            
+            // Show loading state
+            grid.innerHTML = '<div class="loading">Searching hospitals...</div>';
             
             fetch(`../../ajax/search_hospitals.php?term=${encodeURIComponent(searchTerm)}&filter=${currentFilter}`)
                 .then(response => response.json())
-                .then(hospitals => {
-                    const grid = document.getElementById('hospitalsGrid');
+                .then(response => {
                     grid.innerHTML = '';
+                    
+                    if (!response.success) {
+                        grid.innerHTML = `<div class="error">Error: ${response.error}</div>`;
+                        return;
+                    }
+                    
+                    const hospitals = response.data;
+                    
+                    if (hospitals.length === 0) {
+                        grid.innerHTML = `
+                            <div class="no-results">
+                                <p>No hospitals found matching your search criteria.</p>
+                                <p>Try searching with different terms or filters.</p>
+                            </div>`;
+                        return;
+                    }
 
                     hospitals.forEach(hospital => {
                         const card = createHospitalCard(hospital);
                         grid.appendChild(card);
                     });
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    grid.innerHTML = '<div class="error">Error connecting to server. Please try again.</div>';
+                });
         }
 
         function createHospitalCard(hospital) {
             const div = document.createElement('div');
             div.className = 'hospital-card';
+            
+            // Escape HTML to prevent XSS
+            const escapeHtml = (unsafe) => {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            };
+            
             div.innerHTML = `
                 <div class="hospital-header">
                     <div class="hospital-icon">
                         <i class="fas fa-hospital"></i>
                     </div>
-                    <h3 class="hospital-name">${hospital.name}</h3>
+                    <h3 class="hospital-name">${escapeHtml(hospital.name)}</h3>
                 </div>
                 <div class="hospital-info">
                     <div class="info-item">
                         <i class="fas fa-envelope"></i>
-                        <span>${hospital.email}</span>
+                        <span>${escapeHtml(hospital.email)}</span>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>${hospital.address}</span>
+                        <span>${escapeHtml(hospital.address)}</span>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-phone"></i>
-                        <span>${hospital.phone}</span>
+                        <span>${escapeHtml(hospital.phone)}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map"></i>
+                        <span>${escapeHtml(hospital.region)}</span>
                     </div>
                 </div>
-                <button class="request-btn" onclick="makeRequest(${hospital.hospital_id})">
+                <button class="request-btn" onclick="makeRequest(${hospital.hospital_id}, '${escapeHtml(hospital.name)}')">
                     Make Request
                 </button>
             `;
             return div;
         }
 
-        function makeRequest(hospitalId) {
-            window.location.href = `donor_requests_hospital.php?hospital_id=${hospitalId}`;
+        function makeRequest(hospitalId, hospitalName) {
+            if (confirm(`Do you really want to give request for ${hospitalName} for organ donation?`)) {
+                window.location.href = `donor_requests_hospital.php?hospital_id=${hospitalId}`;
+            }
         }
 
-        // Initial search
+        // Initial search on page load
         searchHospitals();
     </script>
 </body>
