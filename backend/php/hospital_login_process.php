@@ -3,8 +3,8 @@ session_start();
 require_once 'connection.php';
 
 // For debugging
-//error_reporting(E_ALL);
-//ini_set('display_errors', 1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     header("Location: ../../pages/hospital_login.php");
@@ -53,11 +53,14 @@ try {
     }
 
     // Set session variables
-    $_SESSION['hospital_id'] = $hospital['id'];
+    $_SESSION['hospital_id'] = $hospital['hospital_id'];
     $_SESSION['hospital_name'] = $hospital['name'];
     $_SESSION['hospital_email'] = $hospital['email'];
     $_SESSION['odml_id'] = $hospital['odml_id'];
     $_SESSION['hospital_logged_in'] = true;
+
+    // For debugging
+    error_log("Logged in hospital ID: " . $hospital['hospital_id']);
 
     // Redirect to hospital dashboard
     header("Location: ../../pages/hospital/hospital_dashboard.php");

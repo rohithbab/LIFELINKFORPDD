@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../backend/php/connection.php';
+require_once '../../config/db_connect.php';
 
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
@@ -8,6 +8,7 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
     exit();
 }
 
+$hospital_id = $_SESSION['hospital_id']; // Make sure we have hospital_id
 $hospital_name = $_SESSION['hospital_name'];
 $hospital_email = $_SESSION['hospital_email'];
 $odml_id = $_SESSION['odml_id'];
@@ -126,6 +127,9 @@ $odml_id = $_SESSION['odml_id'];
                         <tbody>
                             <?php
                             try {
+                                // Debug information
+                                error_log("Hospital ID: " . $hospital_id);
+                                
                                 $donor_query = "
                                     SELECT 
                                         d.name as donor_name,
@@ -145,11 +149,22 @@ $odml_id = $_SESSION['odml_id'];
                                     WHERE hda.hospital_id = :hospital_id
                                     ORDER BY hda.request_date DESC";
                                 
+                                error_log("Executing query with hospital_id: " . $hospital_id);
+                                
+                                // Debug: Check all pending requests
+                                $check_stmt = $conn->query("SELECT hospital_id, status FROM hospital_donor_approvals WHERE status = 'Pending'");
+                                $all_pending = $check_stmt->fetchAll(PDO::FETCH_ASSOC);
+                                error_log("All pending requests: " . print_r($all_pending, true));
+                                
                                 $stmt = $conn->prepare($donor_query);
-                                $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
+                                $stmt->bindParam(':hospital_id', $hospital_id);
                                 $stmt->execute();
                                 $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+                                
+                                error_log("Number of requests found: " . count($donor_requests));
+                                if (count($donor_requests) === 0) {
+                                    error_log("No requests found for hospital_id: " . $hospital_id);
+                                }
                                 if (count($donor_requests) > 0) {
                                     foreach ($donor_requests as $request) {
                                         ?>
@@ -248,7 +263,7 @@ $odml_id = $_SESSION['odml_id'];
                                     ORDER BY rr.request_date DESC";
                                 
                                 $stmt = $conn->prepare($recipient_query);
-                                $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
+                                $stmt->bindParam(':hospital_id', $hospital_id);
                                 $stmt->execute();
                                 $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -509,6 +524,9 @@ $odml_id = $_SESSION['odml_id'];
 
 <?php
 try {
+    // Debug information
+    error_log("Hospital ID: " . $hospital_id);
+    
     $donor_query = "
         SELECT 
             d.name as donor_name,
@@ -528,10 +546,22 @@ try {
         WHERE hda.hospital_id = :hospital_id
         ORDER BY hda.request_date DESC";
     
+    error_log("Executing query with hospital_id: " . $hospital_id);
+    
+    // Debug: Check all pending requests
+    $check_stmt = $conn->query("SELECT hospital_id, status FROM hospital_donor_approvals WHERE status = 'Pending'");
+    $all_pending = $check_stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("All pending requests: " . print_r($all_pending, true));
+    
     $stmt = $conn->prepare($donor_query);
-    $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
+    $stmt->bindParam(':hospital_id', $hospital_id);
     $stmt->execute();
     $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("Number of requests found: " . count($donor_requests));
+    if (count($donor_requests) === 0) {
+        error_log("No requests found for hospital_id: " . $hospital_id);
+    }
 } catch (PDOException $e) {
     $donor_requests = array();
 }
@@ -551,7 +581,7 @@ try {
         ORDER BY rr.request_date DESC";
     
     $stmt = $conn->prepare($recipient_query);
-    $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
+    $stmt->bindParam(':hospital_id', $hospital_id);
     $stmt->execute();
     $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {

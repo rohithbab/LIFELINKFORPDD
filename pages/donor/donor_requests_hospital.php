@@ -87,6 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Insert request into database
+        error_log("Submitting request - Donor ID: " . $donor_id . ", Hospital ID: " . $hospital_id);
+        
         $stmt = $conn->prepare("
             INSERT INTO hospital_donor_approvals 
             (donor_id, hospital_id, organ_type, blood_group, medical_reports, id_proof, status, request_date)
@@ -101,6 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $medical_reports_path,
             $id_proof_path
         ]);
+        
+        error_log("Request submitted successfully");
         
         $conn->commit();
         
