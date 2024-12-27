@@ -127,16 +127,23 @@ $odml_id = $_SESSION['odml_id'];
                             <?php
                             try {
                                 $donor_query = "
-                                    SELECT d.full_name as donor_name, 
-                                           dr.organ_type,
-                                           d.blood_group,
-                                           d.address as location,
-                                           dr.request_date,
-                                           dr.status
-                                    FROM donor_requests dr
-                                    JOIN donors d ON dr.donor_id = d.id
-                                    WHERE dr.hospital_id = :hospital_id
-                                    ORDER BY dr.request_date DESC";
+                                    SELECT 
+                                        d.name as donor_name,
+                                        hda.organ_type,
+                                        d.blood_group,
+                                        d.address as location,
+                                        hda.request_date,
+                                        hda.status,
+                                        hda.approval_id,
+                                        hda.medical_reports,
+                                        hda.id_proof,
+                                        d.phone as donor_phone,
+                                        d.email as donor_email,
+                                        d.medical_conditions
+                                    FROM hospital_donor_approvals hda
+                                    JOIN donor d ON hda.donor_id = d.donor_id
+                                    WHERE hda.hospital_id = :hospital_id
+                                    ORDER BY hda.request_date DESC";
                                 
                                 $stmt = $conn->prepare($donor_query);
                                 $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
@@ -149,21 +156,40 @@ $odml_id = $_SESSION['odml_id'];
                                         <tr>
                                             <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
                                             <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['blood_group']); ?></td>
+                                            <td>
+                                                <span class="blood-badge">
+                                                    <?php echo htmlspecialchars($request['blood_group']); ?>
+                                                </span>
+                                            </td>
                                             <td><?php echo htmlspecialchars($request['location']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <span class="status-badge <?php echo strtolower($request['status']); ?>">
-                                                    <?php echo ucfirst($request['status']); ?>
+                                                    <?php echo htmlspecialchars($request['status']); ?>
                                                 </span>
                                             </td>
                                             <td class="actions">
-                                                <?php if ($request['status'] === 'pending'): ?>
-                                                    <button onclick="handleDonorRequest(<?php echo $request['id']; ?>, 'approve')" class="btn-action approve">
-                                                        <i class="fas fa-check"></i> Approve
+                                                <button onclick="viewDonorDetails(<?php 
+                                                    echo htmlspecialchars(json_encode([
+                                                        'donor_name' => $request['donor_name'],
+                                                        'blood_group' => $request['blood_group'],
+                                                        'organ_type' => $request['organ_type'],
+                                                        'location' => $request['location'],
+                                                        'phone' => $request['donor_phone'],
+                                                        'email' => $request['donor_email'],
+                                                        'medical_conditions' => $request['medical_conditions'],
+                                                        'medical_reports' => $request['medical_reports'],
+                                                        'id_proof' => $request['id_proof']
+                                                    ])); 
+                                                ?>)" class="btn-view">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <?php if ($request['status'] === 'Pending'): ?>
+                                                    <button onclick="approveDonor(<?php echo $request['approval_id']; ?>)" class="btn-approve">
+                                                        <i class="fas fa-check"></i>
                                                     </button>
-                                                    <button onclick="handleDonorRequest(<?php echo $request['id']; ?>, 'reject')" class="btn-action reject">
-                                                        <i class="fas fa-times"></i> Reject
+                                                    <button onclick="showRejectionModal(<?php echo $request['approval_id']; ?>)" class="btn-reject">
+                                                        <i class="fas fa-times"></i>
                                                     </button>
                                                 <?php endif; ?>
                                             </td>
@@ -171,10 +197,14 @@ $odml_id = $_SESSION['odml_id'];
                                         <?php
                                     }
                                 } else {
-                                    echo '<tr><td colspan="7" class="no-data">No pending donor requests</td></tr>';
+                                    ?>
+                                    <tr>
+                                        <td colspan="7" class="no-data">No pending donor approvals</td>
+                                    </tr>
+                                    <?php
                                 }
                             } catch (PDOException $e) {
-                                echo '<tr><td colspan="7" class="no-data">Error loading donor requests</td></tr>';
+                                echo "<tr><td colspan='7' class='error'>Error fetching donor requests</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -346,6 +376,132 @@ $odml_id = $_SESSION['odml_id'];
                     });
                 }
             </script>
+
+            <script>
+                function viewDonorDetails(details) {
+                    // Create and show modal with donor details
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>Donor Details</h3>
+                                <button onclick="this.closest('.modal').remove()" class="close-btn">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="donor-info">
+                                    <div class="info-group">
+                                        <label>Name:</label>
+                                        <span>${details.donor_name}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Blood Group:</label>
+                                        <span class="blood-badge">${details.blood_group}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Organ Type:</label>
+                                        <span>${details.organ_type}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Location:</label>
+                                        <span>${details.location}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Phone:</label>
+                                        <span>${details.phone}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Email:</label>
+                                        <span>${details.email}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Medical Conditions:</label>
+                                        <span>${details.medical_conditions || 'None'}</span>
+                                    </div>
+                                    <div class="info-group">
+                                        <label>Documents:</label>
+                                        <div class="document-links">
+                                            ${details.medical_reports ? 
+                                                `<a href="../../uploads/hospitals_donors/medical_reports/${details.medical_reports}" target="_blank" class="doc-link">
+                                                    <i class="fas fa-file-medical"></i> Medical Reports
+                                                </a>` : ''}
+                                            ${details.id_proof ? 
+                                                `<a href="../../uploads/hospitals_donors/id_proof/${details.id_proof}" target="_blank" class="doc-link">
+                                                    <i class="fas fa-id-card"></i> ID Proof
+                                                </a>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+
+                function approveDonor(approvalId) {
+                    if (confirm('Are you sure you want to approve this donor request?')) {
+                        fetch('../../ajax/handle_donor_approval.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `approval_id=${approvalId}&action=approve`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Donor request approved successfully!');
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error processing request');
+                        });
+                    }
+                }
+
+                function showRejectionModal(approvalId) {
+                    const modal = document.getElementById('rejectionModal');
+                    const form = modal.querySelector('form');
+                    form.onsubmit = (e) => {
+                        e.preventDefault();
+                        const reason = form.querySelector('textarea').value;
+                        rejectDonor(approvalId, reason);
+                    };
+                    modal.style.display = 'block';
+                }
+
+                function rejectDonor(approvalId, reason) {
+                    fetch('../../ajax/handle_donor_approval.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `approval_id=${approvalId}&action=reject&reason=${encodeURIComponent(reason)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Donor request rejected successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error processing request');
+                    });
+                }
+
+                // Close modal when clicking outside
+                window.onclick = function(event) {
+                    if (event.target.className === 'modal') {
+                        event.target.remove();
+                    }
+                }
+            </script>
         </main>
     </div>
 </body>
@@ -354,16 +510,23 @@ $odml_id = $_SESSION['odml_id'];
 <?php
 try {
     $donor_query = "
-        SELECT d.full_name as donor_name, 
-               dr.organ_type,
-               d.blood_group,
-               d.address as location,
-               dr.request_date,
-               dr.status
-        FROM donor_requests dr
-        JOIN donors d ON dr.donor_id = d.id
-        WHERE dr.hospital_id = :hospital_id
-        ORDER BY dr.request_date DESC";
+        SELECT 
+            d.name as donor_name,
+            hda.organ_type,
+            d.blood_group,
+            d.address as location,
+            hda.request_date,
+            hda.status,
+            hda.approval_id,
+            hda.medical_reports,
+            hda.id_proof,
+            d.phone as donor_phone,
+            d.email as donor_email,
+            d.medical_conditions
+        FROM hospital_donor_approvals hda
+        JOIN donor d ON hda.donor_id = d.donor_id
+        WHERE hda.hospital_id = :hospital_id
+        ORDER BY hda.request_date DESC";
     
     $stmt = $conn->prepare($donor_query);
     $stmt->bindParam(':hospital_id', $_SESSION['hospital_id']);
