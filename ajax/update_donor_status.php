@@ -47,12 +47,14 @@ try {
     }
 
     // Update the request status
+    $approval_date = ($status === 'Approved') ? date('Y-m-d H:i:s') : null;
     $update_stmt = $conn->prepare("
         UPDATE hospital_donor_approvals 
-        SET status = ?
+        SET status = ?, 
+            approval_date = ?
         WHERE approval_id = ? AND hospital_id = ?
     ");
-    $update_stmt->execute([$status, $approval_id, $hospital_id]);
+    $update_stmt->execute([$status, $approval_date, $approval_id, $hospital_id]);
 
     $conn->commit();
     echo json_encode(['success' => true]);
