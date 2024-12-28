@@ -131,8 +131,8 @@ try {
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-heartbeat"></i>
-                <span>LifeLink</span>
+                <h2 class="logo-text">LifeLink</h2>
+                <div class="sub-text">HospitalHub</div>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -142,14 +142,44 @@ try {
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="hospitals_handles_donors_status.php" class="active">
+                    <li class="active">
+                        <a href="hospitals_handles_donors_status.php">
                             <i class="fas fa-users"></i>
                             <span>Manage Donors</span>
                         </a>
                     </li>
                     <li>
-                        <a href="../logout.php">
+                        <a href="#">
+                            <i class="fas fa-hospital"></i>
+                            <span>Manage Hospitals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-search"></i>
+                            <span>Search Organ</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-share"></i>
+                            <span>Forward Matches to Admin</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../../pages/hospital_login.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>

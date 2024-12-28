@@ -160,35 +160,15 @@ $odml_id = $_SESSION['odml_id'];
                                 // Debug information
                                 error_log("Hospital ID: " . $hospital_id);
                                 
-                                $donor_query = "
-                                    SELECT 
-                                        d.name as donor_name,
-                                        hda.organ_type,
-                                        d.blood_group,
-                                        d.address as location,
-                                        hda.request_date,
-                                        hda.status,
-                                        hda.approval_id,
-                                        hda.medical_reports,
-                                        hda.id_proof,
-                                        d.phone as donor_phone,
-                                        d.email as donor_email,
-                                        d.medical_conditions
+                                // Fetch pending donor requests
+                                $stmt = $conn->prepare("
+                                    SELECT hda.*, d.name as donor_name, d.blood_group 
                                     FROM hospital_donor_approvals hda
                                     JOIN donor d ON hda.donor_id = d.donor_id
-                                    WHERE hda.hospital_id = :hospital_id
-                                    ORDER BY hda.request_date DESC";
-                                
-                                error_log("Executing query with hospital_id: " . $hospital_id);
-                                
-                                // Debug: Check all pending requests
-                                $check_stmt = $conn->query("SELECT hospital_id, status FROM hospital_donor_approvals WHERE status = 'Pending'");
-                                $all_pending = $check_stmt->fetchAll(PDO::FETCH_ASSOC);
-                                error_log("All pending requests: " . print_r($all_pending, true));
-                                
-                                $stmt = $conn->prepare($donor_query);
-                                $stmt->bindParam(':hospital_id', $hospital_id);
-                                $stmt->execute();
+                                    WHERE hda.hospital_id = ? AND hda.status = 'Pending'
+                                    ORDER BY hda.request_date DESC
+                                ");
+                                $stmt->execute([$hospital_id]);
                                 $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 
                                 error_log("Number of requests found: " . count($donor_requests));
@@ -569,35 +549,15 @@ try {
     // Debug information
     error_log("Hospital ID: " . $hospital_id);
     
-    $donor_query = "
-        SELECT 
-            d.name as donor_name,
-            hda.organ_type,
-            d.blood_group,
-            d.address as location,
-            hda.request_date,
-            hda.status,
-            hda.approval_id,
-            hda.medical_reports,
-            hda.id_proof,
-            d.phone as donor_phone,
-            d.email as donor_email,
-            d.medical_conditions
+    // Fetch pending donor requests
+    $stmt = $conn->prepare("
+        SELECT hda.*, d.name as donor_name, d.blood_group 
         FROM hospital_donor_approvals hda
         JOIN donor d ON hda.donor_id = d.donor_id
-        WHERE hda.hospital_id = :hospital_id
-        ORDER BY hda.request_date DESC";
-    
-    error_log("Executing query with hospital_id: " . $hospital_id);
-    
-    // Debug: Check all pending requests
-    $check_stmt = $conn->query("SELECT hospital_id, status FROM hospital_donor_approvals WHERE status = 'Pending'");
-    $all_pending = $check_stmt->fetchAll(PDO::FETCH_ASSOC);
-    error_log("All pending requests: " . print_r($all_pending, true));
-    
-    $stmt = $conn->prepare($donor_query);
-    $stmt->bindParam(':hospital_id', $hospital_id);
-    $stmt->execute();
+        WHERE hda.hospital_id = ? AND hda.status = 'Pending'
+        ORDER BY hda.request_date DESC
+    ");
+    $stmt->execute([$hospital_id]);
     $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     error_log("Number of requests found: " . count($donor_requests));

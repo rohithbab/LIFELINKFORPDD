@@ -46,15 +46,21 @@ try {
         throw new Exception('Invalid request');
     }
 
-    // Update the request status
-    $approval_date = ($status === 'Approved') ? date('Y-m-d H:i:s') : null;
+    // Get the current timestamp for approval_date
+    $current_time = date('Y-m-d H:i:s');
+    
+    // Update the request status and approval_date
     $update_stmt = $conn->prepare("
         UPDATE hospital_donor_approvals 
-        SET status = ?, 
-            approval_date = ?
+        SET status = ?,
+            approval_date = CASE 
+                WHEN ? = 'Approved' THEN ? 
+                ELSE NULL 
+            END
         WHERE approval_id = ? AND hospital_id = ?
     ");
-    $update_stmt->execute([$status, $approval_date, $approval_id, $hospital_id]);
+    
+    $update_stmt->execute([$status, $status, $current_time, $approval_id, $hospital_id]);
 
     $conn->commit();
     echo json_encode(['success' => true]);
