@@ -1,10 +1,30 @@
-<?php
+ <?php
 session_start();
+require_once '../../config/db_connect.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['recipient_id'])) {
+// Check if user is logged in as recipient
+if (!isset($_SESSION['is_recipient']) || !$_SESSION['is_recipient']) {
     header("Location: ../recipient_login.php");
     exit();
+}
+
+// Get recipient info from session
+$recipient_id = $_SESSION['recipient_id'];
+
+// Fetch recipient details from database
+try {
+    $stmt = $conn->prepare("SELECT id, full_name, date_of_birth, gender, phone_number, email, address, 
+                           medical_condition, blood_type, organ_required, urgency_level, request_status 
+                           FROM recipient_registration WHERE id = ?");
+    $stmt->execute([$recipient_id]);
+    $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$recipient) {
+        die("Recipient not found");
+    }
+} catch(PDOException $e) {
+    error_log("Error fetching recipient details: " . $e->getMessage());
+    die("An error occurred while fetching your details");
 }
 ?>
 <!DOCTYPE html>
@@ -13,103 +33,182 @@ if (!isset($_SESSION['recipient_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipient Dashboard - LifeLink</title>
+    <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/styles.css">
-    <style>
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        .welcome-section {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding: 2rem;
-            background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            border-radius: 10px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-card i {
-            font-size: 2rem;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-        }
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: opacity 0.3s;
-        }
-        .logout-btn:hover {
-            opacity: 0.9;
-            color: white;
-        }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="../../index.php" class="logo">
-                <span class="logo-life">LifeLink</span>
-            </a>
-            <div class="nav-links">
-                <a href="../logout.php" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-
     <div class="dashboard-container">
-        <div class="welcome-section">
-            <h1>Welcome, <?php echo htmlspecialchars($_SESSION['recipient_name']); ?>!</h1>
-            <p>This is your recipient dashboard where you can manage your organ donation requests and view matches.</p>
-        </div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-heartbeat"></i>
+                <span>LifeLink</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="recipient_dashboard.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'recipient_dashboard.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="personal_details.php">
+                            <i class="fas fa-user"></i>
+                            <span>Personal Details</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="search_hospitals.php">
+                            <i class="fas fa-hospital"></i>
+                            <span>Search Hospitals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my_requests.php">
+                            <i class="fas fa-notes-medical"></i>
+                            <span>My Requests</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../logout.php">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-heart"></i>
-                <h3>Donation Status</h3>
-                <p>Waiting for Match</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-calendar-check"></i>
-                <h3>Registration Date</h3>
-                <p>Active Member</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-bell"></i>
-                <h3>Notifications</h3>
-                <p>No new notifications</p>
-            </div>
-        </div>
+        <main class="main-content">
+            <div class="main-section">
+                <header class="dashboard-header">
+                    <div class="header-left">
+                        <h1>Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?></h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="notification-icon">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="headerNotificationCount">0</span>
+                        </div>
+                        <div class="profile-section">
+                            <button class="profile-trigger" onclick="toggleProfile()">
+                                <div class="profile-icon">
+                                    <?php if($recipient['gender'] === 'Male'): ?>
+                                        <i class="fas fa-male"></i>
+                                    <?php else: ?>
+                                        <i class="fas fa-female"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="profile-name"><?php echo htmlspecialchars($recipient['full_name']); ?></span>
+                            </button>
+                            
+                            <div class="profile-card modern">
+                                <div class="profile-header">
+                                    <div class="header-overlay"></div>
+                                    <div class="profile-avatar">
+                                        <?php if($recipient['gender'] === 'Male'): ?>
+                                            <i class="fas fa-male"></i>
+                                        <?php else: ?>
+                                            <i class="fas fa-female"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    <h2><?php echo htmlspecialchars($recipient['full_name']); ?></h2>
+                                </div>
+                                
+                                <div class="profile-content">
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-envelope"></i>
+                                            </div>
+                                            <div class="info-text">
+                                                <label>Email</label>
+                                                <span><?php echo htmlspecialchars($recipient['email']); ?></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-phone"></i>
+                                            </div>
+                                            <div class="info-text">
+                                                <label>Phone</label>
+                                                <span><?php echo htmlspecialchars($recipient['phone_number']); ?></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-tint"></i>
+                                            </div>
+                                            <div class="info-text">
+                                                <label>Blood Type</label>
+                                                <span><?php echo htmlspecialchars($recipient['blood_type']); ?></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-heartbeat"></i>
+                                            </div>
+                                            <div class="info-text">
+                                                <label>Organ Required</label>
+                                                <span><?php echo htmlspecialchars($recipient['organ_required']); ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
 
-        <div style="text-align: center;">
-            <p>More features coming soon!</p>
-        </div>
+                <!-- Modern Table Section -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2>Your Request Status</h2>
+                    </div>
+                    <div class="status-card <?php echo strtolower($recipient['request_status']); ?>">
+                        <div class="status-icon">
+                            <?php if($recipient['request_status'] === 'accepted'): ?>
+                                <i class="fas fa-check-circle"></i>
+                            <?php elseif($recipient['request_status'] === 'pending'): ?>
+                                <i class="fas fa-clock"></i>
+                            <?php else: ?>
+                                <i class="fas fa-times-circle"></i>
+                            <?php endif; ?>
+                        </div>
+                        <div class="status-info">
+                            <h3>Current Status</h3>
+                            <p><?php echo ucfirst(htmlspecialchars($recipient['request_status'])); ?></p>
+                        </div>
+                        <div class="urgency-level">
+                            <span class="urgency-badge <?php echo strtolower($recipient['urgency_level']); ?>">
+                                <?php echo ucfirst(htmlspecialchars($recipient['urgency_level'])); ?> Priority
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Add any JavaScript functionality here
+        function toggleProfile() {
+            const profileCard = document.querySelector('.profile-card');
+            profileCard.classList.toggle('show');
+        }
+
+        // Close profile card when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileSection = document.querySelector('.profile-section');
+            const profileCard = document.querySelector('.profile-card');
+            
+            if (!profileSection.contains(event.target)) {
+                profileCard.classList.remove('show');
+            }
+        });
     </script>
 </body>
 </html>
