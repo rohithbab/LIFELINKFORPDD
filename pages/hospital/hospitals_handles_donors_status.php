@@ -142,44 +142,14 @@ try {
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="active">
-                        <a href="hospitals_handles_donors_status.php">
+                    <li>
+                        <a href="hospitals_handles_donors_status.php" class="active">
                             <i class="fas fa-users"></i>
                             <span>Manage Donors</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#">
-                            <i class="fas fa-hospital"></i>
-                            <span>Manage Hospitals</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="fas fa-search"></i>
-                            <span>Search Organ</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="fas fa-share"></i>
-                            <span>Forward Matches to Admin</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Analytics</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="fas fa-bell"></i>
-                            <span>Notifications</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../../pages/hospital_login.php">
+                        <a href="../logout.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
