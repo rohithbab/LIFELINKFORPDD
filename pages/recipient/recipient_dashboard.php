@@ -198,17 +198,17 @@ try {
         function toggleProfile() {
             const profileCard = document.querySelector('.profile-card');
             profileCard.classList.toggle('show');
-        }
 
-        // Close profile card when clicking outside
-        document.addEventListener('click', function(event) {
-            const profileSection = document.querySelector('.profile-section');
-            const profileCard = document.querySelector('.profile-card');
-            
-            if (!profileSection.contains(event.target)) {
-                profileCard.classList.remove('show');
-            }
-        });
+            // Close profile card when clicking outside
+            document.addEventListener('click', function(event) {
+                const profileSection = document.querySelector('.profile-section');
+                const isClickInside = profileSection.contains(event.target);
+                
+                if (!isClickInside && profileCard.classList.contains('show')) {
+                    profileCard.classList.remove('show');
+                }
+            });
+        }
     </script>
 </body>
 </html>

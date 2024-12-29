@@ -133,12 +133,7 @@ body {
     width: calc(100% - var(--sidebar-width));
     padding: 20px;
     flex: 1;
-}
-
-.main-section {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
+    position: relative;
 }
 
 /* Header Styles */
@@ -155,6 +150,7 @@ body {
     width: calc(100% - 40px);
     margin-left: 20px;
     margin-right: 20px;
+    position: relative;
 }
 
 .header-left {
@@ -173,11 +169,13 @@ body {
     align-items: center;
     gap: 25px;
     margin-left: auto;
+    position: relative;
 }
 
 /* Profile Section */
 .profile-section {
     position: relative;
+    z-index: 9999;
 }
 
 .profile-trigger {
@@ -220,33 +218,51 @@ body {
 /* Profile Card */
 .profile-card {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 15px);
     right: 0;
     width: 300px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    margin-top: 15px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-    z-index: 1000;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    padding: 20px;
+    display: none;
+    z-index: 10000;
 }
 
 .profile-card.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-card::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 5px rgba(0,0,0,0.05);
 }
 
 .profile-header {
-    padding: 20px;
-    text-align: center;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 15px 15px 0 0;
     position: relative;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
+    padding: 30px 20px;
+    text-align: center;
 }
 
 .profile-avatar {
@@ -262,6 +278,7 @@ body {
 
 .profile-avatar i {
     font-size: 40px;
+    color: white;
 }
 
 .profile-content {
@@ -278,19 +295,15 @@ body {
     align-items: center;
     gap: 15px;
     padding: 10px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-}
-
-.info-item:hover {
-    background: rgba(40, 167, 69, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
 }
 
 .info-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 10px;
+    background: var(--primary-color);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -305,12 +318,12 @@ body {
     display: block;
     font-size: 12px;
     color: var(--text-secondary);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .info-text span {
-    color: var(--text-primary);
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 /* Guardian Section */
@@ -353,6 +366,8 @@ body {
     border-radius: 10px;
     box-shadow: 0 2px 10px var(--shadow-color);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .table-header {
