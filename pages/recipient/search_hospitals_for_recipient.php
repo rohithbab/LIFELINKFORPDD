@@ -96,6 +96,25 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
         .search-header h2 {
             color: var(--primary-color);
             margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .search-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .search-subtitle i {
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .search-subtitle p {
+            margin: 0;
+            font-size: 14px;
         }
 
         .search-box {
@@ -290,7 +309,10 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
             <div class="search-container">
                 <div class="search-header">
                     <h2>Search Hospitals</h2>
-                    <p>Find hospitals with available <?php echo htmlspecialchars($recipient['organ_required']); ?> donors</p>
+                    <div class="search-subtitle">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Find hospitals with available <?php echo htmlspecialchars(strtolower($recipient['organ_required'])); ?> donors</p>
+                    </div>
                 </div>
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
