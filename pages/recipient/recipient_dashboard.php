@@ -59,7 +59,7 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="search_hospitals.php">
+                        <a href="search_hospitals_for_recipient.php">
                             <i class="fas fa-hospital"></i>
                             <span>Search Hospitals</span>
                         </a>
