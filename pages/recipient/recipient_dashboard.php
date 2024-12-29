@@ -53,7 +53,7 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="personal_details.php">
+                        <a href="recipient_personal_details.php">
                             <i class="fas fa-user"></i>
                             <span>Personal Details</span>
                         </a>
