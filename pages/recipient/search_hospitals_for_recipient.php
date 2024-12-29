@@ -395,7 +395,7 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
                                 <i class="fas fa-check-circle"></i>
                                 <span>${hospital.organ_count} potential ${hospital.organ_count === 1 ? 'donor' : 'donors'} available</span>
                             </div>
-                            <button class="request-btn" onclick="window.location.href='recipient_requests_hospital.php?hospital_id=${hospital.hospital_id}'">
+                            <button class="request-btn" onclick="confirmRequest('${hospital.hospital_id}', '${hospital.name}'); return false;">
                                 Make Request
                             </button>
                         `;
@@ -409,6 +409,13 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
 
         // Initial search on page load
         performSearch();
+
+        // Confirmation dialog for request
+        function confirmRequest(hospitalId, hospitalName) {
+            if (confirm(`Do you want to make a request to ${hospitalName}?`)) {
+                window.location.href = `recipient_requests_hospital.php?hospital_id=${hospitalId}`;
+            }
+        }
     </script>
 </body>
 </html>

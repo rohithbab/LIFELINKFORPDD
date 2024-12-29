@@ -335,6 +335,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <i class="fas fa-phone"></i>
                             <span><?php echo htmlspecialchars($hospital['phone']); ?></span>
                         </div>
+                        <div class="detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span><?php echo htmlspecialchars($hospital['email']); ?></span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-id-card"></i>
+                            <span>License: <?php echo htmlspecialchars($hospital['license_number']); ?></span>
+                        </div>
                     </div>
                 </div>
 
