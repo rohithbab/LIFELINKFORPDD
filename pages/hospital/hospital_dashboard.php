@@ -336,9 +336,9 @@ $odml_id = $_SESSION['odml_id'];
                                 <th>Donor Name</th>
                                 <th>Organ Type</th>
                                 <th>Blood Group</th>
-                                <th>Location</th>
                                 <th>Request Date</th>
                                 <th>Status</th>
+                                <th>Details</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -374,12 +374,16 @@ $odml_id = $_SESSION['odml_id'];
                                                     <?php echo htmlspecialchars($request['blood_group']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($request['location']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <span class="status-badge <?php echo strtolower($request['status']); ?>">
                                                     <?php echo htmlspecialchars($request['status']); ?>
                                                 </span>
+                                            </td>
+                                            <td>
+                                                <a href="hospital_checks_donor_pf.php?id=<?php echo $request['approval_id']; ?>" class="btn-action btn-view">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
                                             </td>
                                             <td class="actions">
                                                 <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Approved')" class="btn-approve">
@@ -452,9 +456,9 @@ $odml_id = $_SESSION['odml_id'];
                                     <th>Required Organ</th>
                                     <th>Blood Group</th>
                                     <th>Priority Level</th>
-                                    <th>Location</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
+                                    <th>Details</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -473,12 +477,16 @@ $odml_id = $_SESSION['odml_id'];
                                                 <?php echo htmlspecialchars($request['priority_level']); ?>
                                             </span>
                                         </td>
-                                        <td><?php echo htmlspecialchars($request['location']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                         <td>
                                             <span class="status-badge status-pending">
                                                 Pending
                                             </span>
+                                        </td>
+                                        <td>
+                                            <a href="hospital_checks_recipient_pf.php?id=<?php echo $request['approval_id']; ?>" class="btn-action btn-view">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
                                         </td>
                                         <td>
                                             <div class="action-buttons">
@@ -603,10 +611,6 @@ $odml_id = $_SESSION['odml_id'];
                                     <div class="info-group">
                                         <label>Organ Type:</label>
                                         <span>${details.organ_type}</span>
-                                    </div>
-                                    <div class="info-group">
-                                        <label>Location:</label>
-                                        <span>${details.location}</span>
                                     </div>
                                     <div class="info-group">
                                         <label>Phone:</label>
