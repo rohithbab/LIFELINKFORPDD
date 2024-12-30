@@ -227,86 +227,88 @@ $odml_id = $_SESSION['odml_id'];
             </div>
 
             <!-- Pending Recipient Approvals -->
-            <div class="table-section">
-                <div class="section-header">
+            <div class="card">
+                <div class="card-header">
                     <h2>Pending Recipient Approvals</h2>
                 </div>
                 <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Recipient Name</th>
-                                <th>Required Organ</th>
-                                <th>Blood Group</th>
-                                <th>Priority Level</th>
-                                <th>Location</th>
-                                <th>Request Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            try {
-                                $recipient_query = "
-                                    SELECT r.full_name as recipient_name,
-                                           rr.required_organ,
-                                           r.blood_type as blood_group,
-                                           rr.priority_level,
-                                           r.address as location,
-                                           rr.request_date,
-                                           rr.status
-                                    FROM recipient_requests rr
-                                    JOIN recipient_registration r ON rr.recipient_id = r.id
-                                    WHERE rr.hospital_id = :hospital_id
-                                    ORDER BY rr.request_date DESC";
-                                
-                                $stmt = $conn->prepare($recipient_query);
-                                $stmt->bindParam(':hospital_id', $hospital_id);
-                                $stmt->execute();
-                                $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                if (count($recipient_requests) > 0) {
-                                    foreach ($recipient_requests as $request) {
-                                        ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($request['recipient_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['required_organ']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['blood_group']); ?></td>
-                                            <td>
-                                                <span class="priority-badge <?php echo strtolower($request['priority_level']); ?>">
-                                                    <?php echo $request['priority_level']; ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($request['location']); ?></td>
-                                            <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
-                                            <td>
-                                                <span class="status-badge <?php echo strtolower($request['status']); ?>">
-                                                    <?php echo ucfirst($request['status']); ?>
-                                                </span>
-                                            </td>
-                                            <td class="actions">
-                                                <?php if ($request['status'] === 'pending'): ?>
-                                                    <button onclick="handleRecipientRequest(<?php echo $request['id']; ?>, 'approve')" class="btn-action approve">
-                                                        <i class="fas fa-check"></i> Approve
-                                                    </button>
-                                                    <button onclick="handleRecipientRequest(<?php echo $request['id']; ?>, 'reject')" class="btn-action reject">
-                                                        <i class="fas fa-times"></i> Reject
-                                                    </button>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="8" class="no-data">No pending recipient requests</td></tr>';
-                                }
-                            } catch (PDOException $e) {
-                                echo '<tr><td colspan="8" class="no-data">Error loading recipient requests</td></tr>';
-                            }
-                            ?>
-                        </tbody>
-                    </table>
+                    <?php
+                    // Fetch pending recipient requests
+                    try {
+                        $stmt = $conn->prepare("
+                            SELECT 
+                                hra.*,
+                                r.full_name,
+                                r.blood_type,
+                                r.organ_required,
+                                r.medical_condition
+                            FROM hospital_recipient_approvals hra
+                            JOIN recipient_registration r ON hra.recipient_id = r.id
+                            WHERE hra.hospital_id = ? AND hra.status = 'pending'
+                            ORDER BY hra.request_date DESC
+                        ");
+                        $stmt->execute([$hospital_id]);
+                        $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    } catch(PDOException $e) {
+                        error_log("Error fetching recipient requests: " . $e->getMessage());
+                        $error = "Error loading recipient requests";
+                    }
+                    ?>
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger"><?php echo $error; ?></div>
+                    <?php elseif (empty($recipient_requests)): ?>
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No Pending Requests</h3>
+                            <p>There are no pending recipient requests at this time.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Recipient Name</th>
+                                    <th>Required Organ</th>
+                                    <th>Blood Group</th>
+                                    <th>Priority Level</th>
+                                    <th>Location</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recipient_requests as $request): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($request['full_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
+                                        <td>
+                                            <span class="priority-badge <?php echo strtolower($request['priority_level']); ?>">
+                                                <?php echo htmlspecialchars($request['priority_level']); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($request['location']); ?></td>
+                                        <td><?php echo date('Y-m-d', strtotime($request['request_date'])); ?></td>
+                                        <td>
+                                            <span class="status-badge status-pending">
+                                                Pending
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-approve" onclick="approveRequest(<?php echo $request['approval_id']; ?>)">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button class="btn-action btn-reject" onclick="rejectRequest(<?php echo $request['approval_id']; ?>)">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -545,6 +547,40 @@ $odml_id = $_SESSION['odml_id'];
                     }
                 }
             </script>
+
+            <script>
+                function approveRequest(approvalId) {
+                    if (confirm('Are you sure you want to approve this request?')) {
+                        $.post('approve_recipient_request.php', {
+                            approval_id: approvalId,
+                            action: 'approve'
+                        }, function(response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert('Error: ' + response.message);
+                            }
+                        });
+                    }
+                }
+
+                function rejectRequest(approvalId) {
+                    const reason = prompt('Please enter a reason for rejection:');
+                    if (reason) {
+                        $.post('reject_recipient_request.php', {
+                            approval_id: approvalId,
+                            reason: reason,
+                            action: 'reject'
+                        }, function(response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert('Error: ' + response.message);
+                            }
+                        });
+                    }
+                }
+            </script>
         </main>
     </div>
 </body>
@@ -575,24 +611,22 @@ try {
 }
 
 try {
-    $recipient_query = "
-        SELECT r.full_name as recipient_name,
-               rr.required_organ,
-               r.blood_type as blood_group,
-               rr.priority_level,
-               r.address as location,
-               rr.request_date,
-               rr.status
-        FROM recipient_requests rr
-        JOIN recipient_registration r ON rr.recipient_id = r.id
-        WHERE rr.hospital_id = :hospital_id
-        ORDER BY rr.request_date DESC";
-    
-    $stmt = $conn->prepare($recipient_query);
-    $stmt->bindParam(':hospital_id', $hospital_id);
-    $stmt->execute();
+    $stmt = $conn->prepare("
+        SELECT 
+            hra.*,
+            r.full_name,
+            r.blood_type,
+            r.organ_required,
+            r.medical_condition
+        FROM hospital_recipient_approvals hra
+        JOIN recipient_registration r ON hra.recipient_id = r.id
+        WHERE hra.hospital_id = ? AND hra.status = 'pending'
+        ORDER BY hra.request_date DESC
+    ");
+    $stmt->execute([$hospital_id]);
     $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $recipient_requests = array();
+} catch(PDOException $e) {
+    error_log("Error fetching recipient requests: " . $e->getMessage());
+    $error = "Error loading recipient requests";
 }
 ?>
