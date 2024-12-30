@@ -60,6 +60,161 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background: #f4f6f9;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .table-container {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .table-header h2 {
+            color: #333;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .modern-table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .modern-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+
+        .modern-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .status-approved {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            padding: 5px;
+            outline: none;
+            color: #495057;
+        }
+
+        .search-box i {
+            color: #6c757d;
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -191,48 +346,65 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Modern Table Section -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>Pending Requests</h2>
+                        <h2><i class="fas fa-clock"></i> Pending Requests</h2>
+                        <div class="table-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search requests...">
+                            </div>
+                        </div>
                     </div>
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Recipient Name</th>
-                                <th>Blood Type</th>
-                                <th>Organ Type</th>
-                                <th>Hospital Name</th>
-                                <th>Hospital Email</th>
-                                <th>Hospital Address</th>
-                                <th>Hospital Number</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($requests as $request): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($request['full_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
-                                    <td><?php echo htmlspecialchars($request['hospital_number']); ?></td>
-                                    <td>
-                                        <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
-                                            <?php echo htmlspecialchars($request['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="action-btn reject-btn" onclick="rejectRequest(<?php echo $request['request_id']; ?>)">
-                                                <i class="fas fa-times"></i> Reject
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+
+                    <div class="table-responsive">
+                        <?php if (empty($requests)): ?>
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <h3>No Pending Requests</h3>
+                                <p>You don't have any pending requests at the moment.</p>
+                            </div>
+                        <?php else: ?>
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Recipient Name</th>
+                                        <th>Blood Type</th>
+                                        <th>Organ Type</th>
+                                        <th>Hospital Name</th>
+                                        <th>Hospital Email</th>
+                                        <th>Hospital Address</th>
+                                        <th>Hospital Number</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($requests as $request): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($request['full_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['hospital_number']); ?></td>
+                                            <td>
+                                                <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
+                                                    <?php echo htmlspecialchars($request['status']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn reject-btn" onclick="rejectRequest(<?php echo $request['request_id']; ?>)">
+                                                        <i class="fas fa-times"></i> Reject
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </main>

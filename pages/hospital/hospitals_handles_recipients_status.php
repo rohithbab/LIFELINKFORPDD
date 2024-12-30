@@ -10,6 +10,15 @@ if (!isset($_SESSION['hospital_id'])) {
 
 $hospital_id = $_SESSION['hospital_id'];
 
+// Get hospital info
+try {
+    $stmt = $conn->prepare("SELECT * FROM hospitals WHERE hospital_id = ?");
+    $stmt->execute([$hospital_id]);
+    $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Error fetching hospital details: " . $e->getMessage());
+}
+
 // Handle status updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id']) && isset($_POST['status'])) {
     try {
@@ -39,7 +48,11 @@ try {
             r.id_document,
             hra.status,
             hra.request_date,
-            hra.approval_id AS request_id
+            hra.approval_id AS request_id,
+            hra.required_organ,
+            hra.blood_group,
+            hra.priority_level,
+            hra.medical_reports AS approval_medical_reports
         FROM hospital_recipient_approvals hra
         JOIN recipient_registration r ON hra.recipient_id = r.id
         WHERE hra.hospital_id = ?
@@ -56,15 +69,6 @@ try {
 } catch(PDOException $e) {
     $error = "Error fetching requests: " . $e->getMessage();
 }
-
-// Get hospital info
-try {
-    $stmt = $conn->prepare("SELECT * FROM hospitals WHERE hospital_id = ?");
-    $stmt->execute([$hospital_id]);
-    $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    die("Error fetching hospital details: " . $e->getMessage());
-}
 ?>
 
 <!DOCTYPE html>
@@ -72,144 +76,114 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Recipient Requests - <?php echo htmlspecialchars($hospital['name']); ?></title>
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Manage Recipients - <?php echo htmlspecialchars($hospital['name']); ?></title>
+    <link rel="stylesheet" href="../../assets/css/hospital-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .details-section {
-            background: #fff;
+        .table-responsive {
+            margin: 20px 0;
+            background: white;
             padding: 20px;
             border-radius: 8px;
-            margin-top: 10px;
-            display: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .details-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 15px;
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-
-        .detail-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
+        .modern-table th, .modern-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
         }
-
-        .detail-item label {
+        .modern-table th {
+            background-color: #f8f9fa;
             font-weight: 600;
             color: #495057;
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
         }
-
-        .detail-item p {
-            margin: 0;
-            color: #6c757d;
+        .modern-table tr:hover {
+            background-color: #f8f9fa;
         }
-
-        .document-preview {
-            max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-            border-radius: 4px;
-            border: 1px solid #dee2e6;
-        }
-
         .status-badge {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.85em;
             font-weight: 500;
         }
-
         .status-pending {
-            background: rgba(255, 191, 0, 0.2);
+            background: rgba(255, 193, 7, 0.2);
             color: #ffc107;
         }
-
         .status-approved {
             background: rgba(40, 167, 69, 0.2);
             color: #28a745;
         }
-
         .status-rejected {
             background: rgba(220, 53, 69, 0.2);
             color: #dc3545;
         }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
         .action-btn {
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin: 0 4px;
             font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
         }
-
-        .view-btn {
-            background: #6c757d;
+        .btn-approve {
+            background-color: #28a745;
             color: white;
         }
-
-        .approve-btn {
-            background: #28a745;
+        .btn-reject {
+            background-color: #dc3545;
             color: white;
-        }
-
-        .reject-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .action-btn:hover {
-            opacity: 0.9;
-        }
-
-        .urgency-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 500;
-        }
-
-        .urgency-high {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
-        }
-
-        .urgency-medium {
-            background: rgba(255, 191, 0, 0.2);
-            color: #ffc107;
-        }
-
-        .urgency-low {
-            background: rgba(40, 167, 69, 0.2);
-            color: #28a745;
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Include your sidebar here -->
-        <?php include '../includes/hospital_sidebar.php'; ?>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo-text">LifeLink</h2>
+                <div class="sub-text">HospitalHub</div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="hospital_dashboard.php">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="hospitals_handles_donors_status.php">
+                            <i class="fas fa-users"></i>
+                            <span>Manage Donors</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="hospitals_handles_recipients_status.php">
+                            <i class="fas fa-procedures"></i>
+                            <span>Manage Recipients</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../logout.php">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <div class="container">
                 <header class="dashboard-header">
-                    <h1>Manage Recipient Requests</h1>
+                    <h1>Manage Recipients</h1>
                 </header>
 
                 <?php if (isset($error)): ?>
@@ -233,8 +207,8 @@ try {
                                 <tr>
                                     <th>Recipient Name</th>
                                     <th>Blood Type</th>
-                                    <th>Organ Required</th>
-                                    <th>Urgency Level</th>
+                                    <th>Required Organ</th>
+                                    <th>Priority Level</th>
                                     <th>Status</th>
                                     <th>Request Date</th>
                                     <th>Actions</th>
@@ -244,11 +218,11 @@ try {
                                 <?php foreach ($requests as $request): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($request['full_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['blood_group']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['required_organ']); ?></td>
                                         <td>
-                                            <span class="urgency-badge urgency-<?php echo strtolower($request['urgency_level']); ?>">
-                                                <?php echo htmlspecialchars($request['urgency_level']); ?>
+                                            <span class="priority-badge <?php echo strtolower($request['priority_level']); ?>">
+                                                <?php echo htmlspecialchars($request['priority_level']); ?>
                                             </span>
                                         </td>
                                         <td>
@@ -258,58 +232,14 @@ try {
                                         </td>
                                         <td><?php echo date('Y-m-d', strtotime($request['request_date'])); ?></td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn view-btn" onclick="toggleDetails(<?php echo $request['request_id']; ?>)">
-                                                    <i class="fas fa-eye"></i> Details
+                                            <?php if ($request['status'] === 'pending'): ?>
+                                                <button class="action-btn btn-approve" onclick="updateStatus(<?php echo $request['request_id']; ?>, 'approved')">
+                                                    <i class="fas fa-check"></i> Approve
                                                 </button>
-                                                <?php if ($request['status'] === 'pending'): ?>
-                                                    <button class="action-btn approve-btn" onclick="updateStatus(<?php echo $request['request_id']; ?>, 'approved')">
-                                                        <i class="fas fa-check"></i> Approve
-                                                    </button>
-                                                    <button class="action-btn reject-btn" onclick="updateStatus(<?php echo $request['request_id']; ?>, 'rejected')">
-                                                        <i class="fas fa-times"></i> Reject
-                                                    </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="7">
-                                            <div id="details-<?php echo $request['request_id']; ?>" class="details-section">
-                                                <h3>Recipient Details</h3>
-                                                <div class="details-grid">
-                                                    <div class="detail-item">
-                                                        <label>Medical Condition</label>
-                                                        <p><?php echo htmlspecialchars($request['medical_condition']); ?></p>
-                                                    </div>
-                                                    <div class="detail-item">
-                                                        <label>ID Proof Type</label>
-                                                        <p><?php echo htmlspecialchars($request['id_proof_type']); ?></p>
-                                                    </div>
-                                                    <div class="detail-item">
-                                                        <label>ID Proof Number</label>
-                                                        <p><?php echo htmlspecialchars($request['id_proof_number']); ?></p>
-                                                    </div>
-                                                    <div class="detail-item">
-                                                        <label>Medical Reports</label>
-                                                        <?php if ($request['recipient_medical_reports']): ?>
-                                                            <img src="<?php echo htmlspecialchars($request['recipient_medical_reports']); ?>" 
-                                                                 alt="Medical Reports" class="document-preview">
-                                                        <?php else: ?>
-                                                            <p>No medical reports available</p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="detail-item">
-                                                        <label>ID Document</label>
-                                                        <?php if ($request['id_document']): ?>
-                                                            <img src="<?php echo htmlspecialchars($request['id_document']); ?>" 
-                                                                 alt="ID Document" class="document-preview">
-                                                        <?php else: ?>
-                                                            <p>No ID document available</p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                <button class="action-btn btn-reject" onclick="updateStatus(<?php echo $request['request_id']; ?>, 'rejected')">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -322,15 +252,6 @@ try {
     </div>
 
     <script>
-        function toggleDetails(requestId) {
-            const detailsSection = document.getElementById(`details-${requestId}`);
-            if (detailsSection.style.display === 'none' || !detailsSection.style.display) {
-                detailsSection.style.display = 'block';
-            } else {
-                detailsSection.style.display = 'none';
-            }
-        }
-
         function updateStatus(requestId, status) {
             if (confirm(`Are you sure you want to ${status} this request?`)) {
                 const form = document.createElement('form');
