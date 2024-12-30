@@ -44,9 +44,8 @@ try {
             r.full_name,
             r.blood_type,
             r.organ_required,
-            r.medical_condition,
-            r.phone_number,
-            r.email
+            r.email,
+            r.phone_number
         FROM hospital_recipient_approvals hra
         JOIN recipient_registration r ON hra.recipient_id = r.id
         WHERE hra.hospital_id = ? AND hra.status = 'Approved'
@@ -55,8 +54,10 @@ try {
     $stmt->execute([$hospital_id]);
     $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    $error = "Error fetching requests: " . $e->getMessage();
+    error_log("Error: " . $e->getMessage());
+    $error_message = "An error occurred while fetching the data.";
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -210,6 +211,44 @@ try {
             color: #2C3E50;
             font-weight: 600;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -265,10 +304,10 @@ try {
                                     <th>Required Organ</th>
                                     <th>Blood Group</th>
                                     <th>Priority Level</th>
-                                    <th>Location</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
                                     <th>Reason</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -293,25 +332,21 @@ try {
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="priority-badge priority-<?php echo strtolower($request['medical_condition']); ?>">
-                                                    <?php echo htmlspecialchars($request['medical_condition']); ?>
+                                                <span class="priority-badge priority-<?php echo strtolower($request['priority_level']); ?>">
+                                                    <?php echo htmlspecialchars($request['priority_level']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($request['phone_number']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
                                                     <?php echo htmlspecialchars($request['status']); ?>
                                                 </span>
                                             </td>
+                                            <td><?php echo htmlspecialchars($request['reason'] ?? '-'); ?></td>
                                             <td>
-                                                <?php 
-                                                if ($request['status'] === 'rejected') {
-                                                    echo htmlspecialchars($request['rejection_reason']);
-                                                } else {
-                                                    echo '-';
-                                                }
-                                                ?>
+                                                <button class="btn-reject" onclick="openRejectModal(<?php echo $request['approval_id']; ?>)">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -324,32 +359,62 @@ try {
         </main>
     </div>
 
+    <!-- Rejection Modal for Recipients -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <h3>Reject Recipient</h3>
+            <p>Please provide a reason for rejection:</p>
+            <textarea id="rejectionReason" rows="4" placeholder="Enter rejection reason..."></textarea>
+            <div class="modal-buttons">
+                <button onclick="submitRejection()" class="btn-confirm">Submit</button>
+                <button onclick="closeRejectModal()" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-    function updateStatus(approvalId, status) {
-        if (status === 'rejected') {
-            const reason = prompt('Please enter a reason for rejection:');
-            if (!reason) return;
-            
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.innerHTML = `
-                <input type="hidden" name="approval_id" value="${approvalId}">
-                <input type="hidden" name="status" value="${status}">
-                <input type="hidden" name="reason" value="${reason}">
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        } else if (confirm(`Are you sure you want to ${status} this request?`)) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.innerHTML = `
-                <input type="hidden" name="approval_id" value="${approvalId}">
-                <input type="hidden" name="status" value="${status}">
-            `;
-            document.body.appendChild(form);
-            form.submit();
+        let currentApprovalId = null;
+
+        function openRejectModal(approvalId) {
+            currentApprovalId = approvalId;
+            document.getElementById('rejectModal').style.display = 'flex';
+            document.getElementById('rejectionReason').value = '';
         }
-    }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        function submitRejection() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+
+            // Send AJAX request to update status
+            $.ajax({
+                url: 'update_recipient_status.php',
+                method: 'POST',
+                data: {
+                    approval_id: currentApprovalId,
+                    status: 'Rejected',
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while processing your request');
+                }
+            });
+
+            closeRejectModal();
+        }
     </script>
 </body>
 </html>

@@ -193,6 +193,71 @@ try {
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-reject {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-confirm {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -261,6 +326,8 @@ try {
                                         <th>Request Date</th>
                                         <th>Approval Date</th>
                                         <th>Status</th>
+                                        <th>Reason</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -280,6 +347,12 @@ try {
                                                     Approved
                                                 </span>
                                             </td>
+                                            <td><?php echo htmlspecialchars($donor['reason'] ?? '-'); ?></td>
+                                            <td>
+                                                <button class="btn-reject" onclick="openRejectModal(<?php echo $donor['approval_id']; ?>)">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -290,5 +363,63 @@ try {
             </div>
         </main>
     </div>
+
+    <!-- Rejection Modal for Donors -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <h3>Reject Donor</h3>
+            <p>Please provide a reason for rejection:</p>
+            <textarea id="rejectionReason" rows="4" placeholder="Enter rejection reason..."></textarea>
+            <div class="modal-buttons">
+                <button onclick="submitRejection()" class="btn-confirm">Submit</button>
+                <button onclick="closeRejectModal()" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentApprovalId = null;
+
+        function openRejectModal(approvalId) {
+            currentApprovalId = approvalId;
+            document.getElementById('rejectModal').style.display = 'flex';
+            document.getElementById('rejectionReason').value = '';
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        function submitRejection() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+
+            // Send AJAX request to update status
+            $.ajax({
+                url: 'update_donor_status.php',
+                method: 'POST',
+                data: {
+                    approval_id: currentApprovalId,
+                    status: 'Rejected',
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while processing your request');
+                }
+            });
+
+            closeRejectModal();
+        }
+    </script>
 </body>
 </html>
