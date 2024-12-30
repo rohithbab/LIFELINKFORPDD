@@ -443,11 +443,15 @@ $odml_id = $_SESSION['odml_id'];
                     <?php if (isset($error)): ?>
                         <div class="alert alert-danger"><?php echo $error; ?></div>
                     <?php elseif (empty($recipient_requests)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <h3>No Pending Requests</h3>
-                            <p>There are no pending recipient requests at this time.</p>
-                        </div>
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <h3>No Pending Requests</h3>
+                                    <p>There are no pending recipient requests at this time.</p>
+                                </div>
+                            </td>
+                        </tr>
                     <?php else: ?>
                         <table class="modern-table">
                             <thead>

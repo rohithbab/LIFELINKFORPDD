@@ -249,6 +249,29 @@ try {
             gap: 10px;
             margin-top: 15px;
         }
+
+        .btn-reject {
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+        }
+
+        .btn-reject i {
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -306,14 +329,13 @@ try {
                                     <th>Priority Level</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
-                                    <th>Reason</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recipient_requests)): ?>
                                     <tr>
-                                        <td colspan="8">
+                                        <td colspan="7">
                                             <div class="empty-state">
                                                 <i class="fas fa-inbox"></i>
                                                 <h3>No Requests Found</h3>
@@ -342,7 +364,6 @@ try {
                                                     <?php echo htmlspecialchars($request['status']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($request['reason'] ?? '-'); ?></td>
                                             <td>
                                                 <button class="btn-reject" onclick="openRejectModal(<?php echo $request['approval_id']; ?>)">
                                                     <i class="fas fa-times"></i> Reject
