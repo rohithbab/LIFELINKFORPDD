@@ -88,6 +88,188 @@ $odml_id = $_SESSION['odml_id'];
         .actions {
             white-space: nowrap;
         }
+        
+        /* Modern Table Styling */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+        }
+
+        .modern-table th {
+            background: linear-gradient(45deg, #2C3E50, #3498db);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .modern-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .modern-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        .modern-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #2C3E50;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .modern-table tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status and Priority Badges */
+        .status-badge, .priority-badge {
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+            text-transform: capitalize;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-pending {
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            color: white;
+        }
+
+        .status-approved {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .status-rejected {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .priority-high {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .priority-medium {
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            color: white;
+        }
+
+        .priority-low {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .btn-action {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-approve {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-reject {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-action i {
+            font-size: 0.9rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #2C3E50, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empty-state h3 {
+            color: #2C3E50;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* Card Header */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2C3E50;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -143,12 +325,12 @@ $odml_id = $_SESSION['odml_id'];
             </div>
 
             <!-- Pending Donor Approvals -->
-            <div class="table-section">
-                <div class="section-header">
+            <div class="table-container">
+                <div class="card-header">
                     <h2>Pending Donor Approvals</h2>
                 </div>
                 <div class="table-responsive">
-                    <table class="data-table">
+                    <table class="modern-table">
                         <thead>
                             <tr>
                                 <th>Donor Name</th>
@@ -227,7 +409,7 @@ $odml_id = $_SESSION['odml_id'];
             </div>
 
             <!-- Pending Recipient Approvals -->
-            <div class="card">
+            <div class="table-container">
                 <div class="card-header">
                     <h2>Pending Recipient Approvals</h2>
                 </div>
@@ -281,14 +463,18 @@ $odml_id = $_SESSION['odml_id'];
                                     <tr>
                                         <td><?php echo htmlspecialchars($request['full_name']); ?></td>
                                         <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
                                         <td>
-                                            <span class="priority-badge <?php echo strtolower($request['priority_level']); ?>">
+                                            <span class="status-badge">
+                                                <?php echo htmlspecialchars($request['blood_type']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="priority-badge priority-<?php echo strtolower($request['priority_level']); ?>">
                                                 <?php echo htmlspecialchars($request['priority_level']); ?>
                                             </span>
                                         </td>
                                         <td><?php echo htmlspecialchars($request['location']); ?></td>
-                                        <td><?php echo date('Y-m-d', strtotime($request['request_date'])); ?></td>
+                                        <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                         <td>
                                             <span class="status-badge status-pending">
                                                 Pending
