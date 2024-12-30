@@ -70,115 +70,146 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .table-responsive {
-            margin: 20px 0;
+        /* Modern Table Styling */
+        .table-container {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin: 20px 0;
         }
+
+        .table-responsive {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
         .modern-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
         }
-        .modern-table th, .modern-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
+
         .modern-table th {
-            background-color: #f8f9fa;
+            background: linear-gradient(45deg, #20bf55, #01baef);
+            color: white;
+            padding: 15px;
             font-weight: 600;
-            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
         }
+
+        .modern-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .modern-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        .modern-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #2C3E50;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
         .modern-table tr:hover {
             background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
+
+        /* Status and Priority Badges */
+        .status-badge, .priority-badge {
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
             font-weight: 500;
+            display: inline-block;
+            text-transform: capitalize;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         .status-pending {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            color: white;
         }
+
         .status-approved {
-            background: rgba(40, 167, 69, 0.2);
-            color: #28a745;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
         }
+
         .status-rejected {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
-        }
-        .action-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 4px;
-            font-size: 0.9em;
-        }
-        .btn-approve {
-            background-color: #28a745;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
             color: white;
         }
-        .btn-reject {
-            background-color: #dc3545;
+
+        .priority-high {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
             color: white;
         }
-        .table-container {
-            margin-top: 20px;
+
+        .priority-medium {
+            background: linear-gradient(45deg, #f1c40f, #f39c12);
+            color: white;
         }
-        .section-header {
+
+        .priority-low {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #20bf55, #01baef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empty-state h3 {
+            color: #2C3E50;
+            font-size: 1.5rem;
             margin-bottom: 10px;
         }
-        .blood-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 500;
-            background-color: #f8f9fa;
-            color: #495057;
+
+        .empty-state p {
+            color: #6c757d;
+            font-size: 1rem;
+            margin: 0;
         }
-        .priority-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 500;
-        }
-        .priority-badge.high {
-            background-color: #dc3545;
-            color: white;
-        }
-        .priority-badge.medium {
-            background-color: #ffc107;
-            color: white;
-        }
-        .priority-badge.low {
-            background-color: #28a745;
-            color: white;
-        }
-        .action-buttons {
+
+        /* Card Header */
+        .card-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
         }
-        .btn-action {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 4px;
-            font-size: 0.9em;
-        }
-        .btn-approve {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-reject {
-            background-color: #dc3545;
-            color: white;
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2C3E50;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -222,84 +253,73 @@ try {
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="container">
-                <header class="dashboard-header">
-                    <h1>Manage Recipients</h1>
-                </header>
-
-                <?php if (isset($error)): ?>
-                    <div class="alert alert-danger"><?php echo $error; ?></div>
-                <?php endif; ?>
-
-                <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success">Status updated successfully!</div>
-                <?php endif; ?>
-
+            <div class="container mt-4">
                 <div class="table-container">
-                    <?php if (empty($recipient_requests)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <h3>No Recipient Requests</h3>
-                            <p>There are no recipient requests at this time.</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="section-header">
-                            <h2>Recipient Requests</h2>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="modern-table">
-                                <thead>
+                    <div class="card-header">
+                        <h2>Recipient Requests Status</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Recipient Name</th>
+                                    <th>Required Organ</th>
+                                    <th>Blood Group</th>
+                                    <th>Priority Level</th>
+                                    <th>Location</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($recipient_requests)): ?>
                                     <tr>
-                                        <th>Recipient Name</th>
-                                        <th>Required Organ</th>
-                                        <th>Blood Group</th>
-                                        <th>Priority Level</th>
-                                        <th>Location</th>
-                                        <th>Request Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <td colspan="8">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <h3>No Requests Found</h3>
+                                                <p>There are no recipient requests at this time.</p>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
+                                <?php else: ?>
                                     <?php foreach ($recipient_requests as $request): ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($request['recipient_name']); ?></td>
                                             <td><?php echo htmlspecialchars($request['required_organ']); ?></td>
                                             <td>
-                                                <span class="blood-badge">
+                                                <span class="status-badge">
                                                     <?php echo htmlspecialchars($request['blood_group']); ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="priority-badge <?php echo strtolower($request['priority_level']); ?>">
+                                                <span class="priority-badge priority-<?php echo strtolower($request['priority_level']); ?>">
                                                     <?php echo htmlspecialchars($request['priority_level']); ?>
                                                 </span>
                                             </td>
                                             <td><?php echo htmlspecialchars($request['location']); ?></td>
-                                            <td><?php echo date('Y-m-d', strtotime($request['request_date'])); ?></td>
+                                            <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
                                                     <?php echo htmlspecialchars($request['status']); ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <?php if ($request['status'] === 'pending'): ?>
-                                                    <div class="action-buttons">
-                                                        <button class="btn-action btn-approve" onclick="updateStatus(<?php echo $request['approval_id']; ?>, 'approved')">
-                                                            <i class="fas fa-check"></i> Approve
-                                                        </button>
-                                                        <button class="btn-action btn-reject" onclick="updateStatus(<?php echo $request['approval_id']; ?>, 'rejected')">
-                                                            <i class="fas fa-times"></i> Reject
-                                                        </button>
-                                                    </div>
-                                                <?php endif; ?>
+                                                <?php 
+                                                if ($request['status'] === 'rejected') {
+                                                    echo htmlspecialchars($request['rejection_reason']);
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
