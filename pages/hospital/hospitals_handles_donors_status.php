@@ -152,28 +152,25 @@ try {
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin: 20px 0;
+            color: #6c757d;
         }
 
         .empty-state i {
             font-size: 3rem;
-            color: #4a90e2;
             margin-bottom: 15px;
-            background: linear-gradient(45deg, #28a745, #4a90e2);
+            background: linear-gradient(45deg, #20bf55, #01baef);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .empty-state h3 {
-            color: #2C3E50;
             font-size: 1.5rem;
             margin-bottom: 10px;
+            color: #2C3E50;
         }
 
         .empty-state p {
-            color: #6c757d;
+            margin: 0;
             font-size: 1rem;
         }
 
@@ -326,11 +323,21 @@ try {
                                         <th>Request Date</th>
                                         <th>Approval Date</th>
                                         <th>Status</th>
-                                        <th>Reason</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php if (empty($approved_donors)): ?>
+                                        <tr>
+                                            <td colspan="7">
+                                                <div class="empty-state">
+                                                    <i class="fas fa-inbox"></i>
+                                                    <h3>No Approved Donors</h3>
+                                                    <p>There are no approved donor requests at this time.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
                                     <?php foreach ($approved_donors as $donor): ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($donor['donor_name']); ?></td>
@@ -347,7 +354,6 @@ try {
                                                     Approved
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($donor['reason'] ?? '-'); ?></td>
                                             <td>
                                                 <button class="btn-reject" onclick="openRejectModal(<?php echo $donor['approval_id']; ?>)">
                                                     <i class="fas fa-times"></i> Reject
@@ -355,6 +361,7 @@ try {
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>

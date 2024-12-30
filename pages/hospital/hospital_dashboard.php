@@ -418,55 +418,31 @@ $odml_id = $_SESSION['odml_id'];
                     <h2>Pending Recipient Approvals</h2>
                 </div>
                 <div class="table-responsive">
-                    <?php
-                    // Fetch pending recipient requests
-                    try {
-                        $stmt = $conn->prepare("
-                            SELECT 
-                                hra.*,
-                                r.full_name,
-                                r.blood_type,
-                                r.organ_required,
-                                r.medical_condition
-                            FROM hospital_recipient_approvals hra
-                            JOIN recipient_registration r ON hra.recipient_id = r.id
-                            WHERE hra.hospital_id = ? AND hra.status = 'pending'
-                            ORDER BY hra.request_date DESC
-                        ");
-                        $stmt->execute([$hospital_id]);
-                        $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    } catch(PDOException $e) {
-                        error_log("Error fetching recipient requests: " . $e->getMessage());
-                        $error = "Error loading recipient requests";
-                    }
-                    ?>
-                    <?php if (isset($error)): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
-                    <?php elseif (empty($recipient_requests)): ?>
-                        <tr>
-                            <td colspan="8">
-                                <div class="empty-state">
-                                    <i class="fas fa-inbox"></i>
-                                    <h3>No Pending Requests</h3>
-                                    <p>There are no pending recipient requests at this time.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <table class="modern-table">
-                            <thead>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Recipient Name</th>
+                                <th>Required Organ</th>
+                                <th>Blood Group</th>
+                                <th>Priority Level</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($recipient_requests)): ?>
                                 <tr>
-                                    <th>Recipient Name</th>
-                                    <th>Required Organ</th>
-                                    <th>Blood Group</th>
-                                    <th>Priority Level</th>
-                                    <th>Request Date</th>
-                                    <th>Status</th>
-                                    <th>Details</th>
-                                    <th>Actions</th>
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <h3>No Pending Requests</h3>
+                                            <p>There are no pending recipient requests at this time.</p>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            <?php else: ?>
                                 <?php foreach ($recipient_requests as $request): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($request['full_name']); ?></td>
@@ -494,19 +470,19 @@ $odml_id = $_SESSION['odml_id'];
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="btn-action btn-approve" onclick="approveRequest(<?php echo $request['approval_id']; ?>)">
+                                                <button class="btn-action btn-approve" onclick="approveRecipient(<?php echo $request['approval_id']; ?>)">
                                                     <i class="fas fa-check"></i> Approve
                                                 </button>
-                                                <button class="btn-action btn-reject" onclick="rejectRequest(<?php echo $request['approval_id']; ?>)">
+                                                <button class="btn-action btn-reject" onclick="rejectRecipient(<?php echo $request['approval_id']; ?>)">
                                                     <i class="fas fa-times"></i> Reject
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
