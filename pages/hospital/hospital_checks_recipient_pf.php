@@ -66,10 +66,14 @@ try {
         }
 
         .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
             background: var(--primary-gradient);
-            padding: 30px;
             color: white;
-            text-align: center;
+            border-radius: 10px;
         }
 
         .profile-header h1 {
@@ -187,26 +191,25 @@ try {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        /* Back Button */
         .back-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 50px;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            padding: 0.5rem 1rem;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
             transition: all 0.3s ease;
         }
 
+        .back-button i {
+            margin-right: 0.5rem;
+        }
+
         .back-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-            transform: translateY(-2px);
+            transform: translateX(-5px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: #20bf55;
         }
     </style>
 </head>
@@ -269,30 +272,22 @@ try {
                 <?php if (!empty($recipient['medical_reports'])): ?>
                 <div class="info-item">
                     <span class="info-label">Medical Reports:</span>
-                    <span class="info-value">
-                        <a href="/uploads/hospitals_recipients/medical_reports/<?php echo htmlspecialchars($recipient['recipient_medical_reports']); ?>" 
-                           class="document-link" 
-                           target="_blank">
-                            <i class="fas fa-file-medical"></i> View Medical Reports
-                        </a>
-                    </span>
+                    <a href="../../uploads/hospitals_recipients/medical_reports/<?php echo htmlspecialchars($recipient['medical_reports']); ?>" 
+                       target="_blank" 
+                       class="document-link">
+                        <i class="fas fa-file-medical"></i> View Medical Reports
+                    </a>
                 </div>
                 <?php endif; ?>
+
                 <?php if (!empty($recipient['id_document'])): ?>
                 <div class="info-item">
                     <span class="info-label">ID Document:</span>
-                    <span class="info-value">
-                        <a href="/uploads/hospitals_recipients/id_proof/<?php echo htmlspecialchars($recipient['id_document']); ?>" 
-                           class="document-link" 
-                           target="_blank">
-                            <i class="fas fa-id-card"></i> View ID Document
-                        </a>
-                    </span>
-                </div>
-                <?php endif; ?>
-                <?php if (empty($recipient['medical_reports']) && empty($recipient['id_document'])): ?>
-                <div class="info-item">
-                    <span class="info-value">No documents available</span>
+                    <a href="../../uploads/hospitals_recipients/id_proof/<?php echo htmlspecialchars($recipient['id_document']); ?>" 
+                       target="_blank" 
+                       class="document-link">
+                        <i class="fas fa-id-card"></i> View ID Document
+                    </a>
                 </div>
                 <?php endif; ?>
             </div>

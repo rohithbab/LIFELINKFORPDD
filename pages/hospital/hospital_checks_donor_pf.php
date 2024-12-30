@@ -282,42 +282,22 @@ try {
                 <?php if (!empty($donor['medical_reports'])): ?>
                 <div class="info-item">
                     <span class="info-label">Medical Reports:</span>
-                    <span class="info-value">
-                        <a href="/uploads/hospitals_donors/medical_reports/<?php echo htmlspecialchars($donor['medical_reports_path']); ?>" 
-                           class="document-link" 
-                           target="_blank">
-                            <i class="fas fa-file-medical"></i> View Medical Reports
-                        </a>
-                    </span>
+                    <a href="../../uploads/hospitals_donors/medical_reports/<?php echo htmlspecialchars($donor['medical_reports']); ?>" 
+                       target="_blank" 
+                       class="document-link">
+                        <i class="fas fa-file-medical"></i> View Medical Reports
+                    </a>
                 </div>
                 <?php endif; ?>
+                
                 <?php if (!empty($donor['id_proof'])): ?>
                 <div class="info-item">
                     <span class="info-label">ID Proof:</span>
-                    <span class="info-value">
-                        <a href="/uploads/hospitals_donors/id_proof/<?php echo htmlspecialchars($donor['id_proof_path']); ?>" 
-                           class="document-link" 
-                           target="_blank">
-                            <i class="fas fa-id-card"></i> View ID Proof
-                        </a>
-                    </span>
-                </div>
-                <?php endif; ?>
-                <?php if (!empty($donor['guardian_id_proof_path'])): ?>
-                <div class="info-item">
-                    <span class="info-label">Guardian ID Proof:</span>
-                    <span class="info-value">
-                        <a href="/uploads/hospitals_donors/guardian_id_proof/<?php echo htmlspecialchars($donor['guardian_id_proof_path']); ?>" 
-                           class="document-link" 
-                           target="_blank">
-                            <i class="fas fa-id-card"></i> View Guardian ID Proof
-                        </a>
-                    </span>
-                </div>
-                <?php endif; ?>
-                <?php if (empty($donor['medical_reports']) && empty($donor['id_proof']) && empty($donor['guardian_id_proof_path'])): ?>
-                <div class="info-item">
-                    <span class="info-value">No documents available</span>
+                    <a href="../../uploads/hospitals_donors/id_proof/<?php echo htmlspecialchars($donor['id_proof']); ?>" 
+                       target="_blank" 
+                       class="document-link">
+                        <i class="fas fa-id-card"></i> View ID Proof
+                    </a>
                 </div>
                 <?php endif; ?>
             </div>
