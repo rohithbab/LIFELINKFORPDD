@@ -26,6 +26,30 @@ try {
     error_log("Error fetching recipient details: " . $e->getMessage());
     die("An error occurred while fetching your details");
 }
+
+// Then, get hospital requests - only pending ones for dashboard
+$stmt = $conn->prepare("
+    SELECT 
+        r.full_name,
+        r.blood_type,
+        r.organ_required,
+        h.name AS hospital_name,
+        h.email AS hospital_email,
+        h.address AS hospital_address,
+        h.phone AS hospital_number,
+        hra.status,
+        hra.request_date,
+        hra.approval_id AS request_id,
+        hra.medical_reports,
+        hra.id_document
+    FROM hospital_recipient_approvals hra
+    JOIN hospitals h ON hra.hospital_id = h.hospital_id
+    JOIN recipient_registration r ON hra.recipient_id = r.id
+    WHERE hra.recipient_id = ? AND hra.status = 'pending'
+    ORDER BY hra.request_date DESC
+");
+$stmt->execute([$recipient_id]);
+$requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -167,28 +191,48 @@ try {
                 <!-- Modern Table Section -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>Your Request Status</h2>
+                        <h2>Pending Requests</h2>
                     </div>
-                    <div class="status-card <?php echo strtolower($recipient['request_status']); ?>">
-                        <div class="status-icon">
-                            <?php if($recipient['request_status'] === 'accepted'): ?>
-                                <i class="fas fa-check-circle"></i>
-                            <?php elseif($recipient['request_status'] === 'pending'): ?>
-                                <i class="fas fa-clock"></i>
-                            <?php else: ?>
-                                <i class="fas fa-times-circle"></i>
-                            <?php endif; ?>
-                        </div>
-                        <div class="status-info">
-                            <h3>Current Status</h3>
-                            <p><?php echo ucfirst(htmlspecialchars($recipient['request_status'])); ?></p>
-                        </div>
-                        <div class="urgency-level">
-                            <span class="urgency-badge <?php echo strtolower($recipient['urgency_level']); ?>">
-                                <?php echo ucfirst(htmlspecialchars($recipient['urgency_level'])); ?> Priority
-                            </span>
-                        </div>
-                    </div>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Recipient Name</th>
+                                <th>Blood Type</th>
+                                <th>Organ Type</th>
+                                <th>Hospital Name</th>
+                                <th>Hospital Email</th>
+                                <th>Hospital Address</th>
+                                <th>Hospital Number</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($requests as $request): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($request['full_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
+                                    <td><?php echo htmlspecialchars($request['hospital_number']); ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
+                                            <?php echo htmlspecialchars($request['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn reject-btn" onclick="rejectRequest(<?php echo $request['request_id']; ?>)">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -208,6 +252,21 @@ try {
                     profileCard.classList.remove('show');
                 }
             });
+        }
+
+        // Reject request
+        function rejectRequest(requestId) {
+            if (confirm('Are you sure you want to reject this request? This action cannot be undone.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.innerHTML = `
+                    <input type="hidden" name="request_id" value="${requestId}">
+                    <input type="hidden" name="status" value="rejected">
+                    <input type="hidden" name="update_status" value="1">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
         }
     </script>
 </body>

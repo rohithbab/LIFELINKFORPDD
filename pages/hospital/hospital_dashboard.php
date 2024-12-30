@@ -113,6 +113,12 @@ $odml_id = $_SESSION['odml_id'];
                         </a>
                     </li>
                     <li>
+                        <a href="hospitals_handles_recipients_status.php">
+                            <i class="fas fa-procedures"></i>
+                            <span>Manage Recipients</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="../logout.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
