@@ -36,22 +36,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approval_id']) && iss
     }
 }
 
-// Fetch all recipient requests for this hospital
+// Fetch only approved recipient requests
 try {
     $stmt = $conn->prepare("
         SELECT 
             hra.*,
-            r.full_name as recipient_name
+            r.full_name,
+            r.blood_type,
+            r.organ_required,
+            r.medical_condition,
+            r.phone_number,
+            r.email
         FROM hospital_recipient_approvals hra
-        LEFT JOIN recipient_registration r ON hra.recipient_id = r.id
-        WHERE hra.hospital_id = ?
-        ORDER BY 
-            CASE 
-                WHEN hra.status = 'pending' THEN 1
-                WHEN hra.status = 'approved' THEN 2
-                ELSE 3
-            END,
-            hra.request_date DESC
+        JOIN recipient_registration r ON hra.recipient_id = r.id
+        WHERE hra.hospital_id = ? AND hra.status = 'Approved'
+        ORDER BY hra.request_date DESC
     ");
     $stmt->execute([$hospital_id]);
     $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -286,19 +285,19 @@ try {
                                 <?php else: ?>
                                     <?php foreach ($recipient_requests as $request): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($request['recipient_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['required_organ']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['full_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
                                             <td>
                                                 <span class="status-badge">
-                                                    <?php echo htmlspecialchars($request['blood_group']); ?>
+                                                    <?php echo htmlspecialchars($request['blood_type']); ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="priority-badge priority-<?php echo strtolower($request['priority_level']); ?>">
-                                                    <?php echo htmlspecialchars($request['priority_level']); ?>
+                                                <span class="priority-badge priority-<?php echo strtolower($request['medical_condition']); ?>">
+                                                    <?php echo htmlspecialchars($request['medical_condition']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo htmlspecialchars($request['location']); ?></td>
+                                            <td><?php echo htmlspecialchars($request['phone_number']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
