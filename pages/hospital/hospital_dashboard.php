@@ -112,7 +112,7 @@ $odml_id = $_SESSION['odml_id'];
         }
 
         .modern-table th {
-            background: linear-gradient(45deg, #2C3E50, #3498db);
+            background: linear-gradient(45deg, #20bf55, #01baef);
             color: white;
             padding: 15px;
             font-weight: 600;
@@ -237,7 +237,7 @@ $odml_id = $_SESSION['odml_id'];
         .empty-state i {
             font-size: 3rem;
             margin-bottom: 15px;
-            background: linear-gradient(45deg, #2C3E50, #3498db);
+            background: linear-gradient(45deg, #20bf55, #01baef);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
