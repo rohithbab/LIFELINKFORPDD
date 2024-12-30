@@ -244,8 +244,8 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </a>
                     </li>
                     <li>
-                        <a href="my_requests.php">
-                            <i class="fas fa-notes-medical"></i>
+                        <a href="my_requests_for_recipients.php">
+                            <i class="fas fa-list"></i>
                             <span>My Requests</span>
                         </a>
                     </li>
