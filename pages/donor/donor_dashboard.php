@@ -286,8 +286,7 @@ try {
                                             <div class="no-data-message">
                                                 <i class="fas fa-info-circle"></i>
                                                 <p>No hospital requests found</p>
-                                                <a href="search_hospitals_for_donors.php" class="btn-search">
-                                                    <i class="fas fa-search"></i> Search Hospitals
+                                                 
                                                 </a>
                                             </div>
                                         </td>

@@ -285,18 +285,25 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
                     </li>
                     <li>
                         <a href="search_hospitals_for_recipient.php" class="active">
-                            <i class="fas fa-search"></i>
+                            <i class="fas fa-hospital"></i>
                             <span>Search Hospitals</span>
                         </a>
                     </li>
                     <li>
                         <a href="my_requests_for_recipients.php">
-                            <i class="fas fa-list"></i>
+                            <i class="fas fa-notes-medical"></i>
                             <span>My Requests</span>
                         </a>
                     </li>
                     <li>
-                        <a href="../logout.php">
+                        <a href="#" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="notification-badge">2</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../recipient_login.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>

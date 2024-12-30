@@ -140,14 +140,14 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="search_hospitals_for_recipients.php">
-                            <i class="fas fa-search"></i>
+                        <a href="search_hospitals_for_recipient.php">
+                            <i class="fas fa-hospital"></i>
                             <span>Search Hospitals</span>
                         </a>
                     </li>
                     <li>
                         <a href="my_requests_for_recipients.php" class="active">
-                            <i class="fas fa-list"></i>
+                            <i class="fas fa-notes-medical"></i>
                             <span>My Requests</span>
                         </a>
                     </li>
@@ -159,7 +159,7 @@ try {
                         </a>
                     </li>
                     <li>
-                        <a href="../logout.php">
+                        <a href="../recipient_login.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>

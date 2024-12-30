@@ -234,7 +234,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <li>
                         <a href="recipient_personal_details.php">
                             <i class="fas fa-user"></i>
-                            <span>Personal Details</span>
+                            <span>Profile</span>
                         </a>
                     </li>
                     <li>
@@ -245,12 +245,19 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </li>
                     <li>
                         <a href="my_requests_for_recipients.php">
-                            <i class="fas fa-list"></i>
+                            <i class="fas fa-notes-medical"></i>
                             <span>My Requests</span>
                         </a>
                     </li>
                     <li>
-                        <a href="../logout.php">
+                        <a href="#" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="notification-badge">2</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../recipient_login.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
