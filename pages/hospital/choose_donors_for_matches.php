@@ -234,7 +234,6 @@ try {
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Search for donors..." id="searchInput">
-                    <div class="search-results" id="searchResults"></div>
                 </div>
 
                 <div class="filter-buttons">
@@ -282,6 +281,23 @@ try {
                     </table>
                 <?php endif; ?>
             </div>
+            <div id="searchResults" class="mt-4">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Contact Details</th>
+                                <th>Available Donors</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -328,34 +344,67 @@ try {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.results.length > 0) {
-                        searchResults.innerHTML = data.results.map(result => `
-                            <div class="search-result-item">
-                                <span>${result.name} - ${result.hospital_name}</span>
-                                <i class="fas fa-info-circle info-icon" onclick="viewDonorDetails(${result.donor_id})"></i>
-                            </div>
-                        `).join('');
+                        displayResults(data.results);
                         searchResults.style.display = 'block';
                     } else {
-                        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                        displayResults([]);
                         searchResults.style.display = 'block';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    searchResults.innerHTML = '<div class="search-result-item">Error performing search</div>';
+                    displayResults([]);
                     searchResults.style.display = 'block';
                 });
             }, 500);
         });
+
+        function displayResults(results) {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">No hospitals found matching your search criteria</td>
+                    </tr>`;
+                return;
+            }
+
+            results.forEach(hospital => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${hospital.hospital_name}</strong>
+                    </td>
+                    <td>
+                        <div><i class="fas fa-phone"></i> ${hospital.hospital_phone}</div>
+                        <div><i class="fas fa-map-marker-alt"></i> ${hospital.hospital_address}</div>
+                    </td>
+                    <td>
+                        <div><strong>Donors:</strong> ${hospital.donor_count}</div>
+                        <div><strong>Blood Groups:</strong> ${hospital.blood_groups.join(', ')}</div>
+                        <div><strong>Organs:</strong> ${hospital.organ_types.join(', ')}</div>
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm view-donors" 
+                                onclick="viewHospitalDonors(${hospital.hospital_id})">
+                            <i class="fas fa-eye"></i> View Donors
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
         function selectDonor(donorId) {
             // Redirect back to make_matches.php with the selected donor
             window.location.href = `make_matches.php?donor=${donorId}`;
         }
 
-        function viewDonorDetails(donorId) {
-            // Redirect to choose_other_donors.php with the selected donor
-            window.location.href = `choose_other_donors.php?donor_id=${donorId}`;
+        function viewHospitalDonors(hospitalId) {
+            // Redirect to choose_other_donors.php with the selected hospital
+            window.location.href = `choose_other_donors.php?hospital_id=${hospitalId}`;
         }
 
         // Close search results when clicking outside

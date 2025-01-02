@@ -123,10 +123,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $phone = sanitize_input($_POST['phone']);
         $address = sanitize_input($_POST['address']);
         $medical_conditions = isset($_POST['medicalConditions']) ? sanitize_input($_POST['medicalConditions']) : null;
-        $organs = implode(',', $_POST['organs']);
-        $reason = isset($_POST['reason']) ? sanitize_input($_POST['reason']) : null;
+        $organs_to_donate = implode(',', $_POST['organs']);
+        $reason_for_donation = isset($_POST['reason']) ? sanitize_input($_POST['reason']) : null;
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
+        
+        // Guardian fields (optional)
+        $guardian_name = isset($_POST['guardianName']) ? sanitize_input($_POST['guardianName']) : null;
+        $guardian_email = isset($_POST['guardianEmail']) ? sanitize_input($_POST['guardianEmail']) : null;
+        $guardian_phone = isset($_POST['guardianPhone']) ? sanitize_input($_POST['guardianPhone']) : null;
+        
         // Handle ID proof (required)
         $id_proof_path = null;
         if (isset($_FILES['id_proof']) && $_FILES['id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -154,31 +159,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 error_log("Warning: Medical reports upload failed: " . $e->getMessage());
             }
         }
+        
+        // Handle guardian ID proof (optional)
+        $guardian_id_proof_path = null;
+        if (isset($_FILES['guardian_id_proof']) && $_FILES['guardian_id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $guardian_id_proof_path = handle_file_upload(
+                    $_FILES['guardian_id_proof'], 
+                    $base_upload_dir . 'guardian_id_proof_path/'
+                );
+            } catch (Exception $e) {
+                error_log("Warning: Guardian ID proof upload failed: " . $e->getMessage());
+            }
+        }
 
         // Begin transaction
         $conn->beginTransaction();
 
         // Check if email already exists
-        $stmt = $conn->prepare("SELECT id FROM donors WHERE email = ?");
+        $stmt = $conn->prepare("SELECT donor_id FROM donor WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->fetch()) {
             throw new Exception("Email already registered");
         }
 
         // Insert donor
-        $sql = "INSERT INTO donors (
+        $sql = "INSERT INTO donor (
             name, gender, dob, blood_group, email, phone, address,
-            medical_conditions, organs, reason, password, id_proof_path,
-            medical_reports_path, status
+            medical_conditions, organs_to_donate, medical_reports_path,
+            id_proof_path, reason_for_donation, guardian_name,
+            guardian_email, guardian_phone, guardian_id_proof_path,
+            password, status
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
         )";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([
             $name, $gender, $dob, $blood_group, $email, $phone, $address,
-            $medical_conditions, $organs, $reason, $password, $id_proof_path,
-            $medical_reports_path
+            $medical_conditions, $organs_to_donate, $medical_reports_path,
+            $id_proof_path, $reason_for_donation, $guardian_name,
+            $guardian_email, $guardian_phone, $guardian_id_proof_path,
+            $password
         ]);
 
         if ($stmt->rowCount() > 0) {
@@ -217,6 +239,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         if (isset($medical_reports_path)) {
             @unlink($base_upload_dir . 'medical_reports_path/' . $medical_reports_path);
+        }
+        if (isset($guardian_id_proof_path)) {
+            @unlink($base_upload_dir . 'guardian_id_proof_path/' . $guardian_id_proof_path);
         }
 
         $_SESSION['error'] = $e->getMessage();
