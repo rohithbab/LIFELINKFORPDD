@@ -26,8 +26,8 @@ try {
             SELECT DISTINCT 
                 h.hospital_id,
                 h.name as hospital_name,
-                h.phone,
-                h.address,
+                h.phone as hospital_phone,
+                h.address as hospital_address,
                 GROUP_CONCAT(DISTINCT d.blood_group) as blood_groups,
                 GROUP_CONCAT(DISTINCT ha.organ_type) as organ_types,
                 COUNT(DISTINCT d.donor_id) as donor_count
@@ -44,8 +44,8 @@ try {
             SELECT DISTINCT 
                 h.hospital_id,
                 h.name as hospital_name,
-                h.phone,
-                h.address,
+                h.phone as hospital_phone,
+                h.address as hospital_address,
                 GROUP_CONCAT(DISTINCT d.blood_group) as blood_groups,
                 GROUP_CONCAT(DISTINCT ha.organ_type) as organ_types,
                 COUNT(DISTINCT d.donor_id) as donor_count
@@ -68,8 +68,8 @@ try {
         return [
             'hospital_id' => $row['hospital_id'],
             'hospital_name' => htmlspecialchars($row['hospital_name']),
-            'phone' => htmlspecialchars($row['phone']),
-            'address' => htmlspecialchars($row['address']),
+            'phone' => htmlspecialchars($row['hospital_phone']),
+            'address' => htmlspecialchars($row['hospital_address']),
             'donor_count' => $row['donor_count'],
             'blood_groups' => array_unique(explode(',', $row['blood_groups'])),
             'organ_types' => array_unique(explode(',', $row['organ_types']))

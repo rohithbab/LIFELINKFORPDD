@@ -8,44 +8,48 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
     exit();
 }
 
-$hospital_id = $_SESSION['hospital_id'];
-$donor_id = isset($_GET['donor_id']) ? (int)$_GET['donor_id'] : 0;
+$hospital_id = isset($_GET['hospital_id']) ? (int)$_GET['hospital_id'] : 0;
 
-if (!$donor_id) {
+if (!$hospital_id) {
     header("Location: choose_donors_for_matches.php");
     exit();
 }
 
-// Fetch donor details with hospital information
+// Get hospital details and its donors
 try {
+    // Get hospital info
     $stmt = $conn->prepare("
-        SELECT d.*, h.hospital_name, h.phone as hospital_phone, h.address as hospital_address,
-               ha.status as approval_status, ha.organ_type
-        FROM donor d
-        JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
-        JOIN hospitals h ON ha.hospital_id = h.hospital_id
-        WHERE d.donor_id = ? AND ha.status = 'Approved'
+        SELECT name, phone, address 
+        FROM hospitals 
+        WHERE hospital_id = ?
     ");
-    $stmt->execute([$donor_id]);
-    $donor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$hospital_id]);
+    $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$donor) {
+    if (!$hospital) {
         header("Location: choose_donors_for_matches.php");
         exit();
     }
 
-    // Check if request already exists
+    // Get donors from this hospital
     $stmt = $conn->prepare("
-        SELECT status 
-        FROM donor_and_recipient_requests 
-        WHERE donor_id = ? AND requesting_hospital_id = ? 
-        ORDER BY request_date DESC LIMIT 1
+        SELECT 
+            d.donor_id,
+            d.name as donor_name,
+            d.blood_group,
+            ha.organ_type,
+            d.medical_conditions
+        FROM donor d
+        JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
+        WHERE ha.hospital_id = ? 
+        AND ha.status = 'Approved'
+        ORDER BY d.name ASC
     ");
-    $stmt->execute([$donor_id, $hospital_id]);
-    $existingRequest = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$hospital_id]);
+    $donors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch(PDOException $e) {
-    error_log("Error fetching donor details: " . $e->getMessage());
+    error_log("Error: " . $e->getMessage());
     header("Location: choose_donors_for_matches.php");
     exit();
 }
@@ -56,11 +60,11 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donor Details - LifeLink</title>
+    <title>Hospital Donors - LifeLink</title>
     <link rel="stylesheet" href="../../assets/css/hospital-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .donor-details {
+        .donor-list {
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -68,100 +72,66 @@ try {
             padding: 2rem;
         }
 
-        .donor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .hospital-info {
             margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid #eee;
         }
 
-        .donor-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .info-card {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .info-card h3 {
+        .hospital-info h2 {
             color: var(--primary-blue);
             margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .info-item {
-            margin: 0.5rem 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            margin: 0.5rem 0;
+            color: #666;
         }
 
-        .info-label {
-            font-weight: 500;
-            color: #666;
-            min-width: 120px;
+        .donor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .donor-table th {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .donor-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .donor-table tr:hover {
+            background: #f8f9fa;
         }
 
         .request-btn {
-            padding: 0.8rem 2rem;
+            padding: 0.5rem 1rem;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: 5px;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
-            font-size: 1rem;
+            cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .request-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .request-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
-        }
-
-        .request-status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
         }
 
         .back-btn {
@@ -172,10 +142,10 @@ try {
             color: #666;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            text-decoration: none;
         }
 
         .back-btn:hover {
@@ -185,137 +155,63 @@ try {
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2 class="logo-text">LifeLink</h2>
-                <div class="sub-text">HospitalHub</div>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li>
-                        <a href="hospital_dashboard.php">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="hospitals_handles_donors_status.php">
-                            <i class="fas fa-users"></i>
-                            <span>Manage Donors</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="hospitals_handles_recipients_status.php">
-                            <i class="fas fa-procedures"></i>
-                            <span>Manage Recipients</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="make_matches.php" class="active">
-                            <i class="fas fa-link"></i>
-                            <span>Make Matches</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="check_requests.php">
-                            <i class="fas fa-bell"></i>
-                            <span>Check Requests</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../logout.php">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
+        <?php include '../../includes/hospital_sidebar.php'; ?>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="dashboard-header">
                 <div class="header-left">
                     <a href="choose_donors_for_matches.php" class="back-btn">
                         <i class="fas fa-arrow-left"></i>
-                        Back to Donor List
+                        Back to Search
                     </a>
                 </div>
             </div>
 
-            <div class="donor-details">
-                <div class="donor-header">
-                    <h2>Donor Information</h2>
-                    <?php if ($existingRequest): ?>
-                        <span class="request-status status-<?php echo strtolower($existingRequest['status']); ?>">
-                            Request <?php echo $existingRequest['status']; ?>
-                        </span>
-                    <?php else: ?>
-                        <button class="request-btn" onclick="sendRequest(<?php echo $donor_id; ?>)"
-                                <?php echo ($donor['hospital_id'] == $hospital_id) ? 'disabled' : ''; ?>>
-                            <i class="fas fa-paper-plane"></i>
-                            Send Request
-                        </button>
-                    <?php endif; ?>
-                </div>
-
-                <div class="donor-info">
-                    <!-- Personal Information -->
-                    <div class="info-card">
-                        <h3><i class="fas fa-user"></i> Personal Details</h3>
-                        <div class="info-item">
-                            <span class="info-label">Name:</span>
-                            <span><?php echo htmlspecialchars($donor['name']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Blood Group:</span>
-                            <span><?php echo htmlspecialchars($donor['blood_group']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Gender:</span>
-                            <span><?php echo htmlspecialchars($donor['gender']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Age:</span>
-                            <span><?php 
-                                $dob = new DateTime($donor['dob']);
-                                $now = new DateTime();
-                                echo $dob->diff($now)->y . " years";
-                            ?></span>
-                        </div>
+            <div class="donor-list">
+                <div class="hospital-info">
+                    <h2><?php echo htmlspecialchars($hospital['name']); ?></h2>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <?php echo htmlspecialchars($hospital['phone']); ?>
                     </div>
-
-                    <!-- Medical Information -->
-                    <div class="info-card">
-                        <h3><i class="fas fa-heartbeat"></i> Medical Information</h3>
-                        <div class="info-item">
-                            <span class="info-label">Organ Type:</span>
-                            <span><?php echo htmlspecialchars($donor['organ_type']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Medical Conditions:</span>
-                            <span><?php echo htmlspecialchars($donor['medical_conditions'] ?: 'None'); ?></span>
-                        </div>
-                    </div>
-
-                    <!-- Hospital Information -->
-                    <div class="info-card">
-                        <h3><i class="fas fa-hospital"></i> Hospital Information</h3>
-                        <div class="info-item">
-                            <span class="info-label">Hospital:</span>
-                            <span><?php echo htmlspecialchars($donor['hospital_name']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Phone:</span>
-                            <span><?php echo htmlspecialchars($donor['hospital_phone']); ?></span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Address:</span>
-                            <span><?php echo htmlspecialchars($donor['hospital_address']); ?></span>
-                        </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <?php echo htmlspecialchars($hospital['address']); ?>
                     </div>
                 </div>
+
+                <?php if (empty($donors)): ?>
+                    <div class="text-center">
+                        <p>No donors available from this hospital.</p>
+                    </div>
+                <?php else: ?>
+                    <table class="donor-table">
+                        <thead>
+                            <tr>
+                                <th>Donor Name</th>
+                                <th>Blood Group</th>
+                                <th>Organ Type</th>
+                                <th>Medical Conditions</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donors as $donor): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($donor['donor_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($donor['blood_group']); ?></td>
+                                    <td><?php echo htmlspecialchars($donor['organ_type']); ?></td>
+                                    <td><?php echo $donor['medical_conditions'] ? htmlspecialchars($donor['medical_conditions']) : 'None'; ?></td>
+                                    <td>
+                                        <button class="request-btn" onclick="sendRequest(<?php echo $donor['donor_id']; ?>)">
+                                            Request Donor
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
             </div>
         </main>
     </div>

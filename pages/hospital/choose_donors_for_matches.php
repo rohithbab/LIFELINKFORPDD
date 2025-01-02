@@ -97,33 +97,79 @@ try {
         }
 
         .search-results {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: none;
-            position: absolute;
-            width: 100%;
-            z-index: 1000;
-            max-height: 300px;
-            overflow-y: auto;
+            margin-top: 2rem;
         }
-
-        .search-result-item {
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        .results-table td {
             padding: 1rem;
             border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
+            vertical-align: top;
         }
-
-        .search-result-item:hover {
+        
+        .results-table tr:hover {
             background: #f8f9fa;
         }
-
-        .info-icon {
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .contact-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+        }
+        
+        .donor-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .donor-count {
+            font-weight: bold;
             color: var(--primary-blue);
+        }
+        
+        .donor-details {
+            color: #666;
+        }
+        
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .donors-table {
@@ -282,22 +328,20 @@ try {
                     </table>
                 <?php endif; ?>
             </div>
-            <div id="searchResults" class="mt-4">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Hospital Name</th>
-                                <th>Contact Details</th>
-                                <th>Available Donors</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsBody">
-                            <!-- Results will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
+            <div id="searchResults" class="search-results">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Hospital Name</th>
+                            <th>Contact Details</th>
+                            <th>Available Donors</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>
@@ -373,29 +417,35 @@ try {
             }
 
             results.forEach(hospital => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+                const row = document.createElement('tr');
+                
+                // Hospital Name
+                row.innerHTML = `
+                    <td>${hospital.hospital_name}</td>
                     <td>
-                        <strong>${hospital.hospital_name}</strong>
+                        <div class="contact-info">
+                            <span><i class="fas fa-phone"></i> ${hospital.phone}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${hospital.address}</span>
+                        </div>
                     </td>
                     <td>
-                        <div><i class="fas fa-phone"></i> ${hospital.hospital_phone}</div>
-                        <div><i class="fas fa-map-marker-alt"></i> ${hospital.hospital_address}</div>
+                        <div class="donor-info">
+                            <span class="donor-count">Donors: ${hospital.donor_count}</span>
+                            <span class="donor-details">Blood Groups: ${hospital.blood_groups.join(', ')}</span>
+                            <span class="donor-details">Organs: ${hospital.organ_types.join(', ')}</span>
+                        </div>
                     </td>
                     <td>
-                        <div><strong>Donors:</strong> ${hospital.donor_count}</div>
-                        <div><strong>Blood Groups:</strong> ${hospital.blood_groups.join(', ')}</div>
-                        <div><strong>Organs:</strong> ${hospital.organ_types.join(', ')}</div>
-                    </td>
-                    <td>
-                        <button class="btn btn-info btn-sm view-donors" 
-                                onclick="viewHospitalDonors(${hospital.hospital_id})">
-                            <i class="fas fa-eye"></i> View Donors
-                        </button>
+                        <a href="choose_other_donors.php?hospital_id=${hospital.hospital_id}" class="view-btn">
+                            View Donors
+                        </a>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                
+                tbody.appendChild(row);
             });
+            
+            document.getElementById('searchResults').style.display = results.length ? 'block' : 'none';
         }
 
         function selectDonor(donorId) {
