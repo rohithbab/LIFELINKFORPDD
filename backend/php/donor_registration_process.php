@@ -189,9 +189,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             medical_conditions, organs_to_donate, medical_reports_path,
             id_proof_path, reason_for_donation, guardian_name,
             guardian_email, guardian_phone, guardian_id_proof_path,
-            password, status
+            odml_id, password, status
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, 'pending'
         )";
 
         $stmt = $conn->prepare($sql);
