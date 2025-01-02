@@ -301,6 +301,18 @@ $odml_id = $_SESSION['odml_id'];
                         </a>
                     </li>
                     <li>
+                        <a href="make_matches.php">
+                            <i class="fas fa-link"></i>
+                            <span>Make Matches</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="check_requests.php">
+                            <i class="fas fa-bell"></i>
+                            <span>Check Requests</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="../logout.php">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
