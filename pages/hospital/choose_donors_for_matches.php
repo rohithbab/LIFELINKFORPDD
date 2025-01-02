@@ -237,11 +237,12 @@ try {
                 </div>
 
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="name">Name</button>
-                    <button class="filter-btn" data-filter="address">Address</button>
-                    <button class="filter-btn" data-filter="phone">Phone</button>
-                    <button class="filter-btn" data-filter="organs">Organs</button>
-                    <button class="filter-btn" data-filter="blood_group">Blood Group</button>
+                    <button class="filter-btn" data-filter="blood_group">
+                        <i class="fas fa-tint"></i> Blood Group
+                    </button>
+                    <button class="filter-btn" data-filter="organs">
+                        <i class="fas fa-heart"></i> Organs
+                    </button>
                 </div>
 
                 <?php if (empty($donors)): ?>
