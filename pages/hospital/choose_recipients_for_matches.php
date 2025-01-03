@@ -101,19 +101,20 @@ try {
 
         .filter-buttons {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 0.5rem 1.5rem;
+            padding: 0.5rem 1rem;
             border: none;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #f0f0f0;
             color: #666;
+            font-size: 0.9rem;
         }
 
         .filter-btn.active {
@@ -121,23 +122,55 @@ try {
             color: white;
         }
 
-        .shared-recipient {
-            background-color: rgba(33, 150, 243, 0.05);
-            border-left: 4px solid var(--primary-blue);
-        }
-        
-        .shared-badge {
-            display: inline-block;
-            background: var(--primary-blue);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.85em;
-            margin-top: 0.5rem;
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .shared-badge i {
-            margin-right: 0.3rem;
+        .results-table th,
+        .results-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recipient-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .recipient-count {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .recipient-details {
+            font-size: 0.9rem;
+            color: #666;
         }
 
         .action-btn {
@@ -155,37 +188,9 @@ try {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .recipients-table {
-            width: 100%;
-            border-collapse: collapse;
+        #searchResults {
+            display: none;
             margin-top: 1rem;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .recipients-table th,
-        .recipients-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        .recipients-table th {
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            font-weight: 500;
-        }
-
-        .recipients-table tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
         }
     </style>
 </head>
@@ -195,109 +200,167 @@ try {
         
         <main class="main-content">
             <div class="search-section">
-                <h2>Choose Recipients for Matching</h2>
+                <h2>Search Recipients</h2>
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search recipients...">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by blood group...">
                 </div>
 
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">All Recipients</button>
-                    <button class="filter-btn" data-filter="own">Own Recipients</button>
-                    <button class="filter-btn" data-filter="shared">Shared Recipients</button>
+                    <button class="filter-btn active" data-filter="blood_group">Blood Group</button>
+                    <button class="filter-btn" data-filter="organs">Organs</button>
                 </div>
 
-                <?php if (empty($recipients)): ?>
-                    <div class="empty-state">
-                        <i class="fas fa-user-plus fa-3x" style="color: #ccc; margin-bottom: 1rem;"></i>
-                        <h3>No Recipients Available</h3>
-                        <p>There are no recipients available for matching at this time.</p>
-                    </div>
-                <?php else: ?>
-                    <table class="recipients-table">
+                <div id="searchResults">
+                    <table class="results-table">
                         <thead>
                             <tr>
-                                <th>Recipient Name</th>
-                                <th>Blood Group</th>
-                                <th>Organ Type</th>
-                                <th>Action</th>
+                                <th>Hospital Name</th>
+                                <th>Contact Details</th>
+                                <th>Available Recipients</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php foreach ($recipients as $recipient): ?>
-                                <tr class="<?php echo $recipient['recipient_type'] === 'Shared' ? 'shared-recipient' : ''; ?>">
-                                    <td>
-                                        <?php echo htmlspecialchars($recipient['name']); ?>
-                                        <?php if ($recipient['recipient_type'] === 'Shared'): ?>
-                                            <div class="shared-badge">
-                                                <i class="fas fa-share-alt"></i> 
-                                                Shared from <?php echo htmlspecialchars($recipient['shared_from_hospital']); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($recipient['blood_group']); ?></td>
-                                    <td><?php echo htmlspecialchars($recipient['organ_type']); ?></td>
-                                    <td>
-                                        <button class="action-btn" onclick="selectRecipient(<?php echo $recipient['recipient_id']; ?>)">
-                                            Select for Match
-                                        </button>
-                                    </td>
+                        <tbody id="resultsBody">
+                            <?php if (empty($recipients)): ?>
+                                <tr>
+                                    <td colspan="4" class="text-center">No recipients found matching your search criteria</td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php foreach ($recipients as $recipient): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($recipient['name']); ?></td>
+                                        <td>
+                                            <div class="contact-info">
+                                                <span><i class="fas fa-phone"></i> <?php echo htmlspecialchars($recipient['phone']); ?></span>
+                                                <span><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($recipient['address']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="recipient-info">
+                                                <span class="recipient-count">Recipients: <?php echo htmlspecialchars($recipient['recipient_count']); ?></span>
+                                                <span class="recipient-details">Blood Groups: <?php echo htmlspecialchars($recipient['blood_groups']); ?></span>
+                                                <span class="recipient-details">Required Organs: <?php echo htmlspecialchars($recipient['organ_types']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn" onclick="viewRecipients(<?php echo $recipient['recipient_id']; ?>)">
+                                                View Recipients
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
-                <?php endif; ?>
+                </div>
             </div>
         </main>
     </div>
 
     <script>
-        function selectRecipient(recipientId) {
-            // TODO: Implement recipient selection logic
-            console.log('Selected recipient:', recipientId);
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        let currentFilter = 'blood_group';
+
+        // Filter button click handling
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentFilter = button.dataset.filter;
+                searchInput.placeholder = `Search by ${currentFilter}...`;
+                searchInput.value = '';
+                searchResults.style.display = 'none';
+            });
+        });
+
+        // Real-time search handling
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const searchTerm = searchInput.value.trim();
+
+            if (searchTerm.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch('../../ajax/search_recipients.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        search: searchTerm,
+                        filter: currentFilter
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.results.length > 0) {
+                        displayResults(data.results);
+                        searchResults.style.display = 'block';
+                    } else {
+                        displayResults([]);
+                        searchResults.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    displayResults([]);
+                    searchResults.style.display = 'block';
+                });
+            }, 500);
+        });
+
+        function displayResults(results) {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">No hospitals found matching your search criteria</td>
+                    </tr>`;
+                return;
+            }
+
+            results.forEach(hospital => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${hospital.hospital_name}</td>
+                    <td>
+                        <div class="contact-info">
+                            <span><i class="fas fa-phone"></i> ${hospital.phone}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${hospital.address}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="recipient-info">
+                            <span class="recipient-count">Recipients: ${hospital.recipient_count}</span>
+                            <span class="recipient-details">Blood Groups: ${hospital.blood_groups.join(', ')}</span>
+                            <span class="recipient-details">Required Organs: ${hospital.organ_types.join(', ')}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="viewRecipients(${hospital.hospital_id})">
+                            View Recipients
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
         }
 
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.recipients-table tbody tr');
-            
-            rows.forEach(row => {
-                const name = row.querySelector('td:first-child').textContent.toLowerCase();
-                const bloodGroup = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const organType = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                
-                if (name.includes(searchTerm) || bloodGroup.includes(searchTerm) || organType.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-
-        // Filter functionality
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active button
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-
-                const filter = this.dataset.filter;
-                const rows = document.querySelectorAll('.recipients-table tbody tr');
-
-                rows.forEach(row => {
-                    if (filter === 'all') {
-                        row.style.display = '';
-                    } else if (filter === 'own') {
-                        row.style.display = row.classList.contains('shared-recipient') ? 'none' : '';
-                    } else if (filter === 'shared') {
-                        row.style.display = row.classList.contains('shared-recipient') ? '' : 'none';
-                    }
-                });
-            });
-        });
+        function viewRecipients(hospitalId) {
+            // TODO: Implement view recipients functionality
+            console.log('Viewing recipients for hospital:', hospitalId);
+        }
     </script>
 </body>
 </html>
