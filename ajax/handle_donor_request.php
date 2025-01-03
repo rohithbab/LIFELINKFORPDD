@@ -69,15 +69,24 @@ try {
         throw new Exception('This donor has already been matched with a recipient');
     }
 
-    // Update request status
+    // Update request status - ONLY for this specific request
     $newStatus = $action === 'approve' ? 'Approved' : 'Rejected';
     
     $stmt = $conn->prepare("
         UPDATE donor_requests 
         SET status = ?, response_date = NOW(), response_message = ? 
-        WHERE request_id = ?
+        WHERE request_id = ? 
+        AND donor_hospital_id = ? 
+        AND requesting_hospital_id = ?
+        AND status = 'Pending'
     ");
-    $stmt->execute([$newStatus, $message, $request_id]);
+    $stmt->execute([
+        $newStatus, 
+        $message, 
+        $request_id,
+        $request['donor_hospital_id'],
+        $request['requesting_hospital_id']
+    ]);
 
     // If approving, create shared approval for requesting hospital
     if ($action === 'approve') {
