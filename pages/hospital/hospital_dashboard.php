@@ -404,14 +404,6 @@ try {
             <div class="table-container">
                 <div class="card-header">
                     <h2>Pending Recipient Approvals</h2>
-                    <!-- Debug information -->
-                    <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                        <small style="color: #666;">
-                            Debug Info:<br>
-                            - Hospital ID: <?php echo htmlspecialchars($hospital_id); ?><br>
-                            - Number of requests: <?php echo count($recipient_requests); ?><br>
-                        </small>
-                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="modern-table">
@@ -551,7 +543,7 @@ try {
                         if (data.success) {
                             location.reload(); // Reload to show updated status
                         } else {
-                            alert('Error: ' + data.message);
+                            throw new Error(data.message);
                         }
                     })
                     .catch(error => {
@@ -714,53 +706,56 @@ try {
 
             <script>
                 function updateRecipientStatus(approvalId, status) {
-                    if (!approvalId) {
-                        console.error('Invalid approval ID');
+                    if (!confirm('Are you sure you want to ' + status.toLowerCase() + ' this request?')) {
                         return;
                     }
-                    
-                    const confirmMessage = status === 'Approved' ? 
-                        'Are you sure you want to approve this recipient?' :
-                        'Are you sure you want to reject this recipient?';
-                        
-                    if (confirm(confirmMessage)) {
-                        // Show loading state
-                        const button = event.target.closest('button');
-                        const originalText = button.innerHTML;
-                        button.disabled = true;
-                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                        
-                        fetch('../../ajax/handle_recipient_request.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                approval_id: approvalId,
-                                status: status,
-                                action: status.toLowerCase()
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Refresh the page to show updated status
-                                location.reload();
-                            } else {
-                                alert('Error: ' + (data.message || 'Failed to update status'));
-                                // Reset button state
-                                button.disabled = false;
-                                button.innerHTML = originalText;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error updating status. Please try again.');
-                            // Reset button state
+
+                    const button = event.target.closest('button');
+                    const originalText = button.innerHTML;
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                    let rejectionReason = null;
+                    if (status === 'Rejected') {
+                        rejectionReason = prompt('Please provide a reason for rejection:');
+                        if (rejectionReason === null) {
                             button.disabled = false;
                             button.innerHTML = originalText;
-                        });
+                            return;
+                        }
                     }
+
+                    fetch('../../ajax/handle_recipient_request.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            approval_id: approvalId,
+                            status: status,
+                            rejection_reason: rejectionReason
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            throw new Error(data.message || 'Failed to update status');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error: ' + error.message);
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    });
                 }
             </script>
 

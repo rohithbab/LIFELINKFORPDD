@@ -2,6 +2,13 @@
 session_start();
 require_once '../config/db_connect.php';
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Set headers
+header('Content-Type: application/json');
+
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
     http_response_code(401);
@@ -11,19 +18,18 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
 
 $hospital_id = $_SESSION['hospital_id'];
 
-// Get JSON data
-$data = json_decode(file_get_contents('php://input'), true);
-
-if (!isset($data['approval_id']) || !isset($data['status'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-    exit();
-}
-
-$approval_id = $data['approval_id'];
-$status = $data['status'];
-
 try {
+    // Check if we have the required data
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['approval_id']) || !isset($data['status'])) {
+        throw new Exception('Missing required parameters');
+    }
+
+    $approval_id = $data['approval_id'];
+    $status = $data['status'];
+    $rejection_reason = isset($data['rejection_reason']) ? $data['rejection_reason'] : null;
+    $current_date = date('Y-m-d H:i:s');
+
     // Start transaction
     $conn->beginTransaction();
 
@@ -45,11 +51,18 @@ try {
     $stmt = $conn->prepare("
         UPDATE hospital_recipient_approvals 
         SET status = ?,
-            response_date = NOW()
+            approval_date = ?,
+            rejection_reason = ?
         WHERE approval_id = ? 
         AND hospital_id = ?
     ");
-    $stmt->execute([$status, $approval_id, $hospital_id]);
+    $stmt->execute([
+        $status,
+        $current_date,
+        $status === 'Rejected' ? $rejection_reason : null,
+        $approval_id,
+        $hospital_id
+    ]);
 
     // If approved, we might want to notify the recipient or update other related records
     if ($status === 'Approved') {
@@ -60,22 +73,26 @@ try {
     // Commit transaction
     $conn->commit();
 
+    // Return success response
     echo json_encode([
         'success' => true,
         'message' => "Recipient successfully " . strtolower($status)
     ]);
 
 } catch (Exception $e) {
-    // Rollback transaction on error
+    // Rollback transaction if active
     if ($conn->inTransaction()) {
         $conn->rollBack();
     }
+
+    // Log the error
+    error_log("Error in handle_recipient_request.php: " . $e->getMessage());
     
-    error_log("Error handling recipient request: " . $e->getMessage());
+    // Return error response
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => 'Error: ' . $e->getMessage()
     ]);
 }
 ?>
