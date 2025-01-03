@@ -2,6 +2,10 @@
 session_start();
 require_once '../config/db_connect.php';
 
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
@@ -28,15 +32,15 @@ try {
                 h.name as hospital_name,
                 h.phone as hospital_phone,
                 h.address as hospital_address,
-                GROUP_CONCAT(DISTINCT r.blood_group) as blood_groups,
+                GROUP_CONCAT(DISTINCT ha.blood_group) as blood_groups,
                 GROUP_CONCAT(DISTINCT ha.required_organ) as organ_types,
-                COUNT(DISTINCT r.recipient_id) as recipient_count
+                COUNT(DISTINCT r.id) as recipient_count
             FROM hospitals h
             JOIN hospital_recipient_approvals ha ON h.hospital_id = ha.hospital_id
-            JOIN recipient r ON ha.recipient_id = r.recipient_id
+            JOIN recipient_registration r ON ha.recipient_id = r.id
             WHERE ha.status = 'Approved'
             AND h.hospital_id != ?
-            AND LOWER(r.blood_group) LIKE LOWER(?)
+            AND LOWER(ha.blood_group) LIKE LOWER(?)
             GROUP BY h.hospital_id
             ORDER BY h.name ASC";
     } else { // organs
@@ -46,22 +50,30 @@ try {
                 h.name as hospital_name,
                 h.phone as hospital_phone,
                 h.address as hospital_address,
-                GROUP_CONCAT(DISTINCT r.blood_group) as blood_groups,
+                GROUP_CONCAT(DISTINCT ha.blood_group) as blood_groups,
                 GROUP_CONCAT(DISTINCT ha.required_organ) as organ_types,
-                COUNT(DISTINCT r.recipient_id) as recipient_count
+                COUNT(DISTINCT r.id) as recipient_count
             FROM hospitals h
             JOIN hospital_recipient_approvals ha ON h.hospital_id = ha.hospital_id
-            JOIN recipient r ON ha.recipient_id = r.recipient_id
+            JOIN recipient_registration r ON ha.recipient_id = r.id
             WHERE ha.status = 'Approved'
             AND h.hospital_id != ?
             AND LOWER(ha.required_organ) LIKE LOWER(?)
             GROUP BY h.hospital_id
             ORDER BY h.name ASC";
     }
+
+    // Log the query and parameters for debugging
+    error_log("Search Term: " . $searchTerm);
+    error_log("Filter: " . $filter);
+    error_log("Hospital ID: " . $hospital_id);
     
     $stmt = $conn->prepare($query);
     $stmt->execute([$hospital_id, "%$searchTerm%"]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Log the number of results
+    error_log("Number of results: " . count($results));
 
     // Format results
     $formattedResults = array_map(function($row) {
@@ -83,9 +95,10 @@ try {
 
 } catch(Exception $e) {
     error_log("Error in recipient search: " . $e->getMessage());
+    error_log("SQL Query: " . $query);
     echo json_encode([
         'success' => false,
-        'message' => 'An error occurred while searching'
+        'message' => 'An error occurred while searching: ' . $e->getMessage()
     ]);
 }
 ?>
