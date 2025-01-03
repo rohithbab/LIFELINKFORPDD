@@ -157,6 +157,93 @@ try {
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .search-results {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin: 2rem;
+            padding: 1rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: #666;
+        }
+
+        .recipient-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .recipient-count {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .recipient-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .view-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
     </style>
 </head>
 <body>
@@ -172,15 +259,19 @@ try {
                 </div>
 
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="blood_group">Blood Group</button>
-                    <button class="filter-btn" data-filter="organs">Organs</button>
+                    <button class="filter-btn active" data-filter="blood_group">
+                        <i class="fas fa-tint"></i> Blood Group
+                    </button>
+                    <button class="filter-btn" data-filter="organs">
+                        <i class="fas fa-heart"></i> Organs
+                    </button>
                 </div>
 
                 <?php if (empty($recipients)): ?>
                     <div class="empty-state">
-                        <i class="fas fa-user-plus fa-3x" style="color: #ccc; margin-bottom: 1rem;"></i>
+                        <i class="fas fa-user-plus fa-3x"></i>
                         <h3>No Recipients Available</h3>
-                        <p>There are no recipients available for matching at this time.</p>
+                        <p>There are no approved recipients in your hospital at this time.</p>
                     </div>
                 <?php else: ?>
                     <table class="recipients-table">
@@ -213,11 +304,29 @@ try {
                     </table>
                 <?php endif; ?>
             </div>
+
+            <div id="searchResults" class="search-results">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Hospital Name</th>
+                            <th>Contact Details</th>
+                            <th>Available Recipients</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
         </main>
     </div>
 
     <script>
+        let searchTimeout;
         const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
         const filterButtons = document.querySelectorAll('.filter-btn');
         let currentFilter = 'blood_group';
 
@@ -227,36 +336,106 @@ try {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 currentFilter = button.dataset.filter;
-                filterRecipients();
+                searchInput.placeholder = `Search by ${currentFilter}...`;
+                searchInput.value = '';
+                searchResults.style.display = 'none';
             });
         });
 
-        // Search functionality
-        searchInput.addEventListener('input', filterRecipients);
+        // Real-time search handling
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const searchTerm = searchInput.value.trim();
 
-        function filterRecipients() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const rows = document.querySelectorAll('.recipients-table tbody tr');
-            
-            rows.forEach(row => {
-                const bloodGroup = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const organ = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+            if (searchTerm.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch('../../ajax/search_recipients.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        search: searchTerm,
+                        filter: currentFilter
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.results.length > 0) {
+                        displayResults(data.results);
+                        searchResults.style.display = 'block';
+                    } else {
+                        displayResults([]);
+                        searchResults.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    displayResults([]);
+                    searchResults.style.display = 'block';
+                });
+            }, 500);
+        });
+
+        function displayResults(results) {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">No hospitals found matching your search criteria</td>
+                    </tr>`;
+                return;
+            }
+
+            results.forEach(hospital => {
+                const row = document.createElement('tr');
                 
-                let show = false;
-                if (currentFilter === 'blood_group') {
-                    show = bloodGroup.includes(searchTerm);
-                } else {
-                    show = organ.includes(searchTerm);
-                }
+                // Hospital Name
+                row.innerHTML = `
+                    <td>${hospital.hospital_name}</td>
+                    <td>
+                        <div class="contact-info">
+                            <span><i class="fas fa-phone"></i> ${hospital.phone}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${hospital.address}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="recipient-info">
+                            <span class="recipient-count">Recipients: ${hospital.recipient_count}</span>
+                            <span class="recipient-details">Blood Groups: ${hospital.blood_groups.join(', ')}</span>
+                            <span class="recipient-details">Required Organs: ${hospital.organ_types.join(', ')}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="choose_other_recipients.php?hospital_id=${hospital.hospital_id}" class="view-btn">
+                            View Recipients
+                        </a>
+                    </td>
+                `;
                 
-                row.style.display = show ? '' : 'none';
+                tbody.appendChild(row);
             });
+            
+            document.getElementById('searchResults').style.display = results.length ? 'block' : 'none';
         }
 
         function selectRecipient(recipientId) {
-            // TODO: Implement recipient selection logic
-            console.log('Selected recipient:', recipientId);
+            // Redirect back to make_matches.php with the selected recipient
+            window.location.href = `make_matches.php?recipient=${recipientId}`;
         }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
