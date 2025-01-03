@@ -2,16 +2,67 @@
 session_start();
 require_once '../../config/db_connect.php';
 
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
     header("Location: ../../pages/hospital_login.php");
     exit();
 }
 
-$hospital_id = $_SESSION['hospital_id']; // Make sure we have hospital_id
+$hospital_id = $_SESSION['hospital_id'];
 $hospital_name = $_SESSION['hospital_name'];
 $hospital_email = $_SESSION['hospital_email'];
 $odml_id = $_SESSION['odml_id'];
+
+// Debug session information
+error_log("DEBUG: Starting hospital dashboard for hospital_id: " . $hospital_id);
+error_log("Session Info - Hospital ID: " . $hospital_id . ", Name: " . $hospital_name);
+
+// Fetch recipient requests
+try {
+    $query = "
+        SELECT 
+            hra.*,
+            r.full_name,
+            r.blood_type,
+            r.organ_required,
+            r.medical_condition
+        FROM hospital_recipient_approvals hra
+        JOIN recipient_registration r ON r.id = hra.recipient_id
+        WHERE hra.hospital_id = :hospital_id 
+        AND LOWER(hra.status) = 'pending'
+        ORDER BY hra.request_date DESC
+    ";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(':hospital_id', $hospital_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("DEBUG: Found " . count($recipient_requests) . " pending recipient requests");
+} catch(PDOException $e) {
+    error_log("ERROR: " . $e->getMessage());
+    $recipient_requests = array();
+}
+
+// Fetch donor requests
+try {
+    $stmt = $conn->prepare("
+        SELECT hda.*, d.name as donor_name, d.blood_group 
+        FROM hospital_donor_approvals hda
+        JOIN donor d ON hda.donor_id = d.donor_id
+        WHERE hda.hospital_id = ? AND hda.status = 'Pending'
+        ORDER BY hda.request_date DESC
+    ");
+    $stmt->execute([$hospital_id]);
+    $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("ERROR: " . $e->getMessage());
+    $donor_requests = array();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -308,70 +359,42 @@ $odml_id = $_SESSION['odml_id'];
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            try {
-                                // Debug information
-                                error_log("Hospital ID: " . $hospital_id);
-                                
-                                // Fetch pending donor requests
-                                $stmt = $conn->prepare("
-                                    SELECT hda.*, d.name as donor_name, d.blood_group 
-                                    FROM hospital_donor_approvals hda
-                                    JOIN donor d ON hda.donor_id = d.donor_id
-                                    WHERE hda.hospital_id = ? AND hda.status = 'Pending'
-                                    ORDER BY hda.request_date DESC
-                                ");
-                                $stmt->execute([$hospital_id]);
-                                $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                
-                                error_log("Number of requests found: " . count($donor_requests));
-                                if (count($donor_requests) === 0) {
-                                    error_log("No requests found for hospital_id: " . $hospital_id);
-                                }
-                                if (count($donor_requests) > 0) {
-                                    foreach ($donor_requests as $request) {
-                                        ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
-                                            <td>
-                                                <span class="blood-badge">
-                                                    <?php echo htmlspecialchars($request['blood_group']); ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
-                                            <td>
-                                                <span class="status-badge <?php echo strtolower($request['status']); ?>">
-                                                    <?php echo htmlspecialchars($request['status']); ?>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a href="hospital_checks_donor_pf.php?id=<?php echo $request['approval_id']; ?>" class="btn-action btn-view">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </td>
-                                            <td class="actions">
-                                                <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Approved')" class="btn-approve">
-                                                    <i class="fas fa-check"></i> Approve
-                                                </button>
-                                                <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Rejected')" class="btn-reject">
-                                                    <i class="fas fa-times"></i> Reject
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } else {
-                                    ?>
+                            <?php if (empty($donor_requests)): ?>
+                                <tr>
+                                    <td colspan="7" class="no-data">No pending donor approvals</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($donor_requests as $request): ?>
                                     <tr>
-                                        <td colspan="7" class="no-data">No pending donor approvals</td>
+                                        <td><?php echo htmlspecialchars($request['donor_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['organ_type']); ?></td>
+                                        <td>
+                                            <span class="blood-badge">
+                                                <?php echo htmlspecialchars($request['blood_group']); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
+                                        <td>
+                                            <span class="status-badge <?php echo strtolower($request['status']); ?>">
+                                                <?php echo htmlspecialchars($request['status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="hospital_checks_donor_pf.php?id=<?php echo $request['approval_id']; ?>" class="btn-action btn-view">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                        <td class="actions">
+                                            <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Approved')" class="btn-approve">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button onclick="updateDonorStatus(<?php echo $request['approval_id']; ?>, 'Rejected')" class="btn-reject">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </td>
                                     </tr>
-                                    <?php
-                                }
-                            } catch (PDOException $e) {
-                                echo "<tr><td colspan='7' class='error'>Error fetching donor requests</td></tr>";
-                            }
-                            ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -381,6 +404,14 @@ $odml_id = $_SESSION['odml_id'];
             <div class="table-container">
                 <div class="card-header">
                     <h2>Pending Recipient Approvals</h2>
+                    <!-- Debug information -->
+                    <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                        <small style="color: #666;">
+                            Debug Info:<br>
+                            - Hospital ID: <?php echo htmlspecialchars($hospital_id); ?><br>
+                            - Number of requests: <?php echo count($recipient_requests); ?><br>
+                        </small>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="modern-table">
@@ -411,10 +442,10 @@ $odml_id = $_SESSION['odml_id'];
                                 <?php foreach ($recipient_requests as $request): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($request['full_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                        <td><?php echo htmlspecialchars($request['required_organ']); ?></td>
                                         <td>
                                             <span class="status-badge">
-                                                <?php echo htmlspecialchars($request['blood_type']); ?>
+                                                <?php echo htmlspecialchars($request['blood_group']); ?>
                                             </span>
                                         </td>
                                         <td>
@@ -425,7 +456,7 @@ $odml_id = $_SESSION['odml_id'];
                                         <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                         <td>
                                             <span class="status-badge status-pending">
-                                                Pending
+                                                <?php echo htmlspecialchars($request['status']); ?>
                                             </span>
                                         </td>
                                         <td>
@@ -433,15 +464,13 @@ $odml_id = $_SESSION['odml_id'];
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-action btn-approve" onclick="approveRecipient(<?php echo $request['approval_id']; ?>)">
-                                                    <i class="fas fa-check"></i> Approve
-                                                </button>
-                                                <button class="btn-action btn-reject" onclick="rejectRecipient(<?php echo $request['approval_id']; ?>)">
-                                                    <i class="fas fa-times"></i> Reject
-                                                </button>
-                                            </div>
+                                        <td class="actions">
+                                            <button onclick="updateRecipientStatus(<?php echo $request['approval_id']; ?>, 'Approved')" class="btn-approve">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button onclick="updateRecipientStatus(<?php echo $request['approval_id']; ?>, 'Rejected')" class="btn-reject">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -684,6 +713,58 @@ $odml_id = $_SESSION['odml_id'];
             </script>
 
             <script>
+                function updateRecipientStatus(approvalId, status) {
+                    if (!approvalId) {
+                        console.error('Invalid approval ID');
+                        return;
+                    }
+                    
+                    const confirmMessage = status === 'Approved' ? 
+                        'Are you sure you want to approve this recipient?' :
+                        'Are you sure you want to reject this recipient?';
+                        
+                    if (confirm(confirmMessage)) {
+                        // Show loading state
+                        const button = event.target.closest('button');
+                        const originalText = button.innerHTML;
+                        button.disabled = true;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        
+                        fetch('../../ajax/handle_recipient_request.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                approval_id: approvalId,
+                                status: status,
+                                action: status.toLowerCase()
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Refresh the page to show updated status
+                                location.reload();
+                            } else {
+                                alert('Error: ' + (data.message || 'Failed to update status'));
+                                // Reset button state
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error updating status. Please try again.');
+                            // Reset button state
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                        });
+                    }
+                }
+            </script>
+
+            <script>
                 function approveRequest(approvalId) {
                     if (confirm('Are you sure you want to approve this request?')) {
                         $.post('approve_recipient_request.php', {
@@ -720,48 +801,3 @@ $odml_id = $_SESSION['odml_id'];
     </div>
 </body>
 </html>
-
-<?php
-try {
-    // Debug information
-    error_log("Hospital ID: " . $hospital_id);
-    
-    // Fetch pending donor requests
-    $stmt = $conn->prepare("
-        SELECT hda.*, d.name as donor_name, d.blood_group 
-        FROM hospital_donor_approvals hda
-        JOIN donor d ON hda.donor_id = d.donor_id
-        WHERE hda.hospital_id = ? AND hda.status = 'Pending'
-        ORDER BY hda.request_date DESC
-    ");
-    $stmt->execute([$hospital_id]);
-    $donor_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    error_log("Number of requests found: " . count($donor_requests));
-    if (count($donor_requests) === 0) {
-        error_log("No requests found for hospital_id: " . $hospital_id);
-    }
-} catch (PDOException $e) {
-    $donor_requests = array();
-}
-
-try {
-    $stmt = $conn->prepare("
-        SELECT 
-            hra.*,
-            r.full_name,
-            r.blood_type,
-            r.organ_required,
-            r.medical_condition
-        FROM hospital_recipient_approvals hra
-        JOIN recipient_registration r ON hra.recipient_id = r.id
-        WHERE hra.hospital_id = ? AND hra.status = 'pending'
-        ORDER BY hra.request_date DESC
-    ");
-    $stmt->execute([$hospital_id]);
-    $recipient_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    error_log("Error fetching recipient requests: " . $e->getMessage());
-    $error = "Error loading recipient requests";
-}
-?>
