@@ -30,8 +30,10 @@ try {
 
     // First, verify the request exists and check permissions
     $stmt = $conn->prepare("
-        SELECT * FROM donor_requests 
-        WHERE request_id = ? AND (donor_hospital_id = ? OR requesting_hospital_id = ?)
+        SELECT dr.*, ha.organ_type 
+        FROM donor_requests dr
+        JOIN hospital_donor_approvals ha ON ha.donor_id = dr.donor_id AND ha.hospital_id = dr.donor_hospital_id
+        WHERE dr.request_id = ? AND (dr.donor_hospital_id = ? OR dr.requesting_hospital_id = ?)
     ");
     $stmt->execute([$request_id, $hospital_id, $hospital_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -56,6 +58,17 @@ try {
         throw new Exception('Invalid action: Only the requesting hospital can cancel approved requests');
     }
 
+    // Check if donor is already matched
+    $stmt = $conn->prepare("
+        SELECT is_matched 
+        FROM hospital_donor_approvals 
+        WHERE donor_id = ? AND (status = 'Approved' OR status = 'Shared') AND is_matched = TRUE
+    ");
+    $stmt->execute([$request['donor_id']]);
+    if ($stmt->fetch()) {
+        throw new Exception('This donor has already been matched with a recipient');
+    }
+
     // Update request status
     $newStatus = $action === 'approve' ? 'Approved' : 'Rejected';
     
@@ -66,16 +79,44 @@ try {
     ");
     $stmt->execute([$newStatus, $message, $request_id]);
 
-    // If cancelling an approved request, also update any other pending requests
+    // If approving, create shared approval for requesting hospital
+    if ($action === 'approve') {
+        // First check if shared approval already exists
+        $stmt = $conn->prepare("
+            SELECT share_id 
+            FROM shared_donor_approvals 
+            WHERE donor_id = ? AND to_hospital_id = ? AND request_id = ?
+        ");
+        $stmt->execute([$request['donor_id'], $request['requesting_hospital_id'], $request_id]);
+        if (!$stmt->fetch()) {
+            // Create shared approval
+            $stmt = $conn->prepare("
+                INSERT INTO shared_donor_approvals (
+                    donor_id,
+                    from_hospital_id,
+                    to_hospital_id,
+                    request_id,
+                    organ_type,
+                    is_matched
+                ) VALUES (?, ?, ?, ?, ?, FALSE)
+            ");
+            $stmt->execute([
+                $request['donor_id'],
+                $request['donor_hospital_id'],
+                $request['requesting_hospital_id'],
+                $request_id,
+                $request['organ_type']
+            ]);
+        }
+    }
+
+    // If cancelling an approved request, remove shared approval
     if ($action === 'cancel') {
         $stmt = $conn->prepare("
-            UPDATE donor_requests 
-            SET status = 'Rejected', 
-                response_date = NOW(), 
-                response_message = 'Request cancelled by requesting hospital'
-            WHERE donor_id = ? AND status = 'Pending'
+            DELETE FROM shared_donor_approvals 
+            WHERE donor_id = ? AND to_hospital_id = ? AND request_id = ?
         ");
-        $stmt->execute([$request['donor_id']]);
+        $stmt->execute([$request['donor_id'], $request['requesting_hospital_id'], $request_id]);
     }
 
     // Commit transaction
@@ -85,9 +126,10 @@ try {
 
 } catch (Exception $e) {
     // Rollback transaction on error
-    $conn->rollBack();
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>

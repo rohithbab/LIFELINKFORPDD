@@ -14,14 +14,38 @@ $hospital_name = $_SESSION['hospital_name'];
 // Fetch hospital's donors
 try {
     $stmt = $conn->prepare("
-        SELECT d.*, ha.status as approval_status, ha.organ_type
-        FROM donor d
-        JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
-        WHERE ha.hospital_id = ? AND ha.status = 'Approved'
-        ORDER BY d.name ASC
+        (
+            -- Regular donors
+            SELECT 
+                d.*,
+                ha.organ_type,
+                'Own' as donor_type,
+                NULL as shared_from_hospital
+            FROM donor d
+            JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
+            WHERE ha.hospital_id = ? 
+            AND ha.status = 'Approved'
+        )
+        UNION
+        (
+            -- Shared donors
+            SELECT 
+                d.*,
+                sda.organ_type,
+                'Shared' as donor_type,
+                h2.name as shared_from_hospital
+            FROM donor d
+            JOIN shared_donor_approvals sda ON d.donor_id = sda.donor_id
+            JOIN hospitals h2 ON h2.hospital_id = sda.from_hospital_id
+            WHERE sda.to_hospital_id = ?
+            AND sda.is_matched = FALSE
+        )
+        ORDER BY name ASC
     ");
-    $stmt->execute([$hospital_id]);
+    
+    $stmt->execute([$hospital_id, $hospital_id]);
     $donors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch(PDOException $e) {
     error_log("Error fetching donors: " . $e->getMessage());
     $donors = [];
@@ -216,6 +240,40 @@ try {
             padding: 3rem;
             color: #666;
         }
+
+        .shared-donor {
+            background-color: rgba(33, 150, 243, 0.05);
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .shared-badge {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-top: 0.5rem;
+        }
+
+        .shared-badge i {
+            margin-right: 0.3rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -257,22 +315,26 @@ try {
                                 <th>Donor Name</th>
                                 <th>Blood Group</th>
                                 <th>Organ Type</th>
-                                <th>Phone</th>
-                                <th>Address</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($donors as $donor): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($donor['name']); ?></td>
+                                <tr class="<?php echo $donor['donor_type'] === 'Shared' ? 'shared-donor' : ''; ?>">
+                                    <td>
+                                        <?php echo htmlspecialchars($donor['name']); ?>
+                                        <?php if ($donor['donor_type'] === 'Shared'): ?>
+                                            <div class="shared-badge">
+                                                <i class="fas fa-share-alt"></i> 
+                                                Shared from <?php echo htmlspecialchars($donor['shared_from_hospital']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($donor['blood_group']); ?></td>
                                     <td><?php echo htmlspecialchars($donor['organ_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($donor['phone']); ?></td>
-                                    <td><?php echo htmlspecialchars($donor['address']); ?></td>
                                     <td>
                                         <button class="select-btn" onclick="selectDonor(<?php echo $donor['donor_id']; ?>)">
-                                            Select
+                                            Select for Match
                                         </button>
                                     </td>
                                 </tr>
