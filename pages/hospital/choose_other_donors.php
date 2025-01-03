@@ -9,6 +9,13 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
 }
 
 $hospital_id = isset($_GET['hospital_id']) ? (int)$_GET['hospital_id'] : 0;
+$logged_in_hospital = $_SESSION['hospital_id'];
+
+// Check if trying to view own hospital
+if ($hospital_id === $logged_in_hospital) {
+    header("Location: choose_donors_for_matches.php");
+    exit();
+}
 
 if (!$hospital_id) {
     header("Location: choose_donors_for_matches.php");
@@ -21,9 +28,9 @@ try {
     $stmt = $conn->prepare("
         SELECT name, phone, address 
         FROM hospitals 
-        WHERE hospital_id = ?
+        WHERE hospital_id = ? AND hospital_id != ?
     ");
-    $stmt->execute([$hospital_id]);
+    $stmt->execute([$hospital_id, $logged_in_hospital]);
     $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$hospital) {
@@ -31,7 +38,7 @@ try {
         exit();
     }
 
-    // Get donors from this hospital
+    // Get donors from this hospital only (not from logged in hospital)
     $stmt = $conn->prepare("
         SELECT 
             d.donor_id,
@@ -42,10 +49,11 @@ try {
         FROM donor d
         JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
         WHERE ha.hospital_id = ? 
+        AND ha.hospital_id != ?
         AND ha.status = 'Approved'
         ORDER BY d.name ASC
     ");
-    $stmt->execute([$hospital_id]);
+    $stmt->execute([$hospital_id, $logged_in_hospital]);
     $donors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch(PDOException $e) {
@@ -146,6 +154,7 @@ try {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .back-btn:hover {
@@ -156,18 +165,15 @@ try {
 <body>
     <div class="dashboard-container">
         <?php include '../../includes/hospital_sidebar.php'; ?>
-
+        
         <main class="main-content">
-            <div class="dashboard-header">
-                <div class="header-left">
-                    <a href="choose_donors_for_matches.php" class="back-btn">
-                        <i class="fas fa-arrow-left"></i>
-                        Back to Search
-                    </a>
-                </div>
-            </div>
-
+            <!-- Only show back button and selected hospital's donors -->
             <div class="donor-list">
+                <a href="choose_donors_for_matches.php" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Search
+                </a>
+
                 <div class="hospital-info">
                     <h2><?php echo htmlspecialchars($hospital['name']); ?></h2>
                     <div class="info-item">
