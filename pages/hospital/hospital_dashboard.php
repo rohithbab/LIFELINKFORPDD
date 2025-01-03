@@ -274,55 +274,8 @@ $odml_id = $_SESSION['odml_id'];
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2 class="logo-text">LifeLink</h2>
-                <div class="sub-text">HospitalHub</div>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li>
-                        <a href="hospital_dashboard.php" class="active">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="hospitals_handles_donors_status.php">
-                            <i class="fas fa-users"></i>
-                            <span>Manage Donors</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="hospitals_handles_recipients_status.php">
-                            <i class="fas fa-procedures"></i>
-                            <span>Manage Recipients</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="make_matches.php">
-                            <i class="fas fa-link"></i>
-                            <span>Make Matches</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="check_requests.php">
-                            <i class="fas fa-bell"></i>
-                            <span>Check Requests</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../logout.php">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
+        <?php include '../../includes/hospital_sidebar.php'; ?>
+        
         <main class="main-content">
             <div class="dashboard-header">
                 <div class="header-left">
