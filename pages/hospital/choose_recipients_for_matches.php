@@ -294,9 +294,9 @@ try {
                                         <?php echo htmlspecialchars($recipient['priority_level']); ?>
                                     </td>
                                     <td>
-                                        <button class="action-btn" onclick="selectRecipient(<?php echo $recipient['id']; ?>)">
+                                        <a href="make_matches.php?recipient=<?php echo $recipient['id']; ?>" class="action-btn">
                                             Select for Match
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -396,7 +396,6 @@ try {
             results.forEach(hospital => {
                 const row = document.createElement('tr');
                 
-                // Hospital Name
                 row.innerHTML = `
                     <td>${hospital.hospital_name}</td>
                     <td>
@@ -413,9 +412,9 @@ try {
                         </div>
                     </td>
                     <td>
-                        <a href="choose_other_recipients.php?hospital_id=${hospital.hospital_id}" class="view-btn">
+                        <button onclick="window.location.href='choose_other_recipients.php?hospital_id=' + ${hospital.hospital_id}" class="view-btn">
                             View Recipients
-                        </a>
+                        </button>
                     </td>
                 `;
                 
@@ -423,11 +422,6 @@ try {
             });
             
             document.getElementById('searchResults').style.display = results.length ? 'block' : 'none';
-        }
-
-        function selectRecipient(recipientId) {
-            // Redirect back to make_matches.php with the selected recipient
-            window.location.href = `make_matches.php?recipient=${recipientId}`;
         }
 
         // Close search results when clicking outside

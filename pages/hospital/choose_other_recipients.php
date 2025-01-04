@@ -38,9 +38,10 @@ try {
         SELECT 
             r.*,
             ha.required_organ,
+            ha.blood_group,
             ha.priority_level
         FROM recipient_registration r
-        JOIN hospital_recipient_approvals ha ON r.recipient_id = ha.recipient_id
+        JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
         WHERE ha.hospital_id = ?
         AND ha.status = 'Approved'
         ORDER BY ha.priority_level DESC, r.full_name ASC
@@ -220,7 +221,7 @@ try {
                                         <?php echo htmlspecialchars($recipient['priority_level']); ?>
                                     </td>
                                     <td>
-                                        <button class="select-btn" onclick="selectRecipient(<?php echo $recipient['recipient_id']; ?>)">
+                                        <button class="select-btn" onclick="selectRecipient(<?php echo $recipient['id']; ?>)">
                                             Select for Match
                                         </button>
                                     </td>
