@@ -4,73 +4,76 @@ require_once '../config/db_connect.php';
 
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
-    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
-$hospital_id = $_SESSION['hospital_id'];
-
-// Get JSON data
+// Get JSON input
 $data = json_decode(file_get_contents('php://input'), true);
+$recipient_id = $data['recipient_id'] ?? 0;
+$recipient_hospital_id = $data['recipient_hospital_id'] ?? 0;
+$requesting_hospital_id = $_SESSION['hospital_id'];
 
-if (!isset($data['recipient_id']) || !isset($data['recipient_hospital_id'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+if (!$recipient_id || !$recipient_hospital_id) {
+    echo json_encode(['success' => false, 'message' => 'Invalid recipient or hospital ID']);
     exit();
 }
-
-$recipient_id = $data['recipient_id'];
-$recipient_hospital_id = $data['recipient_hospital_id'];
 
 try {
     // Start transaction
     $conn->beginTransaction();
 
-    // Check if recipient exists and is approved
+    // Get recipient and hospital information
     $stmt = $conn->prepare("
-        SELECT r.*, ha.status as approval_status, ha.required_organ, ha.blood_group
-        FROM recipient r
-        JOIN hospital_recipient_approvals ha ON r.recipient_id = ha.recipient_id
-        WHERE r.recipient_id = ? AND ha.hospital_id = ? AND ha.status = 'Approved'
+        SELECT 
+            r.id,
+            r.blood_type,
+            ha.required_organ,
+            ha.hospital_id as recipient_hospital_id
+        FROM recipient_registration r
+        JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
+        WHERE r.id = ? AND ha.status = 'Approved'
     ");
-    $stmt->execute([$recipient_id, $recipient_hospital_id]);
-    $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$recipient_id]);
+    $recipientInfo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$recipient) {
+    if (!$recipientInfo) {
         throw new Exception('Recipient not found or not approved');
     }
 
-    // Check if recipient is already matched
+    // Check if recipient hospital is the same as requesting hospital
+    if ($recipientInfo['recipient_hospital_id'] == $requesting_hospital_id) {
+        throw new Exception('Cannot request your own recipient');
+    }
+
+    // Check if request already exists
     $stmt = $conn->prepare("
-        SELECT is_matched 
-        FROM hospital_recipient_approvals 
-        WHERE recipient_id = ? AND status = 'Approved' AND is_matched = TRUE
+        SELECT status 
+        FROM recipient_requests 
+        WHERE recipient_id = ? AND requesting_hospital_id = ? 
+        AND status IN ('Pending', 'Approved')
+    ");
+    $stmt->execute([$recipient_id, $requesting_hospital_id]);
+    if ($stmt->fetch()) {
+        throw new Exception('A request already exists for this recipient');
+    }
+
+    // Check if recipient already has an approved request
+    $stmt = $conn->prepare("
+        SELECT status 
+        FROM recipient_requests 
+        WHERE recipient_id = ? AND status = 'Approved'
     ");
     $stmt->execute([$recipient_id]);
     if ($stmt->fetch()) {
-        throw new Exception('This recipient has already been matched');
+        throw new Exception('This recipient has already been approved for another hospital');
     }
 
-    // Check if a request already exists
-    $stmt = $conn->prepare("
-        SELECT request_id, status 
-        FROM recipient_requests 
-        WHERE recipient_id = ? 
-        AND requesting_hospital_id = ? 
-        AND recipient_hospital_id = ?
-        AND status = 'Pending'
-    ");
-    $stmt->execute([$recipient_id, $hospital_id, $recipient_hospital_id]);
-    if ($stmt->fetch()) {
-        throw new Exception('A pending request already exists for this recipient');
-    }
-
-    // Create the request
+    // Insert new request
     $stmt = $conn->prepare("
         INSERT INTO recipient_requests (
-            recipient_id,
-            requesting_hospital_id,
+            recipient_id, 
+            requesting_hospital_id, 
             recipient_hospital_id,
             request_date,
             status
@@ -78,17 +81,14 @@ try {
     ");
     $stmt->execute([
         $recipient_id,
-        $hospital_id,
+        $requesting_hospital_id,
         $recipient_hospital_id
     ]);
 
     // Commit transaction
     $conn->commit();
 
-    echo json_encode([
-        'success' => true, 
-        'message' => 'Request sent successfully'
-    ]);
+    echo json_encode(['success' => true, 'message' => 'Request sent successfully']);
 
 } catch (Exception $e) {
     // Rollback transaction on error
@@ -96,6 +96,5 @@ try {
         $conn->rollBack();
     }
     
-    http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
