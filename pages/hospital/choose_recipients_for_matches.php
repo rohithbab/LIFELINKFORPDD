@@ -180,11 +180,14 @@ try {
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none !important;
+            display: inline-block;
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: white;
         }
 
         .empty-state {
@@ -213,8 +216,12 @@ try {
             color: white;
             padding: 0.3rem 0.8rem;
             border-radius: 15px;
-            font-size: 0.8em;
-            margin-left: 0.5rem;
+            font-size: 0.85em;
+            margin-top: 0.5rem;
+        }
+
+        .shared-badge i {
+            margin-right: 0.3rem;
         }
 
         .shared-info {
@@ -222,6 +229,11 @@ try {
             color: #666;
             font-style: italic;
             margin-top: 0.2rem;
+        }
+
+        tr.shared-recipient {
+            background-color: rgba(33, 150, 243, 0.05);
+            border-left: 4px solid var(--primary-blue);
         }
 
         .search-results {
@@ -332,13 +344,15 @@ try {
                         </thead>
                         <tbody>
                             <?php foreach ($recipients as $recipient): ?>
-                                <tr>
+                                <tr class="<?php echo $recipient['recipient_type'] === 'Shared' ? 'shared-recipient' : ''; ?>">
                                     <td>
                                         <?php echo htmlspecialchars($recipient['full_name']); ?>
                                         <?php if ($recipient['recipient_type'] === 'Shared'): ?>
-                                            <span class="shared-badge">Shared</span>
-                                            <div class="shared-info">
-                                                From: <?php echo htmlspecialchars($recipient['shared_from_hospital']); ?>
+                                            <div>
+                                                <span class="shared-badge">
+                                                    <i class="fas fa-share-alt"></i>
+                                                    Shared from <?php echo htmlspecialchars($recipient['shared_from_hospital']); ?>
+                                                </span>
                                             </div>
                                         <?php endif; ?>
                                     </td>
