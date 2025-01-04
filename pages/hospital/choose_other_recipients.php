@@ -39,14 +39,22 @@ try {
             r.*,
             ha.required_organ,
             ha.blood_group,
-            ha.priority_level
+            ha.priority_level,
+            CASE 
+                WHEN rr.status IS NOT NULL THEN rr.status
+                ELSE 'Not Requested'
+            END as request_status
         FROM recipient_registration r
         JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
+        LEFT JOIN recipient_requests rr ON r.id = rr.recipient_id 
+            AND rr.requesting_hospital_id = ? 
+            AND rr.recipient_hospital_id = ?
+            AND rr.status IN ('Pending', 'Approved')
         WHERE ha.hospital_id = ?
         AND ha.status = 'Approved'
         ORDER BY ha.priority_level DESC, r.full_name ASC
     ");
-    $stmt->execute([$selected_hospital_id]);
+    $stmt->execute([$hospital_id, $selected_hospital_id, $selected_hospital_id]);
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch(PDOException $e) {
@@ -128,48 +136,36 @@ try {
             font-weight: bold;
         }
 
-        .select-btn {
+        .request-btn {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 5px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: 500;
         }
 
-        .select-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .request-btn.not-requested {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
         }
 
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            background: #f0f0f0;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.3s ease;
+        .request-btn.pending {
+            background: #ffc107;
+            color: #000;
+            cursor: not-allowed;
         }
 
-        .back-btn:hover {
-            background: #e0e0e0;
+        .request-btn.approved {
+            background: #28a745;
+            color: white;
+            cursor: not-allowed;
         }
 
         .empty-state {
             text-align: center;
             padding: 3rem;
             color: #666;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #ccc;
         }
     </style>
 </head>
@@ -179,26 +175,20 @@ try {
         
         <main class="main-content">
             <div class="hospital-info">
-                <a href="make_matches.php" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Back to Matching
-                </a>
-                <div class="hospital-details">
-                    <h2><?php echo htmlspecialchars($hospital_info['name']); ?></h2>
-                    <div class="hospital-contact">
-                        <span><i class="fas fa-phone"></i> <?php echo htmlspecialchars($hospital_info['phone']); ?></span>
-                        <span><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($hospital_info['address']); ?></span>
-                    </div>
+                <h2><?php echo htmlspecialchars($hospital_info['name']); ?></h2>
+                <div class="hospital-contact">
+                    <span><i class="fas fa-phone"></i> <?php echo htmlspecialchars($hospital_info['phone']); ?></span>
+                    <span><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($hospital_info['address']); ?></span>
                 </div>
             </div>
 
             <div class="recipients-section">
                 <h3>Available Recipients</h3>
-                
                 <?php if (empty($recipients)): ?>
                     <div class="empty-state">
-                        <i class="fas fa-user-plus"></i>
-                        <h3>No Recipients Available</h3>
-                        <p>There are no recipients available from this hospital at this time.</p>
+                        <i class="fas fa-user-slash fa-3x"></i>
+                        <h4>No Recipients Available</h4>
+                        <p>This hospital currently has no approved recipients.</p>
                     </div>
                 <?php else: ?>
                     <table class="recipients-table">
@@ -221,9 +211,20 @@ try {
                                         <?php echo htmlspecialchars($recipient['priority_level']); ?>
                                     </td>
                                     <td>
-                                        <button class="select-btn" onclick="selectRecipient(<?php echo $recipient['id']; ?>)">
-                                            Select for Match
-                                        </button>
+                                        <?php if ($recipient['request_status'] === 'Not Requested'): ?>
+                                            <button onclick="requestRecipient(<?php echo $recipient['id']; ?>)" 
+                                                    class="request-btn not-requested">
+                                                Request Recipient
+                                            </button>
+                                        <?php elseif ($recipient['request_status'] === 'Pending'): ?>
+                                            <button class="request-btn pending" disabled>
+                                                Request Pending
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="request-btn approved" disabled>
+                                                Request Approved
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -235,9 +236,34 @@ try {
     </div>
 
     <script>
-        function selectRecipient(recipientId) {
-            // Redirect back to make_matches.php with recipient ID
-            window.location.href = `make_matches.php?recipient=${recipientId}`;
+        function requestRecipient(recipientId) {
+            if (!confirm('Are you sure you want to request this recipient?')) {
+                return;
+            }
+
+            fetch('../../ajax/send_recipient_request.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recipient_id: recipientId,
+                    recipient_hospital_id: <?php echo $selected_hospital_id; ?>
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Request sent successfully!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to send request. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
         }
     </script>
 </body>
