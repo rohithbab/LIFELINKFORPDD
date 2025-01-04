@@ -21,53 +21,76 @@ $hospital_id = $_SESSION['hospital_id'];
 try {
     // Check if we have the required data
     $data = json_decode(file_get_contents('php://input'), true);
-    if (!isset($data['approval_id']) || !isset($data['status'])) {
+    if (!isset($data['request_id']) || !isset($data['action'])) {
         throw new Exception('Missing required parameters');
     }
 
-    $approval_id = $data['approval_id'];
-    $status = $data['status'];
-    $rejection_reason = isset($data['rejection_reason']) ? $data['rejection_reason'] : null;
+    $request_id = $data['request_id'];
+    $action = $data['action'];
+    $message = isset($data['message']) ? $data['message'] : null;
     $current_date = date('Y-m-d H:i:s');
 
     // Start transaction
     $conn->beginTransaction();
 
-    // First, verify the approval exists and belongs to this hospital
+    // First, verify the request exists and belongs to this hospital
     $stmt = $conn->prepare("
-        SELECT hra.*, r.full_name 
-        FROM hospital_recipient_approvals hra
-        JOIN recipient_registration r ON r.id = hra.recipient_id
-        WHERE hra.approval_id = ? AND hra.hospital_id = ? AND hra.status = 'Pending'
+        SELECT rr.*, r.full_name, r.id as recipient_id, ha.required_organ
+        FROM recipient_requests rr
+        JOIN recipient_registration r ON r.id = rr.recipient_id
+        JOIN hospital_recipient_approvals ha ON ha.recipient_id = r.id
+        WHERE rr.request_id = ? 
+        AND rr.recipient_hospital_id = ? 
+        AND rr.status = 'Pending'
     ");
-    $stmt->execute([$approval_id, $hospital_id]);
-    $approval = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute([$request_id, $hospital_id]);
+    $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$approval) {
-        throw new Exception('Approval not found or you do not have permission to modify it');
+    if (!$request) {
+        throw new Exception('Request not found or you do not have permission to modify it');
     }
 
-    // Update approval status
+    // Update request status based on action
+    $status = ($action === 'approve') ? 'Approved' : 'Rejected';
+    
     $stmt = $conn->prepare("
-        UPDATE hospital_recipient_approvals 
+        UPDATE recipient_requests 
         SET status = ?,
-            approval_date = ?,
-            rejection_reason = ?
-        WHERE approval_id = ? 
-        AND hospital_id = ?
+            response_date = ?,
+            response_message = ?
+        WHERE request_id = ? 
     ");
     $stmt->execute([
         $status,
         $current_date,
-        $status === 'Rejected' ? $rejection_reason : null,
-        $approval_id,
-        $hospital_id
+        $message,
+        $request_id
     ]);
 
-    // If approved, we might want to notify the recipient or update other related records
+    // If approved, create shared recipient approval for requesting hospital
     if ($status === 'Approved') {
-        // Add any additional logic for approved recipients here
-        error_log("Recipient {$approval['full_name']} approved by hospital {$hospital_id}");
+        // Insert into shared_recipient_approvals
+        $stmt = $conn->prepare("
+            INSERT INTO shared_recipient_approvals (
+                recipient_id,
+                from_hospital_id,
+                to_hospital_id,
+                request_id,
+                organ_type,
+                share_date,
+                is_matched
+            ) VALUES (?, ?, ?, ?, ?, NOW(), FALSE)
+        ");
+        $stmt->execute([
+            $request['recipient_id'],
+            $hospital_id,
+            $request['requesting_hospital_id'],
+            $request_id,
+            $request['required_organ']
+        ]);
+
+        // Log the approval
+        error_log("Recipient {$request['full_name']} shared with hospital {$request['requesting_hospital_id']}");
     }
 
     // Commit transaction
@@ -76,7 +99,7 @@ try {
     // Return success response
     echo json_encode([
         'success' => true,
-        'message' => "Recipient successfully " . strtolower($status)
+        'message' => "Request successfully " . strtolower($status)
     ]);
 
 } catch (Exception $e) {
