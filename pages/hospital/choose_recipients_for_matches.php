@@ -14,20 +14,49 @@ $hospital_name = $_SESSION['hospital_name'];
 // Fetch hospital's recipients
 try {
     $stmt = $conn->prepare("
-        SELECT 
-            r.*,
-            ha.required_organ,
-            ha.blood_group,
-            ha.status as approval_status,
-            ha.priority_level
-        FROM recipient_registration r
-        JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
-        WHERE ha.hospital_id = ? 
-        AND ha.status = 'Approved'
-        ORDER BY ha.priority_level DESC, r.full_name ASC
+        (
+            -- Regular recipients
+            SELECT 
+                r.*,
+                ha.required_organ,
+                ha.blood_group,
+                ha.priority_level,
+                'Own' as recipient_type,
+                NULL as shared_from_hospital
+            FROM recipient_registration r
+            JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
+            WHERE ha.hospital_id = ? 
+            AND ha.status = 'Approved'
+            AND NOT EXISTS (
+                SELECT 1 FROM donor_and_recipient_requests 
+                WHERE recipient_id = r.id
+            )
+        )
+        UNION
+        (
+            -- Shared recipients
+            SELECT 
+                r.*,
+                sra.organ_type as required_organ,
+                r.blood_type as blood_group,
+                ha.priority_level,
+                'Shared' as recipient_type,
+                h2.name as shared_from_hospital
+            FROM recipient_registration r
+            JOIN shared_recipient_approvals sra ON r.id = sra.recipient_id
+            JOIN hospitals h2 ON h2.hospital_id = sra.from_hospital_id
+            JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id AND ha.hospital_id = sra.from_hospital_id
+            WHERE sra.to_hospital_id = ?
+            AND sra.is_matched = FALSE
+            AND NOT EXISTS (
+                SELECT 1 FROM donor_and_recipient_requests 
+                WHERE recipient_id = r.id
+            )
+        )
+        ORDER BY priority_level DESC, full_name ASC
     ");
     
-    $stmt->execute([$hospital_id]);
+    $stmt->execute([$hospital_id, $hospital_id]);
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch(PDOException $e) {
@@ -158,6 +187,43 @@ try {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        .shared-badge {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-left: 0.5rem;
+        }
+
+        .shared-info {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 0.2rem;
+        }
+
         .search-results {
             display: none;
             background: white;
@@ -224,26 +290,6 @@ try {
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #ccc;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h3 {
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: #999;
-        }
     </style>
 </head>
 <body>
@@ -287,7 +333,15 @@ try {
                         <tbody>
                             <?php foreach ($recipients as $recipient): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($recipient['full_name']); ?></td>
+                                    <td>
+                                        <?php echo htmlspecialchars($recipient['full_name']); ?>
+                                        <?php if ($recipient['recipient_type'] === 'Shared'): ?>
+                                            <span class="shared-badge">Shared</span>
+                                            <div class="shared-info">
+                                                From: <?php echo htmlspecialchars($recipient['shared_from_hospital']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($recipient['blood_group']); ?></td>
                                     <td><?php echo htmlspecialchars($recipient['required_organ']); ?></td>
                                     <td class="priority-<?php echo strtolower($recipient['priority_level']); ?>">
