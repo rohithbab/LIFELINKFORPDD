@@ -17,6 +17,8 @@ try {
         SELECT 
             'donor_request' as type,
             dr.request_id,
+            dr.requesting_hospital_id,
+            dr.donor_hospital_id,
             dr.request_date,
             dr.status,
             dr.response_date,
@@ -200,7 +202,7 @@ try {
                             <div class="notification-actions">
                                 <?php if ($notification['type'] === 'donor_request'): ?>
                                     <a href="donor_requests.php?type=<?php echo $notification['requesting_hospital_id'] == $hospital_id ? 'outgoing' : 'incoming'; ?>" class="action-btn view-btn">
-                                        View Details
+                                        <i class="fas fa-eye"></i> View Details
                                     </a>
                                 <?php endif; ?>
                             </div>
