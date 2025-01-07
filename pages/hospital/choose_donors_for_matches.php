@@ -20,11 +20,13 @@ try {
                 d.*,
                 ha.organ_type,
                 'Own' as donor_type,
-                NULL as shared_from_hospital
+                NULL as shared_from_hospital,
+                ha.hospital_id as donor_hospital_id
             FROM donor d
             JOIN hospital_donor_approvals ha ON d.donor_id = ha.donor_id
             WHERE ha.hospital_id = ? 
             AND ha.status = 'Approved'
+            AND ha.is_matched = FALSE
         )
         UNION
         (
@@ -33,7 +35,8 @@ try {
                 d.*,
                 sda.organ_type,
                 'Shared' as donor_type,
-                h2.name as shared_from_hospital
+                h2.name as shared_from_hospital,
+                sda.from_hospital_id as donor_hospital_id
             FROM donor d
             JOIN shared_donor_approvals sda ON d.donor_id = sda.donor_id
             JOIN hospitals h2 ON h2.hospital_id = sda.from_hospital_id
@@ -356,14 +359,14 @@ try {
                         </thead>
                         <tbody>
                             <?php foreach ($donors as $donor): ?>
-                                <tr class="<?php echo $donor['donor_type'] === 'Shared' ? 'shared-donor' : ''; ?>">
+                                <tr class="<?php echo $donor['donor_type'] === 'Shared' ? 'shared-donor' : ''; ?>" 
+                                    data-donor-type="<?php echo $donor['donor_type']; ?>" 
+                                    data-hospital-name="<?php echo $donor['donor_type'] === 'Shared' ? htmlspecialchars($donor['shared_from_hospital']) : htmlspecialchars($hospital_name); ?>"
+                                    data-hospital-id="<?php echo $donor['donor_hospital_id']; ?>">
                                     <td>
                                         <?php echo htmlspecialchars($donor['name']); ?>
                                         <?php if ($donor['donor_type'] === 'Shared'): ?>
-                                            <div class="shared-badge">
-                                                <i class="fas fa-share-alt"></i> 
-                                                Shared from <?php echo htmlspecialchars($donor['shared_from_hospital']); ?>
-                                            </div>
+                                            <span class="shared-badge">Shared from <?php echo htmlspecialchars($donor['shared_from_hospital']); ?></span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($donor['blood_group']); ?></td>
@@ -505,30 +508,34 @@ try {
             const donorName = row.cells[0].textContent.trim();
             const bloodGroup = row.cells[1].textContent.trim();
             const organType = row.cells[2].textContent.trim();
+            const donorType = row.getAttribute('data-donor-type');
             
+            // Get hospital info based on donor type
+            let hospitalId, hospitalName;
+            if (donorType === 'Own') {
+                hospitalId = <?php echo $hospital_id; ?>;
+                hospitalName = <?php echo json_encode($hospital_name); ?>;
+            } else {
+                // For shared donors, get the original hospital's info
+                hospitalName = row.getAttribute('data-hospital-name');
+                hospitalId = row.getAttribute('data-hospital-id');
+            }
+
             // Create donor info object
             const donorInfo = {
                 id: donorId,
                 name: donorName,
                 bloodGroup: bloodGroup,
-                organType: organType
+                organType: organType,
+                hospitalId: hospitalId,
+                hospitalName: hospitalName
             };
             
             // Store in session storage
             sessionStorage.setItem('selectedDonor', JSON.stringify(donorInfo));
             
-            // Get existing recipient from URL if exists
-            const urlParams = new URLSearchParams(window.location.search);
-            const recipientId = urlParams.get('recipient');
-            
-            // Build URL with both donor and recipient if recipient exists
-            let url = 'make_matches.php?donor=' + encodeURIComponent(donorId);
-            if (recipientId) {
-                url += '&recipient=' + encodeURIComponent(recipientId);
-            }
-            
             // Redirect to make matches page
-            window.location.href = url;
+            window.location.href = 'make_matches.php?donor=' + encodeURIComponent(donorId);
         }
 
         function viewHospitalDonors(hospitalId) {

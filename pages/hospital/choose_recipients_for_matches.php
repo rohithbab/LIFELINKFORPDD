@@ -22,7 +22,8 @@ try {
                 ha.blood_group,
                 ha.priority_level,
                 'Own' as recipient_type,
-                NULL as shared_from_hospital
+                NULL as shared_from_hospital,
+                ha.hospital_id as recipient_hospital_id
             FROM recipient_registration r
             JOIN hospital_recipient_approvals ha ON r.id = ha.recipient_id
             WHERE ha.hospital_id = ? 
@@ -41,7 +42,8 @@ try {
                 r.blood_type as blood_group,
                 ha.priority_level,
                 'Shared' as recipient_type,
-                h2.name as shared_from_hospital
+                h2.name as shared_from_hospital,
+                sra.from_hospital_id as recipient_hospital_id
             FROM recipient_registration r
             JOIN shared_recipient_approvals sra ON r.id = sra.recipient_id
             JOIN hospitals h2 ON h2.hospital_id = sra.from_hospital_id
@@ -385,7 +387,10 @@ try {
                         </thead>
                         <tbody>
                             <?php foreach ($recipients as $recipient): ?>
-                                <tr class="<?php echo $recipient['recipient_type'] === 'Shared' ? 'shared-recipient' : ''; ?>">
+                                <tr class="<?php echo $recipient['recipient_type'] === 'Shared' ? 'shared-recipient' : ''; ?>" 
+                                    data-recipient-type="<?php echo $recipient['recipient_type']; ?>" 
+                                    data-hospital-name="<?php echo $recipient['recipient_type'] === 'Shared' ? htmlspecialchars($recipient['shared_from_hospital']) : htmlspecialchars($hospital_name); ?>"
+                                    data-hospital-id="<?php echo $recipient['recipient_hospital_id']; ?>">
                                     <td>
                                         <?php echo htmlspecialchars($recipient['full_name']); ?>
                                         <?php if ($recipient['recipient_type'] === 'Shared'): ?>
@@ -539,30 +544,34 @@ try {
             const recipientName = row.cells[0].textContent.trim();
             const bloodGroup = row.cells[1].textContent.trim();
             const requiredOrgan = row.cells[2].textContent.trim();
+            const recipientType = row.getAttribute('data-recipient-type');
             
+            // Get hospital info based on recipient type
+            let hospitalId, hospitalName;
+            if (recipientType === 'Own') {
+                hospitalId = <?php echo $hospital_id; ?>;
+                hospitalName = <?php echo json_encode($hospital_name); ?>;
+            } else {
+                // For shared recipients, get the original hospital's info
+                hospitalName = row.getAttribute('data-hospital-name');
+                hospitalId = row.getAttribute('data-hospital-id');
+            }
+
             // Create recipient info object
             const recipientInfo = {
                 id: recipientId,
                 name: recipientName,
                 bloodGroup: bloodGroup,
-                requiredOrgan: requiredOrgan
+                requiredOrgan: requiredOrgan,
+                hospitalId: hospitalId,
+                hospitalName: hospitalName
             };
             
             // Store in session storage
             sessionStorage.setItem('selectedRecipient', JSON.stringify(recipientInfo));
             
-            // Get existing donor from URL if exists
-            const urlParams = new URLSearchParams(window.location.search);
-            const donorId = urlParams.get('donor');
-            
-            // Build URL with both donor and recipient if donor exists
-            let url = 'make_matches.php?recipient=' + encodeURIComponent(recipientId);
-            if (donorId) {
-                url += '&donor=' + encodeURIComponent(donorId);
-            }
-            
             // Redirect to make matches page
-            window.location.href = url;
+            window.location.href = 'make_matches.php?recipient=' + encodeURIComponent(recipientId);
         }
 
         // Close search results when clicking outside

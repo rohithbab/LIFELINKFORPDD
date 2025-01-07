@@ -451,26 +451,33 @@ $hospital_name = $_SESSION['hospital_name'];
                 type: 'POST',
                 data: matchData,
                 success: function(response) {
-                    const result = JSON.parse(response);
-                    if (result.success) {
-                        // Clear selections
-                        sessionStorage.removeItem('selectedDonor');
-                        sessionStorage.removeItem('selectedRecipient');
-                        
-                        // Show success modal
-                        showSuccessModal(donorInfo.name, recipientInfo.name);
-                        
-                        // Update UI
-                        document.getElementById('donorInfo').classList.remove('show');
-                        document.getElementById('recipientInfo').classList.remove('show');
-                        document.getElementById('donorDetails').innerHTML = '<div class="no-selection">No donor selected</div>';
-                        document.getElementById('recipientDetails').innerHTML = '<div class="no-selection">No recipient selected</div>';
-                        updateMatchButton();
-                    } else {
-                        alert('Error creating match: ' + result.message);
+                    console.log('Server response:', response); // Debug log
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            // Clear selections
+                            sessionStorage.removeItem('selectedDonor');
+                            sessionStorage.removeItem('selectedRecipient');
+                            
+                            // Show success modal
+                            showSuccessModal(donorInfo.name, recipientInfo.name);
+                            
+                            // Update UI
+                            document.getElementById('donorInfo').classList.remove('show');
+                            document.getElementById('recipientInfo').classList.remove('show');
+                            document.getElementById('donorDetails').innerHTML = '<div class="no-selection">No donor selected</div>';
+                            document.getElementById('recipientDetails').innerHTML = '<div class="no-selection">No recipient selected</div>';
+                            updateMatchButton();
+                        } else {
+                            alert('Error creating match: ' + result.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e, response);
+                        alert('Error processing server response');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('Ajax error:', status, error);
                     alert('Error creating match. Please try again.');
                 }
             });
