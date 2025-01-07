@@ -230,6 +230,139 @@ $hospital_name = $_SESSION['hospital_name'];
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
+        /* Enhanced Modal Styles */
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-content h2 {
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .match-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+            border: 1px solid #e9ecef;
+        }
+
+        .match-details .donor-section,
+        .match-details .recipient-section {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .match-details .donor-section {
+            background: rgba(0, 123, 255, 0.1);
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .match-details .recipient-section {
+            background: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .match-details h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .match-details h3 i {
+            color: var(--primary-blue);
+        }
+
+        .match-details p {
+            margin: 0.5rem 0;
+            color: #555;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .match-details strong {
+            min-width: 120px;
+            color: #333;
+        }
+
+        .warning {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .modal-buttons button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .modal-buttons .primary-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+        }
+
+        .modal-buttons .secondary-btn {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .modal-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-buttons .primary-btn:hover {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+        }
+
+        .modal-buttons .secondary-btn:hover {
+            background: #e9ecef;
+        }
     </style>
 </head>
 <body>
@@ -428,18 +561,27 @@ $hospital_name = $_SESSION['hospital_name'];
                     <h2>Confirm Match</h2>
                     <p>Are you sure you want to make a match between:</p>
                     <div class="match-details">
-                        <p><strong>Donor:</strong> ${donorInfo.name}</p>
-                        <p><strong>Blood Group:</strong> ${donorInfo.bloodGroup}</p>
-                        <p><strong>Organ Type:</strong> ${donorInfo.organType}</p>
-                        <br>
-                        <p><strong>Recipient:</strong> ${recipientInfo.name}</p>
-                        <p><strong>Blood Group:</strong> ${recipientInfo.bloodGroup}</p>
-                        <p><strong>Required Organ:</strong> ${recipientInfo.requiredOrgan}</p>
+                        <div class="donor-section">
+                            <h3><i class="fas fa-user"></i> Donor</h3>
+                            <p><strong>Name:</strong> ${donorInfo.name}</p>
+                            <p><strong>Blood Group:</strong> ${donorInfo.bloodGroup}</p>
+                            <p><strong>Organ Type:</strong> ${donorInfo.organType}</p>
+                        </div>
+                        <div class="recipient-section">
+                            <h3><i class="fas fa-procedures"></i> Recipient</h3>
+                            <p><strong>Name:</strong> ${recipientInfo.name}</p>
+                            <p><strong>Blood Group:</strong> ${recipientInfo.bloodGroup}</p>
+                            <p><strong>Required Organ:</strong> ${recipientInfo.requiredOrgan}</p>
+                        </div>
                     </div>
                     <p class="warning">This action cannot be undone.</p>
                     <div class="modal-buttons">
-                        <button onclick="confirmMatchCreation()" class="primary-btn">Confirm Match</button>
-                        <button onclick="closeConfirmationModal()" class="secondary-btn">Cancel</button>
+                        <button onclick="confirmMatchCreation()" class="primary-btn">
+                            <i class="fas fa-check"></i> Confirm Match
+                        </button>
+                        <button onclick="closeConfirmationModal()" class="secondary-btn">
+                            Cancel
+                        </button>
                     </div>
                 </div>
             `;
