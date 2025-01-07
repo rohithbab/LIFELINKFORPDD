@@ -122,6 +122,7 @@ $hospital_name = $_SESSION['hospital_name'];
             padding: 1rem;
             border-left: 4px solid var(--primary-blue);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .info-card p {
@@ -136,6 +137,32 @@ $hospital_name = $_SESSION['hospital_name'];
             width: 100px;
         }
 
+        .remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .remove-btn:hover {
+            background: #cc0000;
+            transform: translateY(-1px);
+        }
+
+        .remove-btn i {
+            font-size: 0.8rem;
+        }
+
         .no-selection {
             text-align: center;
             color: #666;
@@ -144,6 +171,63 @@ $hospital_name = $_SESSION['hospital_name'];
             background: #f8f9fa;
             border-radius: 8px;
             margin-top: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn.confirm {
+            background: #ff4444;
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: #eee;
+            color: #333;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -189,6 +273,17 @@ $hospital_name = $_SESSION['hospital_name'];
         </main>
     </div>
 
+    <div class="modal" id="removeConfirmationModal">
+        <div class="modal-content">
+            <h2>Confirm Removal</h2>
+            <p>Are you sure you want to remove the selected <span id="remove-type"></span>?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" onclick="confirmRemove()">Yes, Remove</button>
+                <button class="modal-btn cancel" onclick="cancelRemove()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function navigateToChoose(type) {
             if (type === 'donor') {
@@ -225,6 +320,9 @@ $hospital_name = $_SESSION['hospital_name'];
                 document.getElementById('donorInfo').classList.add('show');
                 document.getElementById('donorDetails').innerHTML = `
                     <div class="info-card">
+                        <button class="remove-btn" onclick="showRemoveConfirmation('Donor')">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
                         <p><strong>Name:</strong> ${donorInfo.name}</p>
                         <p><strong>Blood Group:</strong> ${donorInfo.bloodGroup}</p>
                         <p><strong>Organ Type:</strong> ${donorInfo.organType}</p>
@@ -243,6 +341,9 @@ $hospital_name = $_SESSION['hospital_name'];
                 document.getElementById('recipientInfo').classList.add('show');
                 document.getElementById('recipientDetails').innerHTML = `
                     <div class="info-card">
+                        <button class="remove-btn" onclick="showRemoveConfirmation('Recipient')">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
                         <p><strong>Name:</strong> ${recipientInfo.name}</p>
                         <p><strong>Blood Group:</strong> ${recipientInfo.bloodGroup}</p>
                         <p><strong>Required Organ:</strong> ${recipientInfo.requiredOrgan}</p>
@@ -255,6 +356,46 @@ $hospital_name = $_SESSION['hospital_name'];
             }
 
             // Check and update Make Match button
+            updateMatchButton();
+        }
+
+        function showRemoveConfirmation(type) {
+            const modal = document.getElementById('removeConfirmationModal');
+            modal.classList.add('show');
+            document.getElementById('remove-type').innerText = type;
+        }
+
+        function confirmRemove() {
+            const modal = document.getElementById('removeConfirmationModal');
+            modal.classList.remove('show');
+            const removeType = document.getElementById('remove-type').innerText;
+            if (removeType === 'Donor') {
+                removeDonorSelection();
+            } else {
+                removeRecipientSelection();
+            }
+        }
+
+        function cancelRemove() {
+            const modal = document.getElementById('removeConfirmationModal');
+            modal.classList.remove('show');
+        }
+
+        function removeDonorSelection() {
+            sessionStorage.removeItem('selectedDonor');
+            document.getElementById('donorInfo').classList.remove('show');
+            document.getElementById('donorDetails').innerHTML = `
+                <div class="no-selection">No donor selected</div>
+            `;
+            updateMatchButton();
+        }
+
+        function removeRecipientSelection() {
+            sessionStorage.removeItem('selectedRecipient');
+            document.getElementById('recipientInfo').classList.remove('show');
+            document.getElementById('recipientDetails').innerHTML = `
+                <div class="no-selection">No recipient selected</div>
+            `;
             updateMatchButton();
         }
 
