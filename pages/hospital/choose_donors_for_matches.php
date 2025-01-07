@@ -274,6 +274,36 @@ try {
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .switch-list-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .switch-list-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .switch-list-btn i {
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -284,6 +314,12 @@ try {
             <div class="dashboard-header">
                 <div class="header-left">
                     <h1>Choose Donors</h1>
+                </div>
+                <div class="header-right">
+                    <a href="choose_recipients_for_matches.php" class="switch-list-btn">
+                        <i class="fas fa-users"></i>
+                        Recipients List
+                    </a>
                 </div>
             </div>
 

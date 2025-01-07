@@ -302,6 +302,36 @@ try {
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .switch-list-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .switch-list-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .switch-list-btn i {
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -310,7 +340,18 @@ try {
         
         <main class="main-content">
             <div class="search-section">
-                <h2>Choose Recipients for Matching</h2>
+                <div class="dashboard-header" style="margin-bottom: 2rem;">
+                    <div class="header-left">
+                        <h2>Choose Recipients for Matching</h2>
+                    </div>
+                    <div class="header-right">
+                        <a href="choose_donors_for_matches.php" class="switch-list-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Donors List
+                        </a>
+                    </div>
+                </div>
+
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" id="searchInput" class="search-input" placeholder="Search recipients...">
