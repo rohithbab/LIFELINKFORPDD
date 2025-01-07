@@ -23,22 +23,32 @@ $hospital_name = $_SESSION['hospital_name'];
     <style>
         .match-container {
             padding: 2rem;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 2rem auto;
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .match-buttons {
+        .match-section {
             display: flex;
             gap: 2rem;
             justify-content: center;
             margin-top: 2rem;
         }
 
+        .match-column {
+            flex: 1;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
         .match-button {
-            padding: 1.5rem 3rem;
+            width: 100%;
+            padding: 1.5rem;
             border: none;
             border-radius: 10px;
             font-size: 1.2rem;
@@ -48,6 +58,7 @@ $hospital_name = $_SESSION['hospital_name'];
             overflow: hidden;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 1rem;
             color: white;
         }
@@ -65,17 +76,13 @@ $hospital_name = $_SESSION['hospital_name'];
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .match-button.shrink {
-            transform: scale(0.8);
-            opacity: 0.8;
-        }
-
         .match-button i {
             font-size: 1.5rem;
         }
 
         .make-match-btn {
             display: block;
+            width: 200px;
             margin: 2rem auto;
             padding: 1rem 2rem;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
@@ -99,22 +106,44 @@ $hospital_name = $_SESSION['hospital_name'];
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .selection-status {
-            text-align: center;
-            margin-top: 2rem;
-            color: #666;
-        }
-
         .selected-info {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
+            width: 100%;
             display: none;
+            margin-top: 1rem;
         }
 
         .selected-info.show {
             display: block;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid var(--primary-blue);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card p {
+            margin: 0.5rem 0;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .info-card strong {
+            color: var(--primary-blue);
+            display: inline-block;
+            width: 100px;
+        }
+
+        .no-selection {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -130,29 +159,30 @@ $hospital_name = $_SESSION['hospital_name'];
             </div>
 
             <div class="match-container">
-                <div class="match-buttons">
-                    <button class="match-button donor" onclick="navigateToChoose('donor')">
-                        <i class="fas fa-user"></i>
-                        Choose Donor
-                    </button>
-                    <button class="match-button recipient" onclick="navigateToChoose('recipient')">
-                        <i class="fas fa-procedures"></i>
-                        Choose Recipient
-                    </button>
+                <div class="match-section">
+                    <div class="match-column">
+                        <button class="match-button donor" onclick="navigateToChoose('donor')">
+                            <i class="fas fa-user"></i>
+                            Choose Donor
+                        </button>
+                        <div id="donorInfo" class="selected-info">
+                            <h3>Selected Donor</h3>
+                            <div id="donorDetails">No donor selected</div>
+                        </div>
+                    </div>
+                    <div class="match-column">
+                        <button class="match-button recipient" onclick="navigateToChoose('recipient')">
+                            <i class="fas fa-procedures"></i>
+                            Choose Recipient
+                        </button>
+                        <div id="recipientInfo" class="selected-info">
+                            <h3>Selected Recipient</h3>
+                            <div id="recipientDetails">No recipient selected</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="selection-status">
-                    <div id="donorInfo" class="selected-info">
-                        <h3>Selected Donor</h3>
-                        <p>No donor selected</p>
-                    </div>
-                    <div id="recipientInfo" class="selected-info">
-                        <h3>Selected Recipient</h3>
-                        <p>No recipient selected</p>
-                    </div>
-                </div>
-
-                <button id="makeMatchBtn" class="make-match-btn" disabled>
+                <button id="makeMatchBtn" class="make-match-btn" disabled onclick="makeMatch()">
                     Make Match
                 </button>
             </div>
@@ -168,28 +198,73 @@ $hospital_name = $_SESSION['hospital_name'];
             }
         }
 
-        // Check URL parameters for selections
-        window.onload = function() {
+        function updateMatchButton() {
             const urlParams = new URLSearchParams(window.location.search);
-            const selectedDonor = urlParams.get('donor');
-            const selectedRecipient = urlParams.get('recipient');
+            const selectedDonorId = urlParams.get('donor');
+            const selectedRecipientId = urlParams.get('recipient');
+            const storedDonor = sessionStorage.getItem('selectedDonor');
+            const storedRecipient = sessionStorage.getItem('selectedRecipient');
 
-            if (selectedDonor) {
-                document.getElementById('donorInfo').classList.add('show');
-                // Add donor info display logic here
-            }
-
-            if (selectedRecipient) {
-                document.getElementById('recipientInfo').classList.add('show');
-                // Add recipient info display logic here
-            }
-
-            // Enable make match button if both are selected
-            if (selectedDonor && selectedRecipient) {
+            if (selectedDonorId && selectedRecipientId && storedDonor && storedRecipient) {
                 const makeMatchBtn = document.getElementById('makeMatchBtn');
                 makeMatchBtn.classList.add('active');
                 makeMatchBtn.disabled = false;
             }
+        }
+
+        // Check URL parameters and session storage for selections
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedDonorId = urlParams.get('donor');
+            const selectedRecipientId = urlParams.get('recipient');
+
+            // Get stored donor info
+            const storedDonor = sessionStorage.getItem('selectedDonor');
+            if (storedDonor && selectedDonorId) {
+                const donorInfo = JSON.parse(storedDonor);
+                document.getElementById('donorInfo').classList.add('show');
+                document.getElementById('donorDetails').innerHTML = `
+                    <div class="info-card">
+                        <p><strong>Name:</strong> ${donorInfo.name}</p>
+                        <p><strong>Blood Group:</strong> ${donorInfo.bloodGroup}</p>
+                        <p><strong>Organ Type:</strong> ${donorInfo.organType}</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('donorDetails').innerHTML = `
+                    <div class="no-selection">No donor selected</div>
+                `;
+            }
+
+            // Get stored recipient info
+            const storedRecipient = sessionStorage.getItem('selectedRecipient');
+            if (storedRecipient && selectedRecipientId) {
+                const recipientInfo = JSON.parse(storedRecipient);
+                document.getElementById('recipientInfo').classList.add('show');
+                document.getElementById('recipientDetails').innerHTML = `
+                    <div class="info-card">
+                        <p><strong>Name:</strong> ${recipientInfo.name}</p>
+                        <p><strong>Blood Group:</strong> ${recipientInfo.bloodGroup}</p>
+                        <p><strong>Required Organ:</strong> ${recipientInfo.requiredOrgan}</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('recipientDetails').innerHTML = `
+                    <div class="no-selection">No recipient selected</div>
+                `;
+            }
+
+            // Check and update Make Match button
+            updateMatchButton();
+        }
+
+        function makeMatch() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const donorId = urlParams.get('donor');
+            const recipientId = urlParams.get('recipient');
+
+            // TODO: Add your match creation logic here
+            console.log('Creating match between donor', donorId, 'and recipient', recipientId);
         }
     </script>
 </body>

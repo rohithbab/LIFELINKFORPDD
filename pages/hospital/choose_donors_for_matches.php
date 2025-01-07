@@ -500,8 +500,25 @@ try {
         }
 
         function selectDonor(donorId) {
-            // Redirect back to make_matches.php with the selected donor
-            window.location.href = `make_matches.php?donor=${donorId}`;
+            // Get donor details from the row
+            const row = event.target.closest('tr');
+            const donorName = row.cells[0].textContent.trim();
+            const bloodGroup = row.cells[1].textContent.trim();
+            const organType = row.cells[2].textContent.trim();
+            
+            // Create donor info object
+            const donorInfo = {
+                id: donorId,
+                name: donorName,
+                bloodGroup: bloodGroup,
+                organType: organType
+            };
+            
+            // Store in session storage
+            sessionStorage.setItem('selectedDonor', JSON.stringify(donorInfo));
+            
+            // Redirect to make matches page
+            window.location.href = 'make_matches.php?donor=' + encodeURIComponent(donorId);
         }
 
         function viewHospitalDonors(hospitalId) {

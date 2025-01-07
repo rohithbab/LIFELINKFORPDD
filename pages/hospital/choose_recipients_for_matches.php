@@ -403,9 +403,9 @@ try {
                                         <?php echo htmlspecialchars($recipient['priority_level']); ?>
                                     </td>
                                     <td>
-                                        <a href="make_matches.php?recipient=<?php echo $recipient['id']; ?>" class="action-btn">
+                                        <button onclick="selectRecipient(<?php echo $recipient['id']; ?>)" class="action-btn">
                                             Select for Match
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -531,6 +531,28 @@ try {
             });
             
             document.getElementById('searchResults').style.display = results.length ? 'block' : 'none';
+        }
+
+        function selectRecipient(recipientId) {
+            // Get recipient details from the row
+            const row = event.target.closest('tr');
+            const recipientName = row.cells[0].textContent.trim();
+            const bloodGroup = row.cells[1].textContent.trim();
+            const requiredOrgan = row.cells[2].textContent.trim();
+            
+            // Create recipient info object
+            const recipientInfo = {
+                id: recipientId,
+                name: recipientName,
+                bloodGroup: bloodGroup,
+                requiredOrgan: requiredOrgan
+            };
+            
+            // Store in session storage
+            sessionStorage.setItem('selectedRecipient', JSON.stringify(recipientInfo));
+            
+            // Redirect to make matches page
+            window.location.href = 'make_matches.php?recipient=' + encodeURIComponent(recipientId);
         }
 
         // Close search results when clicking outside
