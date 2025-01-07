@@ -517,8 +517,18 @@ try {
             // Store in session storage
             sessionStorage.setItem('selectedDonor', JSON.stringify(donorInfo));
             
+            // Get existing recipient from URL if exists
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipientId = urlParams.get('recipient');
+            
+            // Build URL with both donor and recipient if recipient exists
+            let url = 'make_matches.php?donor=' + encodeURIComponent(donorId);
+            if (recipientId) {
+                url += '&recipient=' + encodeURIComponent(recipientId);
+            }
+            
             // Redirect to make matches page
-            window.location.href = 'make_matches.php?donor=' + encodeURIComponent(donorId);
+            window.location.href = url;
         }
 
         function viewHospitalDonors(hospitalId) {

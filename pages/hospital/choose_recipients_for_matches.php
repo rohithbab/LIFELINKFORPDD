@@ -551,8 +551,18 @@ try {
             // Store in session storage
             sessionStorage.setItem('selectedRecipient', JSON.stringify(recipientInfo));
             
+            // Get existing donor from URL if exists
+            const urlParams = new URLSearchParams(window.location.search);
+            const donorId = urlParams.get('donor');
+            
+            // Build URL with both donor and recipient if donor exists
+            let url = 'make_matches.php?recipient=' + encodeURIComponent(recipientId);
+            if (donorId) {
+                url += '&donor=' + encodeURIComponent(donorId);
+            }
+            
             // Redirect to make matches page
-            window.location.href = 'make_matches.php?recipient=' + encodeURIComponent(recipientId);
+            window.location.href = url;
         }
 
         // Close search results when clicking outside

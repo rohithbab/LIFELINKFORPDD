@@ -286,36 +286,33 @@ $hospital_name = $_SESSION['hospital_name'];
 
     <script>
         function navigateToChoose(type) {
-            if (type === 'donor') {
-                window.location.href = 'choose_donors_for_matches.php';
-            } else {
-                window.location.href = 'choose_recipients_for_matches.php';
-            }
-        }
-
-        function updateMatchButton() {
+            // Get current URL parameters
             const urlParams = new URLSearchParams(window.location.search);
-            const selectedDonorId = urlParams.get('donor');
-            const selectedRecipientId = urlParams.get('recipient');
-            const storedDonor = sessionStorage.getItem('selectedDonor');
-            const storedRecipient = sessionStorage.getItem('selectedRecipient');
-
-            if (selectedDonorId && selectedRecipientId && storedDonor && storedRecipient) {
-                const makeMatchBtn = document.getElementById('makeMatchBtn');
-                makeMatchBtn.classList.add('active');
-                makeMatchBtn.disabled = false;
+            const currentDonor = urlParams.get('donor');
+            const currentRecipient = urlParams.get('recipient');
+            
+            // Build URL based on type
+            let url;
+            if (type === 'donor') {
+                url = 'choose_donors_for_matches.php';
+                if (currentRecipient) {
+                    url += '?recipient=' + encodeURIComponent(currentRecipient);
+                }
+            } else {
+                url = 'choose_recipients_for_matches.php';
+                if (currentDonor) {
+                    url += '?donor=' + encodeURIComponent(currentDonor);
+                }
             }
+            
+            window.location.href = url;
         }
 
         // Check URL parameters and session storage for selections
         window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const selectedDonorId = urlParams.get('donor');
-            const selectedRecipientId = urlParams.get('recipient');
-
             // Get stored donor info
             const storedDonor = sessionStorage.getItem('selectedDonor');
-            if (storedDonor && selectedDonorId) {
+            if (storedDonor) {
                 const donorInfo = JSON.parse(storedDonor);
                 document.getElementById('donorInfo').classList.add('show');
                 document.getElementById('donorDetails').innerHTML = `
@@ -336,7 +333,7 @@ $hospital_name = $_SESSION['hospital_name'];
 
             // Get stored recipient info
             const storedRecipient = sessionStorage.getItem('selectedRecipient');
-            if (storedRecipient && selectedRecipientId) {
+            if (storedRecipient) {
                 const recipientInfo = JSON.parse(storedRecipient);
                 document.getElementById('recipientInfo').classList.add('show');
                 document.getElementById('recipientDetails').innerHTML = `
@@ -355,8 +352,21 @@ $hospital_name = $_SESSION['hospital_name'];
                 `;
             }
 
-            // Check and update Make Match button
             updateMatchButton();
+        }
+
+        function updateMatchButton() {
+            const makeMatchBtn = document.getElementById('makeMatchBtn');
+            const hasDonor = sessionStorage.getItem('selectedDonor');
+            const hasRecipient = sessionStorage.getItem('selectedRecipient');
+            
+            if (hasDonor && hasRecipient) {
+                makeMatchBtn.classList.add('active');
+                makeMatchBtn.disabled = false;
+            } else {
+                makeMatchBtn.classList.remove('active');
+                makeMatchBtn.disabled = true;
+            }
         }
 
         function showRemoveConfirmation(type) {
