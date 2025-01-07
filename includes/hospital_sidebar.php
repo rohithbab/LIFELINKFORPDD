@@ -39,6 +39,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <span>Make Matches</span>
                 </a>
             </li>
+            <li>
+                <a href="my_matches.php" <?php echo $current_page == 'my_matches.php' ? 'class="active"' : ''; ?>>
+                    <i class="fas fa-handshake"></i>
+                    <span>My Matches</span>
+                </a>
+            </li>
             <!-- New Request Management Section -->
             <li class="has-submenu">
                 <a href="#" class="submenu-toggle <?php echo in_array($current_page, ['donor_requests.php', 'recipient_requests.php']) ? 'active' : ''; ?>">
