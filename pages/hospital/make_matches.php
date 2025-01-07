@@ -410,12 +410,175 @@ $hospital_name = $_SESSION['hospital_name'];
         }
 
         function makeMatch() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const donorId = urlParams.get('donor');
-            const recipientId = urlParams.get('recipient');
+            const donorInfo = JSON.parse(sessionStorage.getItem('selectedDonor'));
+            const recipientInfo = JSON.parse(sessionStorage.getItem('selectedRecipient'));
 
-            // TODO: Add your match creation logic here
-            console.log('Creating match between donor', donorId, 'and recipient', recipientId);
+            if (!donorInfo || !recipientInfo) {
+                alert('Please select both a donor and recipient first.');
+                return;
+            }
+
+            // Show confirmation dialog
+            if (!confirm(`Are you sure you want to make a match between:\n\nDonor: ${donorInfo.name}\nRecipient: ${recipientInfo.name}\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            // Get donor hospital info from the session
+            const donorHospitalId = donorInfo.hospitalId;
+            const donorHospitalName = donorInfo.hospitalName;
+
+            // Get recipient hospital info from the session
+            const recipientHospitalId = recipientInfo.hospitalId;
+            const recipientHospitalName = recipientInfo.hospitalName;
+
+            // Create match data
+            const matchData = {
+                donor_id: donorInfo.id,
+                donor_name: donorInfo.name,
+                donor_hospital_id: donorHospitalId,
+                donor_hospital_name: donorHospitalName,
+                recipient_id: recipientInfo.id,
+                recipient_name: recipientInfo.name,
+                recipient_hospital_id: recipientHospitalId,
+                recipient_hospital_name: recipientHospitalName,
+                organ_type: donorInfo.organType,
+                blood_group: donorInfo.bloodGroup
+            };
+
+            // Send match data to server
+            $.ajax({
+                url: 'save_match.php',
+                type: 'POST',
+                data: matchData,
+                success: function(response) {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        // Clear selections
+                        sessionStorage.removeItem('selectedDonor');
+                        sessionStorage.removeItem('selectedRecipient');
+                        
+                        // Show success modal
+                        showSuccessModal(donorInfo.name, recipientInfo.name);
+                        
+                        // Update UI
+                        document.getElementById('donorInfo').classList.remove('show');
+                        document.getElementById('recipientInfo').classList.remove('show');
+                        document.getElementById('donorDetails').innerHTML = '<div class="no-selection">No donor selected</div>';
+                        document.getElementById('recipientDetails').innerHTML = '<div class="no-selection">No recipient selected</div>';
+                        updateMatchButton();
+                    } else {
+                        alert('Error creating match: ' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('Error creating match. Please try again.');
+                }
+            });
+        }
+
+        function showSuccessModal(donorName, recipientName) {
+            // Create modal HTML
+            const modalHtml = `
+                <div id="successModal" class="modal">
+                    <div class="modal-content">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2>Congratulations!</h2>
+                        <p>You have successfully created a match between:</p>
+                        <div class="match-details">
+                            <p><strong>Donor:</strong> ${donorName}</p>
+                            <p><strong>Recipient:</strong> ${recipientName}</p>
+                        </div>
+                        <div class="modal-buttons">
+                            <button onclick="window.location.href='my_matches.php'" class="primary-btn">
+                                <i class="fas fa-eye"></i> Check My Matches
+                            </button>
+                            <button onclick="closeSuccessModal()" class="secondary-btn">
+                                Make Another Match
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+
+            // Add modal styles if not already added
+            if (!document.getElementById('successModalStyles')) {
+                const styles = `
+                    <style id="successModalStyles">
+                        .modal {
+                            display: block;
+                            position: fixed;
+                            z-index: 1000;
+                            left: 0;
+                            top: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-color: rgba(0,0,0,0.5);
+                        }
+                        .modal-content {
+                            background-color: #fefefe;
+                            margin: 15% auto;
+                            padding: 20px;
+                            border-radius: 10px;
+                            width: 80%;
+                            max-width: 500px;
+                            text-align: center;
+                            position: relative;
+                        }
+                        .success-icon {
+                            font-size: 48px;
+                            color: #28a745;
+                            margin-bottom: 20px;
+                        }
+                        .match-details {
+                            background-color: #f8f9fa;
+                            padding: 15px;
+                            border-radius: 5px;
+                            margin: 15px 0;
+                        }
+                        .modal-buttons {
+                            display: flex;
+                            justify-content: center;
+                            gap: 10px;
+                            margin-top: 20px;
+                        }
+                        .primary-btn, .secondary-btn {
+                            padding: 10px 20px;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-weight: 500;
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                        }
+                        .primary-btn {
+                            background-color: #007bff;
+                            color: white;
+                        }
+                        .primary-btn:hover {
+                            background-color: #0056b3;
+                        }
+                        .secondary-btn {
+                            background-color: #6c757d;
+                            color: white;
+                        }
+                        .secondary-btn:hover {
+                            background-color: #545b62;
+                        }
+                    </style>`;
+                document.head.insertAdjacentHTML('beforeend', styles);
+            }
+
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) {
+                modal.remove();
+            }
         }
     </script>
 </body>

@@ -18,7 +18,18 @@ try {
     die("Error fetching hospital details: " . $e->getMessage());
 }
 
-// For now, we'll just show an empty state since we don't have the matches table yet
+// Fetch matches made by this hospital
+try {
+    $query = "SELECT * FROM made_matches_by_hospitals 
+              WHERE match_made_by = :hospital_id 
+              ORDER BY match_date DESC";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(':hospital_id', $hospital_id);
+    $stmt->execute();
+    $matches = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Error fetching matches: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -158,12 +169,42 @@ try {
                         <h2 class="table-title">My Matches</h2>
                     </div>
 
-                    <!-- Empty state since we don't have the matches table yet -->
-                    <div class="empty-state">
-                        <i class="fas fa-handshake"></i>
-                        <h3>No Matches Yet</h3>
-                        <p>You haven't made any matches yet. Go to the Make Matches page to create your first donor-recipient match.</p>
-                    </div>
+                    <?php if (count($matches) > 0): ?>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Match ID</th>
+                                    <th>Donor Name</th>
+                                    <th>Donor Hospital</th>
+                                    <th>Recipient Name</th>
+                                    <th>Recipient Hospital</th>
+                                    <th>Organ Type</th>
+                                    <th>Blood Group</th>
+                                    <th>Match Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($matches as $match): ?>
+                                    <tr>
+                                        <td>#<?php echo $match['match_id']; ?></td>
+                                        <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['donor_hospital_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['recipient_hospital_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['blood_group']); ?></td>
+                                        <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fas fa-handshake"></i>
+                            <h3>No Matches Yet</h3>
+                            <p>You haven't made any matches yet. Go to the Make Matches page to create your first donor-recipient match.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </main>
