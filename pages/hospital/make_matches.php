@@ -20,6 +20,7 @@ $hospital_name = $_SESSION['hospital_name'];
     <title>Make Matches - LifeLink</title>
     <link rel="stylesheet" href="../../assets/css/hospital-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         .match-container {
             padding: 2rem;
@@ -418,32 +419,60 @@ $hospital_name = $_SESSION['hospital_name'];
                 return;
             }
 
-            // Show confirmation dialog
-            if (!confirm(`Are you sure you want to make a match between:\n\nDonor: ${donorInfo.name}\nRecipient: ${recipientInfo.name}\n\nThis action cannot be undone.`)) {
-                return;
-            }
+            // Show confirmation modal
+            const confirmationModal = document.createElement('div');
+            confirmationModal.className = 'modal';
+            confirmationModal.id = 'confirmationModal';
+            confirmationModal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Confirm Match</h2>
+                    <p>Are you sure you want to make a match between:</p>
+                    <div class="match-details">
+                        <p><strong>Donor:</strong> ${donorInfo.name}</p>
+                        <p><strong>Blood Group:</strong> ${donorInfo.bloodGroup}</p>
+                        <p><strong>Organ Type:</strong> ${donorInfo.organType}</p>
+                        <br>
+                        <p><strong>Recipient:</strong> ${recipientInfo.name}</p>
+                        <p><strong>Blood Group:</strong> ${recipientInfo.bloodGroup}</p>
+                        <p><strong>Required Organ:</strong> ${recipientInfo.requiredOrgan}</p>
+                    </div>
+                    <p class="warning">This action cannot be undone.</p>
+                    <div class="modal-buttons">
+                        <button onclick="confirmMatchCreation()" class="primary-btn">Confirm Match</button>
+                        <button onclick="closeConfirmationModal()" class="secondary-btn">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmationModal);
+            confirmationModal.classList.add('show');
+        }
 
-            // Get donor hospital info from the session
-            const donorHospitalId = donorInfo.hospitalId;
-            const donorHospitalName = donorInfo.hospitalName;
+        function closeConfirmationModal() {
+            const modal = document.getElementById('confirmationModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 300);
+        }
 
-            // Get recipient hospital info from the session
-            const recipientHospitalId = recipientInfo.hospitalId;
-            const recipientHospitalName = recipientInfo.hospitalName;
+        function confirmMatchCreation() {
+            const donorInfo = JSON.parse(sessionStorage.getItem('selectedDonor'));
+            const recipientInfo = JSON.parse(sessionStorage.getItem('selectedRecipient'));
 
             // Create match data
             const matchData = {
                 donor_id: donorInfo.id,
                 donor_name: donorInfo.name,
-                donor_hospital_id: donorHospitalId,
-                donor_hospital_name: donorHospitalName,
+                donor_hospital_id: donorInfo.hospitalId,
+                donor_hospital_name: donorInfo.hospitalName,
                 recipient_id: recipientInfo.id,
                 recipient_name: recipientInfo.name,
-                recipient_hospital_id: recipientHospitalId,
-                recipient_hospital_name: recipientHospitalName,
+                recipient_hospital_id: recipientInfo.hospitalId,
+                recipient_hospital_name: recipientInfo.hospitalName,
                 organ_type: donorInfo.organType,
                 blood_group: donorInfo.bloodGroup
             };
+
+            // Close confirmation modal
+            closeConfirmationModal();
 
             // Send match data to server
             $.ajax({
@@ -451,7 +480,7 @@ $hospital_name = $_SESSION['hospital_name'];
                 type: 'POST',
                 data: matchData,
                 success: function(response) {
-                    console.log('Server response:', response); // Debug log
+                    console.log('Server response:', response);
                     try {
                         const result = JSON.parse(response);
                         if (result.success) {
