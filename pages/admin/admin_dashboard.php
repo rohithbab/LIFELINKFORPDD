@@ -314,62 +314,118 @@ $urgentRecipients = getUrgentRecipients($conn);
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
         }
-        
+
         .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
         }
-        
+
         .close {
-            color: #aaa;
-            float: right;
+            position: absolute;
+            right: 25px;
+            top: 15px;
             font-size: 28px;
             font-weight: bold;
-        }
-        
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
+            color: #666;
             cursor: pointer;
+            transition: 0.3s;
         }
-        
-        .match-details {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .detail-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .detail-section h3 {
-            margin: 0;
-            font-size: 1.2rem;
+
+        .close:hover {
             color: #333;
         }
-        
-        .detail-section p {
-            margin: 5px 0;
-            font-size: 1rem;
-            color: #666;
+
+        .modal h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e3e8f0;
+            font-size: 24px;
         }
+
+        .match-details {
+            display: grid;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .detail-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e3e8f0;
+        }
+
+        .detail-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-section h3 i {
+            color: #3498db;
+            font-size: 20px;
+        }
+
+        .detail-section.match-info {
+            border-left: 4px solid #3498db;
+        }
+
+        .detail-section.donor-info {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .detail-section.recipient-info {
+            border-left: 4px solid #9b59b6;
+        }
+
+        .detail-section p {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .detail-section p:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section p strong {
+            color: #34495e;
+            min-width: 140px;
+        }
+
+        .detail-section p span {
+            color: #666;
+            flex: 1;
+            text-align: right;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* ... other styles ... */
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -715,291 +771,290 @@ $urgentRecipients = getUrgentRecipients($conn);
 
             <script>
             function viewMatchDetails(matchId) {
-                // AJAX call to get match details
+                console.log('View button clicked for match ID:', matchId);
                 $.ajax({
                     url: 'get_match_details.php',
-                    type: 'GET',
+                    method: 'GET',
                     data: { match_id: matchId },
                     success: function(response) {
-                        const match = JSON.parse(response);
-                        const content = `
-                            <div class="match-details">
-                                <div class="detail-section">
-                                    <h3>Match Information</h3>
-                                    <p><strong>Match ID:</strong> ${match.match_id}</p>
-                                    <p><strong>Match Date:</strong> ${new Date(match.match_date).toLocaleDateString()}</p>
-                                    <p><strong>Made By:</strong> ${match.match_made_by_hospital_name}</p>
-                                </div>
-                                <div class="detail-section">
-                                    <h3>Donor Information</h3>
-                                    <p><strong>Name:</strong> ${match.donor_name}</p>
-                                    <p><strong>Hospital:</strong> ${match.donor_hospital_name}</p>
-                                    <p><strong>Blood Group:</strong> ${match.blood_group}</p>
-                                    <p><strong>Organ Type:</strong> ${match.organ_type}</p>
-                                </div>
-                                <div class="detail-section">
-                                    <h3>Recipient Information</h3>
-                                    <p><strong>Name:</strong> ${match.recipient_name}</p>
-                                    <p><strong>Hospital:</strong> ${match.recipient_hospital_name}</p>
-                                </div>
-                            </div>
-                        `;
-                        $('#matchDetailsContent').html(content);
-                        $('#matchDetailsModal').show();
+                        try {
+                            const match = typeof response === 'string' ? JSON.parse(response) : response;
+                            if (match) {
+                                const matchDate = new Date(match.match_date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                });
+
+                                const content = `
+                                    <div class="match-details">
+                                        <div class="detail-section match-info">
+                                            <h3><i class="fas fa-handshake"></i> Match Information</h3>
+                                            <p><strong>Match ID:</strong> <span>${match.match_id}</span></p>
+                                            <p><strong>Match Date:</strong> <span>${matchDate}</span></p>
+                                            <p><strong>Made By Hospital:</strong> <span>${match.match_made_by_hospital_name || 'N/A'}</span></p>
+                                            <p><strong>Blood Group:</strong> <span>${match.blood_group || 'N/A'}</span></p>
+                                            <p><strong>Organ Type:</strong> <span>${match.organ_type || 'N/A'}</span></p>
+                                        </div>
+                                        
+                                        <div class="detail-section donor-info">
+                                            <h3><i class="fas fa-user-plus"></i> Donor Information</h3>
+                                            <p><strong>Name:</strong> <span>${match.donor_name || 'N/A'}</span></p>
+                                            <p><strong>Hospital:</strong> <span>${match.donor_hospital_name || 'N/A'}</span></p>
+                                        </div>
+                                        
+                                        <div class="detail-section recipient-info">
+                                            <h3><i class="fas fa-user"></i> Recipient Information</h3>
+                                            <p><strong>Name:</strong> <span>${match.recipient_name || 'N/A'}</span></p>
+                                            <p><strong>Hospital:</strong> <span>${match.recipient_hospital_name || 'N/A'}</span></p>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                $('#matchDetailsContent').html(content);
+                                $('#matchDetailsModal').fadeIn(300);
+                            } else {
+                                alert('Match details not found');
+                            }
+                        } catch (e) {
+                            console.error('Error:', e);
+                            alert('Error loading match details');
+                        }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
                         alert('Error fetching match details');
                     }
                 });
             }
 
-            // Close modal when clicking the X or outside the modal
-            $('.close, .modal').click(function(e) {
-                if (e.target === this) {
-                    $('#matchDetailsModal').hide();
+            // Close modal
+            $('.close').click(function() {
+                $('#matchDetailsModal').fadeOut(300);
+            });
+
+            $(window).click(function(event) {
+                if ($(event.target).is('#matchDetailsModal')) {
+                    $('#matchDetailsModal').fadeOut(300);
                 }
             });
-            </script>
-        </div>
-    </div>
 
-    <!-- Notification Bell -->
-    <div class="notification-bell-container">
-        <div class="notification-bell" onclick="toggleNotifications()">
-            <i class="fas fa-bell"></i>
-            <span class="notification-count" style="display: none;">0</span>
-        </div>
-        <div class="notification-dropdown">
-            <div class="notification-header">
-                Notifications
-            </div>
-            <div class="notification-list">
-                <!-- Notifications will be inserted here -->
-            </div>
-            <div class="notification-footer">
-                <a href="notifications.php">See All Notifications</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Code -->
-    <script>
-        $(document).ready(function() {
-            // Add event listeners for all dynamic elements
-            $('.update-btn').on('click', function(e) {
-                e.preventDefault();
-                const hospitalId = $(this).data('hospital-id');
-                updateHospitalODMLID(hospitalId);
+            $(document).ready(function() {
+                // Add event listeners for all dynamic elements
+                $('.update-btn').on('click', function(e) {
+                    e.preventDefault();
+                    const hospitalId = $(this).data('hospital-id');
+                    updateHospitalODMLID(hospitalId);
+                });
             });
-        });
 
-        function updateHospitalODMLID(hospitalId) {
-            const odmlId = $(`#odml_id_${hospitalId}`).val();
-            
-            if (confirm('Are you sure you want to update the ODML ID?')) {
-                $.ajax({
-                    url: '../../backend/php/update_odml_id.php',
-                    method: 'POST',
-                    data: {
-                        type: 'hospital',
-                        id: hospitalId,
-                        odml_id: odmlId
-                    },
-                    success: function(response) {
-                        try {
-                            const data = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (data.success) {
-                                alert('ODML ID updated successfully');
-                            } else {
-                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+            function updateHospitalODMLID(hospitalId) {
+                const odmlId = $(`#odml_id_${hospitalId}`).val();
+                
+                if (confirm('Are you sure you want to update the ODML ID?')) {
+                    $.ajax({
+                        url: '../../backend/php/update_odml_id.php',
+                        method: 'POST',
+                        data: {
+                            type: 'hospital',
+                            id: hospitalId,
+                            odml_id: odmlId
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'string' ? JSON.parse(response) : response;
+                                if (data.success) {
+                                    alert('ODML ID updated successfully');
+                                } else {
+                                    alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                                }
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                                alert('Error updating ODML ID');
                             }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
                             alert('Error updating ODML ID');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error updating ODML ID');
-                    }
-                });
+                    });
+                }
             }
-        }
 
-        function updateHospitalStatus(hospitalId, status) {
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this hospital?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_hospital_status.php',
-                    method: 'POST',
-                    data: {
-                        hospital_id: hospitalId,
-                        status: status
-                    },
-                    success: function(response) {
-                        try {
-                            const data = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (data.success) {
-                                alert(`Hospital ${status.toLowerCase()} successfully`);
-                                $(`#hospital_row_${hospitalId}`).fadeOut(400, function() {
-                                    $(this).remove();
-                                    const counter = $('#pending-hospitals-count');
-                                    counter.text(parseInt(counter.text()) - 1);
-                                });
-                            } else {
-                                alert('Failed to update status: ' + (data.message || 'Unknown error'));
+            function updateHospitalStatus(hospitalId, status) {
+                if (confirm(`Are you sure you want to ${status.toLowerCase()} this hospital?`)) {
+                    $.ajax({
+                        url: '../../backend/php/update_hospital_status.php',
+                        method: 'POST',
+                        data: {
+                            hospital_id: hospitalId,
+                            status: status
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'string' ? JSON.parse(response) : response;
+                                if (data.success) {
+                                    alert(`Hospital ${status.toLowerCase()} successfully`);
+                                    $(`#hospital_row_${hospitalId}`).fadeOut(400, function() {
+                                        $(this).remove();
+                                        const counter = $('#pending-hospitals-count');
+                                        counter.text(parseInt(counter.text()) - 1);
+                                    });
+                                } else {
+                                    alert('Failed to update status: ' + (data.message || 'Unknown error'));
+                                }
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                                alert('Error updating hospital status');
                             }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
                             alert('Error updating hospital status');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error updating hospital status');
-                    }
-                });
-            }
-        }
-        
-        function updateDonorStatus(donorId, status) {
-            // Capitalize first letter of status
-            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_donor_status.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        donor_id: donorId,
-                        status: status
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response); // Debug log
-                        if (response.success) {
-                            alert(`Donor ${status.toLowerCase()} successfully`);
-                            location.reload();
-                        } else {
-                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.error('Response:', xhr.responseText); // Debug log
-                        alert('Error updating donor status. Please check the console for details.');
-                    }
-                });
-            }
-        }
-
-        function updateDonorODMLID(donorId, button) {
-            const odmlId = $(button).prev('input').val();
-            
-            if (!odmlId) {
-                alert('Please enter an ODML ID');
-                return;
+                    });
+                }
             }
             
-            if (confirm('Are you sure you want to update the ODML ID?')) {
-                $.ajax({
-                    url: '../../backend/php/update_odml_id.php',
-                    method: 'POST',
-                    data: {
-                        type: 'donor',
-                        id: donorId,
-                        odml_id: odmlId
-                    },
-                    success: function(response) {
-                        try {
-                            const data = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (data.success) {
-                                alert('ODML ID updated successfully');
-                                $(button).prev('input').prop('disabled', true);
-                                $(button).prop('disabled', true);
+            function updateDonorStatus(donorId, status) {
+                // Capitalize first letter of status
+                status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+                
+                if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
+                    $.ajax({
+                        url: '../../backend/php/update_donor_status.php',
+                        method: 'POST',
+                        data: JSON.stringify({
+                            donor_id: donorId,
+                            status: status
+                        }),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log('Response:', response); // Debug log
+                            if (response.success) {
+                                alert(`Donor ${status.toLowerCase()} successfully`);
+                                location.reload();
                             } else {
-                                alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                                alert('Failed to update status: ' + (response.message || 'Unknown error'));
                             }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            console.error('Response:', xhr.responseText); // Debug log
+                            alert('Error updating donor status. Please check the console for details.');
+                        }
+                    });
+                }
+            }
+
+            function updateDonorODMLID(donorId, button) {
+                const odmlId = $(button).prev('input').val();
+                
+                if (!odmlId) {
+                    alert('Please enter an ODML ID');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to update the ODML ID?')) {
+                    $.ajax({
+                        url: '../../backend/php/update_odml_id.php',
+                        method: 'POST',
+                        data: {
+                            type: 'donor',
+                            id: donorId,
+                            odml_id: odmlId
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'string' ? JSON.parse(response) : response;
+                                if (data.success) {
+                                    alert('ODML ID updated successfully');
+                                    $(button).prev('input').prop('disabled', true);
+                                    $(button).prop('disabled', true);
+                                } else {
+                                    alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
+                                }
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                                alert('Error updating ODML ID');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
                             alert('Error updating ODML ID');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error updating ODML ID');
-                    }
-                });
+                    });
+                }
             }
-        }
 
-        function updateRecipientStatus(recipientId, status) {
-            // Capitalize first letter of status
-            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this recipient?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_recipient_status.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        recipient_id: recipientId,
-                        status: status
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response);
-                        if (response.success) {
-                            alert(`Recipient ${status.toLowerCase()} successfully`);
-                            location.reload();
-                        } else {
-                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
+            function updateRecipientStatus(recipientId, status) {
+                // Capitalize first letter of status
+                status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+                
+                if (confirm(`Are you sure you want to ${status.toLowerCase()} this recipient?`)) {
+                    $.ajax({
+                        url: '../../backend/php/update_recipient_status.php',
+                        method: 'POST',
+                        data: JSON.stringify({
+                            recipient_id: recipientId,
+                            status: status
+                        }),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log('Response:', response);
+                            if (response.success) {
+                                alert(`Recipient ${status.toLowerCase()} successfully`);
+                                location.reload();
+                            } else {
+                                alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            console.error('Response:', xhr.responseText);
+                            alert('Error updating recipient status. Please check the console for details.');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.error('Response:', xhr.responseText);
-                        alert('Error updating recipient status. Please check the console for details.');
-                    }
-                });
-            }
-        }
-
-        function updateRecipientODML(recipientId) {
-            const odmlId = document.getElementById(`odml-${recipientId}`).value.trim();
-            
-            if (!odmlId) {
-                alert('Please enter an ODML ID');
-                return;
+                    });
+                }
             }
 
-            if (confirm('Are you sure you want to update the ODML ID?')) {
-                $.ajax({
-                    url: '../../backend/php/update_recipient_odml.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        recipient_id: recipientId,
-                        odml_id: odmlId
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response);
-                        if (response.success) {
-                            alert('ODML ID updated successfully');
-                        } else {
-                            alert('Failed to update ODML ID: ' + (response.message || 'Unknown error'));
+            function updateRecipientODML(recipientId) {
+                const odmlId = document.getElementById(`odml-${recipientId}`).value.trim();
+                
+                if (!odmlId) {
+                    alert('Please enter an ODML ID');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to update the ODML ID?')) {
+                    $.ajax({
+                        url: '../../backend/php/update_recipient_odml.php',
+                        method: 'POST',
+                        data: JSON.stringify({
+                            recipient_id: recipientId,
+                            odml_id: odmlId
+                        }),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log('Response:', response);
+                            if (response.success) {
+                                alert('ODML ID updated successfully');
+                            } else {
+                                alert('Failed to update ODML ID: ' + (response.message || 'Unknown error'));
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            console.error('Response:', xhr.responseText);
+                            alert('Error updating ODML ID. Please check the console for details.');
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.error('Response:', xhr.responseText);
-                        alert('Error updating ODML ID. Please check the console for details.');
-                    }
-                });
+                    });
+                }
             }
-        }
-    </script>
-    <script src="../../assets/js/notifications.js"></script>
-</body>
+        </script>
+        <script src="../../assets/js/notifications.js"></script>
+    </body>
 </html>
