@@ -172,8 +172,8 @@ function getMatchDetails($conn, $match_id) {
         
         return $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error getting match details: " . $e->getMessage());
-        return null;
+        error_log("Error in getMatchDetails: " . $e->getMessage());
+        return false;
     }
 }
 ?>

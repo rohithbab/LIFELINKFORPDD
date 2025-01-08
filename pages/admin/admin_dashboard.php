@@ -841,13 +841,17 @@ $urgentRecipients = getUrgentRecipients($conn);
                                         <div class="detail-section donor-info">
                                             <h3><i class="fas fa-user-plus"></i> Donor Information</h3>
                                             <p><strong>Name:</strong> <span>${match.donor_name || 'N/A'}</span></p>
-                                            <p><strong>Hospital:</strong> <span>${match.donor_hospital_name || 'N/A'}</span></p>
+                                            <p><strong>ID:</strong> <span>${match.donor_id || 'N/A'}</span></p>
+                                            <p><strong>Hospital Name:</strong> <span>${match.donor_hospital_name || 'N/A'}</span></p>
+                                            <p><strong>Hospital ID:</strong> <span>${match.donor_hospital_id || 'N/A'}</span></p>
                                         </div>
                                         
                                         <div class="detail-section recipient-info">
                                             <h3><i class="fas fa-user"></i> Recipient Information</h3>
                                             <p><strong>Name:</strong> <span>${match.recipient_name || 'N/A'}</span></p>
-                                            <p><strong>Hospital:</strong> <span>${match.recipient_hospital_name || 'N/A'}</span></p>
+                                            <p><strong>ID:</strong> <span>${match.recipient_id || 'N/A'}</span></p>
+                                            <p><strong>Hospital Name:</strong> <span>${match.recipient_hospital_name || 'N/A'}</span></p>
+                                            <p><strong>Hospital ID:</strong> <span>${match.recipient_hospital_id || 'N/A'}</span></p>
                                         </div>
                                     </div>
                                 `;
