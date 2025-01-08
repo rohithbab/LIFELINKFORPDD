@@ -347,6 +347,12 @@ $urgentRecipients = getUrgentRecipients($conn);
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="organ_match_info_for_admin.php" class="nav-link">
+                        <i class="fas fa-handshake-angle"></i>
+                        Organ Matches
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="analytics.php" class="nav-link">
                         <i class="fas fa-chart-line"></i>
                         Analytics
