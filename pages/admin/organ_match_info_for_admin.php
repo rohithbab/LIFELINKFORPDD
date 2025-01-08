@@ -217,6 +217,11 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
 
             <style>
+                /* Prevent horizontal scroll on body and main container */
+                body {
+                    overflow-x: hidden;
+                }
+
                 .sidebar {
                     z-index: 1000;
                     position: fixed;
@@ -227,47 +232,27 @@ if (!isset($_SESSION['admin_id'])) {
                     padding: 20px;
                     min-height: 100vh;
                     background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
-                    position: relative;
-                    z-index: 1;
+                    overflow-x: hidden;
+                    width: calc(100vw - 250px); /* Account for sidebar */
+                    box-sizing: border-box;
                 }
 
                 .container {
-                    padding: 20px;
                     width: 100%;
-                    max-width: 100%;
-                    box-sizing: border-box;
+                    overflow-x: hidden;
+                }
+
+                .dashboard-header, .search-bar, .pagination {
+                    width: calc(100% - 40px);
                     position: relative;
-                    z-index: 1;
-                }
-
-                /* Fixed header section */
-                .dashboard-header {
-                    position: sticky;
-                    left: 0;
                     background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
-                    padding-bottom: 20px;
                 }
 
-                h2 {
-                    color: #2196F3;
-                    margin-bottom: 30px;
-                    font-size: 24px;
-                    border-bottom: 2px solid #4CAF50;
-                    padding-bottom: 10px;
-                    width: fit-content;
-                }
-
-                /* Fixed search section */
                 .search-bar {
-                    position: sticky;
-                    left: 0;
                     margin-bottom: 20px;
                     display: flex;
                     gap: 10px;
-                    width: 100%;
                     max-width: 600px;
-                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
-                    padding-bottom: 20px;
                 }
 
                 .search-bar input {
@@ -276,7 +261,6 @@ if (!isset($_SESSION['admin_id'])) {
                     border-radius: 6px;
                     width: 100%;
                     font-size: 14px;
-                    transition: all 0.3s ease;
                 }
 
                 .search-bar button {
@@ -287,19 +271,14 @@ if (!isset($_SESSION['admin_id'])) {
                     border-radius: 6px;
                     cursor: pointer;
                     font-weight: bold;
-                    transition: all 0.3s ease;
                     white-space: nowrap;
                 }
 
-                /* Scrollable table container */
                 .table-container {
-                    width: 100%;
                     overflow-x: auto;
-                    margin-top: 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                    position: relative;
-                    z-index: 1;
+                    margin: 20px -20px;
+                    padding: 0 20px;
+                    width: calc(100% + 40px);
                 }
 
                 .matches-table {
@@ -307,20 +286,19 @@ if (!isset($_SESSION['admin_id'])) {
                     border-collapse: separate;
                     border-spacing: 0;
                     background: white;
-                    margin-bottom: 0;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 }
 
                 .matches-table th {
                     background: linear-gradient(135deg, #4CAF50, #2196F3);
                     color: white;
                     font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
+                    padding: 15px;
+                    text-align: left;
                     white-space: nowrap;
                     position: sticky;
                     top: 0;
-                    z-index: 2;
-                    padding: 15px;
                 }
 
                 .matches-table td {
@@ -330,16 +308,11 @@ if (!isset($_SESSION['admin_id'])) {
                     white-space: nowrap;
                 }
 
-                /* Fixed pagination section */
                 .pagination {
-                    position: sticky;
-                    left: 0;
-                    margin-top: 30px;
-                    margin-bottom: 30px;
                     display: flex;
                     justify-content: center;
                     gap: 10px;
-                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+                    margin: 20px 0;
                     padding: 20px 0;
                 }
 
@@ -349,7 +322,6 @@ if (!isset($_SESSION['admin_id'])) {
                     border-radius: 6px;
                     text-decoration: none;
                     color: #4CAF50;
-                    transition: all 0.3s ease;
                 }
 
                 .pagination a.active {
@@ -358,25 +330,9 @@ if (!isset($_SESSION['admin_id'])) {
                     border: none;
                 }
 
-                /* Custom scrollbar for table */
-                .table-container::-webkit-scrollbar {
-                    height: 8px;
-                }
-
-                .table-container::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 4px;
-                }
-
-                .table-container::-webkit-scrollbar-thumb {
-                    background: linear-gradient(135deg, #4CAF50, #2196F3);
-                    border-radius: 4px;
-                }
-
                 @media screen and (max-width: 1024px) {
                     main {
                         margin-left: 0;
-                        padding: 15px;
                     }
                 }
             </style>
