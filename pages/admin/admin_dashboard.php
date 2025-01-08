@@ -321,17 +321,56 @@ $urgentRecipients = getUrgentRecipients($conn);
             height: 100%;
             background-color: rgba(0,0,0,0.5);
             animation: fadeIn 0.3s;
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .modal-content {
             background: linear-gradient(135deg, #f5f7fa 0%, #e8f0fe 100%);
-            margin: 5% auto;
+            margin: 20px auto;
             padding: 25px;
             border-radius: 15px;
             width: 90%;
             max-width: 800px;
+            max-height: 85vh;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: inherit;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e3e8f0;
+            z-index: 1;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #666;
         }
 
         .close {
@@ -343,6 +382,7 @@ $urgentRecipients = getUrgentRecipients($conn);
             color: #666;
             cursor: pointer;
             transition: 0.3s;
+            z-index: 2;
         }
 
         .close:hover {
@@ -351,16 +391,15 @@ $urgentRecipients = getUrgentRecipients($conn);
 
         .modal h2 {
             color: #2c3e50;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e3e8f0;
             font-size: 24px;
+            margin: 0;
+            padding-right: 40px;
         }
 
         .match-details {
             display: grid;
             gap: 20px;
-            padding: 10px;
+            padding: 10px 0;
         }
 
         .detail-section {
@@ -763,9 +802,11 @@ $urgentRecipients = getUrgentRecipients($conn);
             <!-- Match Details Modal -->
             <div id="matchDetailsModal" class="modal">
                 <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Match Details</h2>
+                    </div>
+                    <div class="modal-body" id="matchDetailsContent"></div>
                     <span class="close">&times;</span>
-                    <h2>Match Details</h2>
-                    <div id="matchDetailsContent"></div>
                 </div>
             </div>
 
@@ -828,7 +869,7 @@ $urgentRecipients = getUrgentRecipients($conn);
                 });
             }
 
-            // Close modal
+            // Close modal when clicking the close button or outside
             $('.close').click(function() {
                 $('#matchDetailsModal').fadeOut(300);
             });
