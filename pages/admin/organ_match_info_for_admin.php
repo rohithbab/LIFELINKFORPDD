@@ -94,11 +94,8 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
             
             <?php
-            include '../../backend/php/connection.php';
             include '../../backend/php/organ_matches.php';
-            ?>
 
-            <?php
             // Get page parameters
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $search = isset($_GET['search']) ? $_GET['search'] : '';

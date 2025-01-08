@@ -172,7 +172,7 @@ function getAllOrganMatches($conn, $page = 1, $limit = 10, $search = '', $sortBy
         FROM made_matches_by_hospitals m
         LEFT JOIN hospitals h ON m.match_made_by = h.hospital_id
         LEFT JOIN donors d ON m.donor_id = d.donor_id
-        LEFT JOIN recipients r ON m.recipient_id = r.recipient_id";
+        LEFT JOIN recipient_registration r ON m.recipient_id = r.recipient_id";
         
         // Add search condition if search term is provided
         if (!empty($search)) {
@@ -184,7 +184,9 @@ function getAllOrganMatches($conn, $page = 1, $limit = 10, $search = '', $sortBy
                 m.recipient_name LIKE :search OR 
                 m.recipient_hospital_name LIKE :search OR 
                 m.organ_type LIKE :search OR 
-                m.blood_group LIKE :search";
+                m.blood_group LIKE :search OR
+                d.email LIKE :search OR
+                r.email LIKE :search";
         }
         
         // Add sorting
