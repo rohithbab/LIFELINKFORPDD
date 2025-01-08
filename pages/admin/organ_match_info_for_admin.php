@@ -88,7 +88,7 @@ if (!isset($_SESSION['admin_id'])) {
             </ul>
         </div>
         
-        <main class="main-content">
+        <main>
             <div class="dashboard-header">
                 <h1>Organ Matches</h1>
             </div>
@@ -118,76 +118,78 @@ if (!isset($_SESSION['admin_id'])) {
                 </div>
 
                 <!-- Matches Table -->
-                <table class="matches-table">
-                    <thead>
-                        <tr>
-                            <th onclick="sort('match_id')">Match ID 
-                                <?php if($sortBy == 'match_id'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('match_made_by_hospital_name')">Hospital (Match Made By)
-                                <?php if($sortBy == 'match_made_by_hospital_name'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('donor_name')">Donor Name
-                                <?php if($sortBy == 'donor_name'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th>Donor Email</th>
-                            <th onclick="sort('donor_hospital_name')">Donor Hospital
-                                <?php if($sortBy == 'donor_hospital_name'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('recipient_name')">Recipient Name
-                                <?php if($sortBy == 'recipient_name'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th>Recipient Email</th>
-                            <th onclick="sort('recipient_hospital_name')">Recipient Hospital
-                                <?php if($sortBy == 'recipient_hospital_name'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('organ_type')">Organ Type
-                                <?php if($sortBy == 'organ_type'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('blood_group')">Blood Group
-                                <?php if($sortBy == 'blood_group'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                            <th onclick="sort('match_date')">Match Date
-                                <?php if($sortBy == 'match_date'): ?>
-                                    <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                <?php endif; ?>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($matches as $match): ?>
+                <div class="table-container">
+                    <table class="matches-table">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($match['match_id']); ?></td>
-                                <td><?php echo htmlspecialchars($match['match_made_by_hospital_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['donor_email']); ?></td>
-                                <td><?php echo htmlspecialchars($match['donor_hospital_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['recipient_email']); ?></td>
-                                <td><?php echo htmlspecialchars($match['recipient_hospital_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
-                                <td><?php echo htmlspecialchars($match['blood_group']); ?></td>
-                                <td><?php echo date('Y-m-d', strtotime($match['match_date'])); ?></td>
+                                <th onclick="sort('match_id')">Match ID 
+                                    <?php if($sortBy == 'match_id'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('match_made_by_hospital_name')">Hospital (Match Made By)
+                                    <?php if($sortBy == 'match_made_by_hospital_name'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('donor_name')">Donor Name
+                                    <?php if($sortBy == 'donor_name'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th>Donor Email</th>
+                                <th onclick="sort('donor_hospital_name')">Donor Hospital
+                                    <?php if($sortBy == 'donor_hospital_name'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('recipient_name')">Recipient Name
+                                    <?php if($sortBy == 'recipient_name'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th>Recipient Email</th>
+                                <th onclick="sort('recipient_hospital_name')">Recipient Hospital
+                                    <?php if($sortBy == 'recipient_hospital_name'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('organ_type')">Organ Type
+                                    <?php if($sortBy == 'organ_type'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('blood_group')">Blood Group
+                                    <?php if($sortBy == 'blood_group'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
+                                <th onclick="sort('match_date')">Match Date
+                                    <?php if($sortBy == 'match_date'): ?>
+                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
+                                    <?php endif; ?>
+                                </th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($matches as $match): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($match['match_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['match_made_by_hospital_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['donor_email']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['donor_hospital_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['recipient_email']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['recipient_hospital_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['blood_group']); ?></td>
+                                    <td><?php echo date('Y-m-d', strtotime($match['match_date'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- Pagination -->
                 <div class="pagination">
@@ -215,57 +217,38 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
 
             <style>
+                /* Add this to ensure sidebar stays on top */
+                .sidebar {
+                    z-index: 1000;
+                    position: fixed;
+                }
+
+                main {
+                    margin-left: 250px;
+                    padding: 20px;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+                    position: relative;
+                    z-index: 1;
+                }
+
                 .container {
                     padding: 20px;
-                    margin-left: 250px; /* Match sidebar width */
-                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
-                    min-height: 100vh;
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    position: relative;
+                    z-index: 1;
                 }
 
-                h2 {
-                    color: #2196F3;
-                    margin-bottom: 30px;
-                    font-size: 24px;
-                    border-bottom: 2px solid #4CAF50;
-                    padding-bottom: 10px;
-                    width: fit-content;
-                }
-
-                .search-bar {
-                    margin-bottom: 20px;
-                    display: flex;
-                    gap: 10px;
-                }
-
-                .search-bar input {
-                    padding: 12px;
-                    border: 1px solid #4CAF50;
-                    border-radius: 6px;
-                    width: 300px;
-                    font-size: 14px;
-                    transition: all 0.3s ease;
-                }
-
-                .search-bar input:focus {
-                    outline: none;
-                    border-color: #2196F3;
-                    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-                }
-
-                .search-bar button {
-                    padding: 12px 20px;
-                    background: linear-gradient(135deg, #4CAF50, #2196F3);
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    transition: all 0.3s ease;
-                }
-
-                .search-bar button:hover {
-                    background: linear-gradient(135deg, #45a049, #1e88e5);
-                    transform: translateY(-1px);
+                .table-container {
+                    width: 100%;
+                    overflow-x: auto;
+                    margin-top: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    position: relative;
+                    z-index: 1;
                 }
 
                 .matches-table {
@@ -273,16 +256,7 @@ if (!isset($_SESSION['admin_id'])) {
                     border-collapse: separate;
                     border-spacing: 0;
                     background: white;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                    border-radius: 8px;
-                    overflow: hidden;
-                    margin-bottom: 20px;
-                }
-
-                .matches-table th, .matches-table td {
-                    padding: 15px;
-                    text-align: left;
-                    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                    margin-bottom: 0;
                 }
 
                 .matches-table th {
@@ -292,111 +266,30 @@ if (!isset($_SESSION['admin_id'])) {
                     cursor: pointer;
                     transition: all 0.3s ease;
                     white-space: nowrap;
+                    position: sticky;
+                    top: 0;
+                    z-index: 2;
+                    padding: 15px;
                 }
 
-                .matches-table th:hover {
-                    background: linear-gradient(135deg, #45a049, #1e88e5);
+                .matches-table td {
+                    padding: 15px;
+                    text-align: left;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                    white-space: nowrap;
                 }
 
-                .matches-table tr:hover {
-                    background-color: rgba(76, 175, 80, 0.05);
+                /* Remove fixed widths to allow natural content width */
+                .matches-table th, .matches-table td {
+                    min-width: auto;
+                    max-width: none;
                 }
 
-                .matches-table tbody tr:last-child td {
-                    border-bottom: none;
-                }
-
-                .pagination {
-                    margin-top: 30px;
-                    margin-bottom: 30px;
-                    display: flex;
-                    justify-content: center;
-                    gap: 10px;
-                    flex-wrap: wrap;
-                }
-
-                .pagination a {
-                    padding: 10px 15px;
-                    border: 1px solid #4CAF50;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    color: #4CAF50;
-                    transition: all 0.3s ease;
-                    font-weight: 500;
-                }
-
-                .pagination a.active {
-                    background: linear-gradient(135deg, #4CAF50, #2196F3);
-                    color: white;
-                    border: none;
-                }
-
-                .pagination a:hover:not(.active) {
-                    background-color: rgba(76, 175, 80, 0.1);
-                    border-color: #2196F3;
-                    color: #2196F3;
-                }
-
-                .sort-icon {
-                    margin-left: 5px;
-                    color: rgba(255, 255, 255, 0.8);
-                }
-
-                /* Responsive Design */
                 @media screen and (max-width: 1024px) {
-                    .container {
+                    main {
                         margin-left: 0;
                         padding: 15px;
                     }
-
-                    .matches-table {
-                        display: block;
-                        overflow-x: auto;
-                    }
-
-                    .search-bar {
-                        flex-direction: column;
-                    }
-
-                    .search-bar input {
-                        width: 100%;
-                    }
-                }
-
-                /* Custom Scrollbar */
-                .matches-table::-webkit-scrollbar {
-                    height: 8px;
-                }
-
-                .matches-table::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 4px;
-                }
-
-                .matches-table::-webkit-scrollbar-thumb {
-                    background: linear-gradient(135deg, #4CAF50, #2196F3);
-                    border-radius: 4px;
-                }
-
-                .matches-table::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(135deg, #45a049, #1e88e5);
-                }
-
-                /* Table Cell Styles */
-                .matches-table td {
-                    font-size: 14px;
-                    color: #333;
-                }
-
-                /* Status Colors */
-                .matches-table .status-active {
-                    color: #4CAF50;
-                    font-weight: 500;
-                }
-
-                .matches-table .status-inactive {
-                    color: #f44336;
-                    font-weight: 500;
                 }
             </style>
         </main>
