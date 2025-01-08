@@ -309,6 +309,67 @@ $urgentRecipients = getUrgentRecipients($conn);
         .update-odml-btn i {
             margin-right: 4px;
         }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .match-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .detail-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .detail-section h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .detail-section p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #666;
+        }
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -595,6 +656,7 @@ $urgentRecipients = getUrgentRecipients($conn);
                     </table>
                 </div>
             </div>
+            
             <!-- Recent Matches Table -->
             <div class="table-container">
                 <h2>Recent Organ Match Activities</h2>
@@ -602,49 +664,102 @@ $urgentRecipients = getUrgentRecipients($conn);
                     <table class="table" id="recent-matches-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Donor</th>
-                                <th>Recipient</th>
+                                <th>Match ID</th>
                                 <th>Hospital</th>
-                                <th>Organ Type</th>
-                                <th>Status</th>
-                                <th>Urgency</th>
-                                <th>Action</th>
+                                <th>Donor Name</th>
+                                <th>Recipient Name</th>
+                                <th>Match Date</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
                             require_once '../../backend/php/organ_matches.php';
-                            $recent_matches = getOrganMatches($conn, ['limit' => 5]);
-                            foreach ($recent_matches as $match): 
+                            $recent_matches = getRecentOrganMatches($conn);
+                            
+                            if (empty($recent_matches)) {
+                                echo '<tr><td colspan="6" class="text-center">No recent matches found</td></tr>';
+                            } else {
+                                foreach ($recent_matches as $match) {
+                                    $match_date = date('M d, Y', strtotime($match['match_date']));
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($match['match_id']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['match_made_by_hospital_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                        <td><?php echo $match_date; ?></td>
+                                        <td>
+                                            <button class="view-btn" onclick="viewMatchDetails(<?php echo $match['match_id']; ?>)">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
+                            }
                             ?>
-                            <tr>
-                                <td><?php echo date('M d, Y', strtotime($match['match_date'])); ?></td>
-                                <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['hospital_name']); ?></td>
-                                <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
-                                <td>
-                                    <span class="status-badge status-<?php echo strtolower($match['status']); ?>">
-                                        <?php echo $match['status']; ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="urgency-badge urgency-<?php echo strtolower($match['urgency_level']); ?>">
-                                        <?php echo $match['urgency_level']; ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn-action btn-view" onclick="viewMatch(<?php echo $match['match_id']; ?>)">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- Match Details Modal -->
+            <div id="matchDetailsModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Match Details</h2>
+                    <div id="matchDetailsContent"></div>
+                </div>
+            </div>
+
+            <script>
+            function viewMatchDetails(matchId) {
+                // AJAX call to get match details
+                $.ajax({
+                    url: 'get_match_details.php',
+                    type: 'GET',
+                    data: { match_id: matchId },
+                    success: function(response) {
+                        const match = JSON.parse(response);
+                        const content = `
+                            <div class="match-details">
+                                <div class="detail-section">
+                                    <h3>Match Information</h3>
+                                    <p><strong>Match ID:</strong> ${match.match_id}</p>
+                                    <p><strong>Match Date:</strong> ${new Date(match.match_date).toLocaleDateString()}</p>
+                                    <p><strong>Made By:</strong> ${match.match_made_by_hospital_name}</p>
+                                </div>
+                                <div class="detail-section">
+                                    <h3>Donor Information</h3>
+                                    <p><strong>Name:</strong> ${match.donor_name}</p>
+                                    <p><strong>Hospital:</strong> ${match.donor_hospital_name}</p>
+                                    <p><strong>Blood Group:</strong> ${match.blood_group}</p>
+                                    <p><strong>Organ Type:</strong> ${match.organ_type}</p>
+                                </div>
+                                <div class="detail-section">
+                                    <h3>Recipient Information</h3>
+                                    <p><strong>Name:</strong> ${match.recipient_name}</p>
+                                    <p><strong>Hospital:</strong> ${match.recipient_hospital_name}</p>
+                                </div>
+                            </div>
+                        `;
+                        $('#matchDetailsContent').html(content);
+                        $('#matchDetailsModal').show();
+                    },
+                    error: function() {
+                        alert('Error fetching match details');
+                    }
+                });
+            }
+
+            // Close modal when clicking the X or outside the modal
+            $('.close, .modal').click(function(e) {
+                if (e.target === this) {
+                    $('#matchDetailsModal').hide();
+                }
+            });
+            </script>
         </div>
     </div>
 

@@ -133,4 +133,47 @@ function getOrganMatch($conn, $match_id) {
         return null;
     }
 }
+
+// Get recent organ matches from made_matches_by_hospitals table
+function getRecentOrganMatches($conn, $limit = 5) {
+    try {
+        $sql = "SELECT 
+            m.*,
+            h.name as match_made_by_hospital_name
+        FROM made_matches_by_hospitals m
+        LEFT JOIN hospitals h ON m.match_made_by = h.hospital_id
+        ORDER BY m.match_date DESC
+        LIMIT :limit";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting recent organ matches: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Get specific match details
+function getMatchDetails($conn, $match_id) {
+    try {
+        $sql = "SELECT 
+            m.*,
+            h.name as match_made_by_hospital_name
+        FROM made_matches_by_hospitals m
+        LEFT JOIN hospitals h ON m.match_made_by = h.hospital_id
+        WHERE m.match_id = :match_id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':match_id', $match_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting match details: " . $e->getMessage());
+        return null;
+    }
+}
 ?>
