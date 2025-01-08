@@ -158,91 +158,15 @@ function getRecentOrganMatches($conn, $limit = 5) {
 }
 
 // Get all organ matches with pagination and search
-function getAllOrganMatches($conn, $page = 1, $limit = 10, $search = '', $sortBy = 'match_date', $sortOrder = 'DESC') {
+function getAllOrganMatches($conn) {
     try {
-        // Calculate offset
-        $offset = ($page - 1) * $limit;
-        
-        // Base query
-        $sql = "SELECT 
-            m.*,
-            h.name as match_made_by_hospital_name,
-            d.email as donor_email,
-            r.email as recipient_email
-        FROM made_matches_by_hospitals m
-        LEFT JOIN hospitals h ON m.match_made_by = h.hospital_id
-        LEFT JOIN donors d ON m.donor_id = d.donor_id
-        LEFT JOIN recipient_registration r ON m.recipient_id = r.recipient_id";
-        
-        // Add search condition if search term is provided
-        if (!empty($search)) {
-            $sql .= " WHERE 
-                m.match_id LIKE :search OR 
-                h.name LIKE :search OR 
-                m.donor_name LIKE :search OR 
-                m.donor_hospital_name LIKE :search OR 
-                m.recipient_name LIKE :search OR 
-                m.recipient_hospital_name LIKE :search OR 
-                m.organ_type LIKE :search OR 
-                m.blood_group LIKE :search OR
-                d.email LIKE :search OR
-                r.email LIKE :search";
-        }
-        
-        // Add sorting
-        $sql .= " ORDER BY " . $sortBy . " " . $sortOrder;
-        
-        // Add pagination
-        $sql .= " LIMIT :limit OFFSET :offset";
-        
-        // Prepare and execute query
+        $sql = "SELECT * FROM made_matches_by_hospitals ORDER BY match_date DESC";
         $stmt = $conn->prepare($sql);
-        
-        // Bind search parameter if exists
-        if (!empty($search)) {
-            $searchTerm = "%$search%";
-            $stmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
-        }
-        
-        // Bind pagination parameters
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        
         $stmt->execute();
-        $matches = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Get total count for pagination
-        $countSql = "SELECT COUNT(*) FROM made_matches_by_hospitals m";
-        if (!empty($search)) {
-            $countSql .= " WHERE 
-                m.match_id LIKE :search OR 
-                m.donor_name LIKE :search OR 
-                m.donor_hospital_name LIKE :search OR 
-                m.recipient_name LIKE :search OR 
-                m.recipient_hospital_name LIKE :search OR 
-                m.organ_type LIKE :search OR 
-                m.blood_group LIKE :search";
-        }
-        
-        $countStmt = $conn->prepare($countSql);
-        if (!empty($search)) {
-            $countStmt->bindParam(':search', $searchTerm, PDO::PARAM_STR);
-        }
-        $countStmt->execute();
-        $totalRecords = $countStmt->fetchColumn();
-        
-        return [
-            'matches' => $matches,
-            'total' => $totalRecords,
-            'pages' => ceil($totalRecords / $limit)
-        ];
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error getting all matches: " . $e->getMessage());
-        return [
-            'matches' => [],
-            'total' => 0,
-            'pages' => 0
-        ];
+        error_log("Error getting matches: " . $e->getMessage());
+        return [];
     }
 }
 

@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once '../../backend/php/connection.php';
-require_once '../../backend/php/queries.php';
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
@@ -9,7 +8,6 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,18 +92,10 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
             
             <?php
-            include '../../backend/php/organ_matches.php';
+            require_once '../../backend/php/organ_matches.php';
 
-            // Get page parameters
-            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-            $search = isset($_GET['search']) ? $_GET['search'] : '';
-            $sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'match_date';
-            $sortOrder = isset($_GET['order']) ? $_GET['order'] : 'DESC';
-
-            // Get matches with pagination and search
-            $result = getAllOrganMatches($conn, $page, 10, $search, $sortBy, $sortOrder);
-            $matches = $result['matches'];
-            $totalPages = $result['pages'];
+            // Get matches directly
+            $matches = getAllOrganMatches($conn);
             ?>
 
             <div class="container">
@@ -113,7 +103,7 @@ if (!isset($_SESSION['admin_id'])) {
                 
                 <!-- Search Bar -->
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search..." value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" id="searchInput" placeholder="Search...">
                     <button onclick="search()">Search</button>
                 </div>
 
@@ -122,97 +112,43 @@ if (!isset($_SESSION['admin_id'])) {
                     <table class="matches-table">
                         <thead>
                             <tr>
-                                <th onclick="sort('match_id')">Match ID 
-                                    <?php if($sortBy == 'match_id'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('match_made_by_hospital_name')">Hospital (Match Made By)
-                                    <?php if($sortBy == 'match_made_by_hospital_name'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('donor_name')">Donor Name
-                                    <?php if($sortBy == 'donor_name'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th>Donor Email</th>
-                                <th onclick="sort('donor_hospital_name')">Donor Hospital
-                                    <?php if($sortBy == 'donor_hospital_name'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('recipient_name')">Recipient Name
-                                    <?php if($sortBy == 'recipient_name'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th>Recipient Email</th>
-                                <th onclick="sort('recipient_hospital_name')">Recipient Hospital
-                                    <?php if($sortBy == 'recipient_hospital_name'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('organ_type')">Organ Type
-                                    <?php if($sortBy == 'organ_type'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('blood_group')">Blood Group
-                                    <?php if($sortBy == 'blood_group'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
-                                <th onclick="sort('match_date')">Match Date
-                                    <?php if($sortBy == 'match_date'): ?>
-                                        <i class="fas fa-sort-<?php echo $sortOrder == 'ASC' ? 'up' : 'down'; ?>"></i>
-                                    <?php endif; ?>
-                                </th>
+                                <th>Match ID</th>
+                                <th>Hospital</th>
+                                <th>Donor Name</th>
+                                <th>Donor Hospital</th>
+                                <th>Recipient Name</th>
+                                <th>Recipient Hospital</th>
+                                <th>Organ Type</th>
+                                <th>Blood Group</th>
+                                <th>Match Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($matches as $match): ?>
+                            <?php 
+                            if (!empty($matches)): 
+                                foreach ($matches as $match): 
+                            ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($match['match_id']); ?></td>
-                                    <td><?php echo htmlspecialchars($match['match_made_by_hospital_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['match_made_by']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($match['donor_email']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_hospital_name']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($match['recipient_email']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_hospital_name']); ?></td>
                                     <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
                                     <td><?php echo htmlspecialchars($match['blood_group']); ?></td>
                                     <td><?php echo date('Y-m-d', strtotime($match['match_date'])); ?></td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php 
+                                endforeach; 
+                            else: 
+                            ?>
+                                <tr>
+                                    <td colspan="9" style="text-align: center;">No matches found</td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="pagination">
-                    <?php if($page > 1): ?>
-                        <a href="?page=1&search=<?php echo urlencode($search); ?>&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>">First</a>
-                        <a href="?page=<?php echo $page-1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>">Previous</a>
-                    <?php endif; ?>
-
-                    <?php
-                    $start = max(1, $page - 2);
-                    $end = min($totalPages, $page + 2);
-                    
-                    for($i = $start; $i <= $end; $i++): ?>
-                        <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>" 
-                           class="<?php echo $i == $page ? 'active' : ''; ?>">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php endfor; ?>
-
-                    <?php if($page < $totalPages): ?>
-                        <a href="?page=<?php echo $page+1; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>">Next</a>
-                        <a href="?page=<?php echo $totalPages; ?>&search=<?php echo urlencode($search); ?>&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>">Last</a>
-                    <?php endif; ?>
                 </div>
             </div>
 
@@ -242,7 +178,7 @@ if (!isset($_SESSION['admin_id'])) {
                     overflow-x: hidden;
                 }
 
-                .dashboard-header, .search-bar, .pagination {
+                .dashboard-header, .search-bar {
                     width: calc(100% - 40px);
                     position: relative;
                     background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
@@ -308,28 +244,6 @@ if (!isset($_SESSION['admin_id'])) {
                     white-space: nowrap;
                 }
 
-                .pagination {
-                    display: flex;
-                    justify-content: center;
-                    gap: 10px;
-                    margin: 20px 0;
-                    padding: 20px 0;
-                }
-
-                .pagination a {
-                    padding: 10px 15px;
-                    border: 1px solid #4CAF50;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    color: #4CAF50;
-                }
-
-                .pagination a.active {
-                    background: linear-gradient(135deg, #4CAF50, #2196F3);
-                    color: white;
-                    border: none;
-                }
-
                 @media screen and (max-width: 1024px) {
                     main {
                         margin-left: 0;
@@ -342,15 +256,7 @@ if (!isset($_SESSION['admin_id'])) {
     <script>
         function search() {
             const searchTerm = document.getElementById('searchInput').value;
-            window.location.href = `?page=1&search=${encodeURIComponent(searchTerm)}&sort=<?php echo $sortBy; ?>&order=<?php echo $sortOrder; ?>`;
-        }
-
-        function sort(column) {
-            const currentSort = '<?php echo $sortBy; ?>';
-            const currentOrder = '<?php echo $sortOrder; ?>';
-            const newOrder = (column === currentSort && currentOrder === 'ASC') ? 'DESC' : 'ASC';
-            
-            window.location.href = `?page=<?php echo $page; ?>&search=<?php echo urlencode($search); ?>&sort=${column}&order=${newOrder}`;
+            window.location.href = `?search=${encodeURIComponent(searchTerm)}`;
         }
 
         // Enable search on Enter key
