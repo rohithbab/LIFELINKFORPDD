@@ -160,12 +160,32 @@ function getRecentOrganMatches($conn, $limit = 5) {
 // Get all organ matches with pagination and search
 function getAllOrganMatches($conn) {
     try {
-        $sql = "SELECT * FROM made_matches_by_hospitals ORDER BY match_date DESC";
-        $stmt = $conn->prepare($sql);
+        $query = "SELECT 
+            match_id,
+            match_made_by,
+            donor_id,
+            donor_name,
+            donor_hospital_id,
+            donor_hospital_name,
+            recipient_id,
+            recipient_name,
+            recipient_hospital_id,
+            recipient_hospital_name,
+            organ_type,
+            blood_group,
+            match_date
+        FROM made_matches_by_hospitals
+        ORDER BY match_date DESC";
+
+        $stmt = $conn->prepare($query);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug: Log the number of rows returned
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Number of matches found: " . count($results));
+        return $results;
     } catch (PDOException $e) {
-        error_log("Error getting matches: " . $e->getMessage());
+        error_log("Error in getAllOrganMatches: " . $e->getMessage());
         return [];
     }
 }
