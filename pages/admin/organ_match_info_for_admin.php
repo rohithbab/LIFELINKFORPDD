@@ -217,7 +217,18 @@ if (!isset($_SESSION['admin_id'])) {
             <style>
                 .container {
                     padding: 20px;
-                    margin-left: 250px;
+                    margin-left: 250px; /* Match sidebar width */
+                    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+                    min-height: 100vh;
+                }
+
+                h2 {
+                    color: #2196F3;
+                    margin-bottom: 30px;
+                    font-size: 24px;
+                    border-bottom: 2px solid #4CAF50;
+                    padding-bottom: 10px;
+                    width: fit-content;
                 }
 
                 .search-bar {
@@ -227,87 +238,165 @@ if (!isset($_SESSION['admin_id'])) {
                 }
 
                 .search-bar input {
-                    padding: 8px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
+                    padding: 12px;
+                    border: 1px solid #4CAF50;
+                    border-radius: 6px;
                     width: 300px;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                }
+
+                .search-bar input:focus {
+                    outline: none;
+                    border-color: #2196F3;
+                    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
                 }
 
                 .search-bar button {
-                    padding: 8px 15px;
-                    background-color: #4CAF50;
+                    padding: 12px 20px;
+                    background: linear-gradient(135deg, #4CAF50, #2196F3);
                     color: white;
                     border: none;
-                    border-radius: 4px;
+                    border-radius: 6px;
                     cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                }
+
+                .search-bar button:hover {
+                    background: linear-gradient(135deg, #45a049, #1e88e5);
+                    transform: translateY(-1px);
                 }
 
                 .matches-table {
                     width: 100%;
-                    border-collapse: collapse;
+                    border-collapse: separate;
+                    border-spacing: 0;
                     background: white;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                    overflow: hidden;
+                    margin-bottom: 20px;
                 }
 
                 .matches-table th, .matches-table td {
-                    padding: 12px;
+                    padding: 15px;
                     text-align: left;
-                    border-bottom: 1px solid #ddd;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
                 }
 
                 .matches-table th {
-                    background-color: #f5f5f5;
-                    font-weight: bold;
+                    background: linear-gradient(135deg, #4CAF50, #2196F3);
+                    color: white;
+                    font-weight: 600;
                     cursor: pointer;
+                    transition: all 0.3s ease;
+                    white-space: nowrap;
                 }
 
                 .matches-table th:hover {
-                    background-color: #e8e8e8;
+                    background: linear-gradient(135deg, #45a049, #1e88e5);
                 }
 
                 .matches-table tr:hover {
-                    background-color: #f9f9f9;
+                    background-color: rgba(76, 175, 80, 0.05);
+                }
+
+                .matches-table tbody tr:last-child td {
+                    border-bottom: none;
                 }
 
                 .pagination {
-                    margin-top: 20px;
+                    margin-top: 30px;
+                    margin-bottom: 30px;
                     display: flex;
                     justify-content: center;
                     gap: 10px;
+                    flex-wrap: wrap;
                 }
 
                 .pagination a {
-                    padding: 8px 12px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
+                    padding: 10px 15px;
+                    border: 1px solid #4CAF50;
+                    border-radius: 6px;
                     text-decoration: none;
-                    color: #333;
+                    color: #4CAF50;
+                    transition: all 0.3s ease;
+                    font-weight: 500;
                 }
 
                 .pagination a.active {
-                    background-color: #4CAF50;
+                    background: linear-gradient(135deg, #4CAF50, #2196F3);
                     color: white;
-                    border-color: #4CAF50;
+                    border: none;
                 }
 
                 .pagination a:hover:not(.active) {
-                    background-color: #ddd;
+                    background-color: rgba(76, 175, 80, 0.1);
+                    border-color: #2196F3;
+                    color: #2196F3;
                 }
 
                 .sort-icon {
                     margin-left: 5px;
+                    color: rgba(255, 255, 255, 0.8);
                 }
 
+                /* Responsive Design */
                 @media screen and (max-width: 1024px) {
                     .container {
                         margin-left: 0;
-                        padding: 10px;
+                        padding: 15px;
                     }
 
                     .matches-table {
                         display: block;
                         overflow-x: auto;
                     }
+
+                    .search-bar {
+                        flex-direction: column;
+                    }
+
+                    .search-bar input {
+                        width: 100%;
+                    }
+                }
+
+                /* Custom Scrollbar */
+                .matches-table::-webkit-scrollbar {
+                    height: 8px;
+                }
+
+                .matches-table::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 4px;
+                }
+
+                .matches-table::-webkit-scrollbar-thumb {
+                    background: linear-gradient(135deg, #4CAF50, #2196F3);
+                    border-radius: 4px;
+                }
+
+                .matches-table::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(135deg, #45a049, #1e88e5);
+                }
+
+                /* Table Cell Styles */
+                .matches-table td {
+                    font-size: 14px;
+                    color: #333;
+                }
+
+                /* Status Colors */
+                .matches-table .status-active {
+                    color: #4CAF50;
+                    font-weight: 500;
+                }
+
+                .matches-table .status-inactive {
+                    color: #f44336;
+                    font-weight: 500;
                 }
             </style>
         </main>
