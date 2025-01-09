@@ -1,18 +1,17 @@
 .notification-bell-container {
     position: relative;
-    margin-left: auto;
+    margin-left: 1150px;
 }
 
 .notification-bell {
-    position: absolute;
-    top: 20px;
-    right: 40px;
+    position: relative;
     cursor: pointer;
     padding: 15px;
     background: linear-gradient(135deg, #4CAF50, #2196F3);
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
+    z-index: 750;
 }
 
 .notification-bell:hover {

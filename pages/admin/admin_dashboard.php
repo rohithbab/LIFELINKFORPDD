@@ -675,6 +675,11 @@ $urgentRecipients = getUrgentRecipients($conn);
                         </div>
                     </div>
                 </div>
+                
+                <!-- Rest of top bar content -->
+                <div class="top-bar-content">
+                    <!-- Add any other top bar content here -->
+                </div>
             </div>
             <!-- Stats Cards Section -->
             <div class="stats-cards">
