@@ -653,28 +653,29 @@ $urgentRecipients = getUrgentRecipients($conn);
                 </li>
             </ul>
         </div>
-
+        
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Notification Bell -->
-            <div class="notification-bell-container">
-                <div class="notification-bell" id="notificationBell">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-count" id="notificationCount">0</span>
-                </div>
-                <div class="notification-dropdown" id="notificationDropdown">
-                    <div class="notification-header">
-                        <h3>Recent Notifications</h3>
+            <div class="top-bar">
+                <!-- Notification Bell -->
+                <div class="notification-bell-container">
+                    <div class="notification-bell" id="notificationBell" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count">0</span>
                     </div>
-                    <div class="notification-list" id="notificationList">
-                        <!-- Notifications will be dynamically added here -->
-                    </div>
-                    <div class="notification-footer">
-                        <a href="notifications.php">View All Notifications</a>
+                    <div class="notification-dropdown">
+                        <div class="notification-header">
+                            <h3>Recent Notifications</h3>
+                        </div>
+                        <div class="notification-list">
+                            <!-- Notifications will be dynamically inserted here -->
+                        </div>
+                        <div class="notification-footer">
+                            <a href="notifications.php">View All Notifications</a>
+                        </div>
                     </div>
                 </div>
             </div>
-
             <!-- Stats Cards Section -->
             <div class="stats-cards">
                 <div class="stat-card">

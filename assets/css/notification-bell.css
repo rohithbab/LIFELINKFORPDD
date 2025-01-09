@@ -1,12 +1,12 @@
 .notification-bell-container {
-    position: fixed;
-    top: 20px;
-    right: 40px;
-    z-index: 1000;
+    position: relative;
+    margin-left: auto;
 }
 
 .notification-bell {
-    position: relative;
+    position: absolute;
+    top: 20px;
+    right: 40px;
     cursor: pointer;
     padding: 15px;
     background: linear-gradient(135deg, #4CAF50, #2196F3);
@@ -39,7 +39,7 @@
 
 .notification-dropdown {
     position: absolute;
-    top: 45px;
+    top: 55px;
     right: 0;
     width: 350px;
     background: white;
@@ -88,6 +88,26 @@
     font-weight: 500;
     text-transform: capitalize;
     margin-bottom: 5px;
+}
+
+.notification-badge.hospital {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.notification-badge.donor {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.notification-badge.recipient {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.notification-badge.organ_match {
+    background-color: #fff3e0;
+    color: #f57c00;
 }
 
 .notification-message {

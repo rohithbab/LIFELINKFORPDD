@@ -105,6 +105,16 @@
     color: var(--dark-gray);
 }
 
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
 /* Cards */
 .dashboard-cards {
     display: grid;

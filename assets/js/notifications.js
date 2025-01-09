@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.classList.remove('show');
         }
     });
+
+    // Add click handler to bell icon
+    document.querySelector('#notificationBell').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleNotifications();
+    });
 });
 
 function toggleNotifications() {
@@ -27,7 +33,7 @@ function toggleNotifications() {
 }
 
 function updateNotifications() {
-    fetch('../backend/php/get_notifications.php?action=get_unread')
+    fetch('../../backend/php/get_recent_notifications.php')
         .then(response => response.json())
         .then(data => {
             updateNotificationUI(data.notifications, data.unread_count);
@@ -38,6 +44,7 @@ function updateNotifications() {
 function updateNotificationUI(notifications, unreadCount) {
     const container = document.querySelector('.notification-dropdown');
     const countBadge = document.querySelector('.notification-count');
+    const notificationsList = container.querySelector('.notification-list');
     
     // Update count badge
     if (unreadCount > 0) {
@@ -47,51 +54,70 @@ function updateNotificationUI(notifications, unreadCount) {
         countBadge.style.display = 'none';
     }
     
-    // Update notification list
-    const notificationsList = container.querySelector('.notification-list');
+    // Clear existing notifications
     notificationsList.innerHTML = '';
     
-    if (notifications.length === 0) {
-        notificationsList.innerHTML = `
-            <div class="notification-empty">
-                No new notifications
-            </div>`;
-        return;
-    }
-    
+    // Add new notifications
     notifications.forEach(notification => {
-        const item = document.createElement('div');
-        item.className = `notification-item ${notification.is_read ? '' : 'unread'}`;
-        item.onclick = () => handleNotificationClick(notification);
+        const notificationItem = document.createElement('div');
+        notificationItem.className = 'notification-item';
+        notificationItem.onclick = () => handleNotificationClick(notification);
         
-        item.innerHTML = `
-            <div class="notification-content">
-                ${notification.formatted_message}
-                <div class="time">${notification.formatted_time}</div>
-            </div>`;
-            
-        notificationsList.appendChild(item);
+        const badge = document.createElement('span');
+        badge.className = `notification-badge ${notification.type}`;
+        badge.textContent = notification.type.replace('_', ' ');
+        
+        const message = document.createElement('div');
+        message.className = 'notification-message';
+        message.textContent = notification.message;
+        
+        const time = document.createElement('span');
+        time.className = 'notification-time';
+        time.textContent = formatTimeAgo(new Date(notification.created_at));
+        
+        notificationItem.appendChild(badge);
+        notificationItem.appendChild(message);
+        notificationItem.appendChild(time);
+        notificationsList.appendChild(notificationItem);
     });
 }
 
 function handleNotificationClick(notification) {
-    // Mark as read
-    fetch('../backend/php/get_notifications.php?action=mark_read', {
+    // Mark notification as read
+    fetch('../../backend/php/mark_notification_read.php', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
         },
-        body: `notification_id=${notification.notification_id}`
+        body: JSON.stringify({
+            notification_id: notification.notification_id
+        })
     })
     .then(() => {
-        // Navigate to the link if provided
+        // Redirect to the notification link
         if (notification.link_url) {
             window.location.href = notification.link_url;
         }
-        // Update notifications UI
-        updateNotifications();
     })
     .catch(error => console.error('Error marking notification as read:', error));
+}
+
+function formatTimeAgo(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    
+    return date.toLocaleDateString();
 }
 
 function playNotificationSound() {
