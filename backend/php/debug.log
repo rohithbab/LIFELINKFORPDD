@@ -14123,3 +14123,56 @@ Data: []
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
 2024-12-21 15:54:36: SQL executed successfully
 2024-12-21 15:54:36: Transaction committed
+2025-01-09 06:37:10: Registration process started
+2025-01-09 06:37:10: POST data: Array
+(
+    [hospital_name] => ourcare hospitals2
+    [hospital_email] => ourcare2@gmail.com
+    [hospital_phone] => 432425387
+    [street] => no.12 thuraipaakam,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => raju
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => nithya124@gmail.com
+    [license_number] => Li001
+    [username] => ourcare2
+    [password] => @Ourcare123
+    [confirm_password] => @Ourcare123
+    [terms] => on
+)
+
+2025-01-09 06:37:10: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpA362.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-09 06:37:10: Database connection successful
+2025-01-09 06:37:10: Sanitized inputs: name=ourcare hospitals2, email=ourcare2@gmail.com, phone=432425387
+2025-01-09 06:37:10: Address: no.12 thuraipaakam,, chennai, India, 600080, India
+2025-01-09 06:37:10: Region: India
+2025-01-09 06:37:10: Transaction started
+2025-01-09 06:37:10: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+2025-01-09 06:37:10: SQL executed successfully
+2025-01-09 06:37:10: Transaction committed

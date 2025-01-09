@@ -465,6 +465,125 @@ $urgentRecipients = getUrgentRecipients($conn);
         }
         
         /* ... other styles ... */
+        
+        /* Notification Bell Styles */
+        .notification-bell-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .notification-bell {
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .notification-bell:hover {
+            color: #333;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 12px;
+            background: #f44336;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 30px;
+            right: 0;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            margin-bottom: 10px;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f2f5;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background: #f8f9fa;
+        }
+
+        .notification-badge {
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .notification-badge.type-match {
+            background: #2196F3;
+        }
+
+        .notification-badge.type-donor {
+            background: #4CAF50;
+        }
+
+        .notification-badge.type-recipient {
+            background: #9C27B0;
+        }
+
+        .notification-content {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .no-notifications {
+            padding: 10px;
+            text-align: center;
+            color: #666;
+        }
+
+        .notification-footer {
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #f0f2f5;
+        }
+
+        .notification-footer a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+
+        .notification-footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 
     <!-- JavaScript Dependencies -->
@@ -538,20 +657,24 @@ $urgentRecipients = getUrgentRecipients($conn);
         <!-- Main Content -->
         <div class="main-content">
             <!-- Notification Bell -->
-<div class="notification-bell-container">
-    <div class="notification-bell" id="notificationBell">
-        <i class="fas fa-bell"></i>
-        <span class="notification-count">0</span>
-        <div class="notification-dropdown">
-            <div class="notification-header">
-                <h3>Notifications</h3>
+            <div class="notification-bell-container">
+                <div class="notification-bell" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count" id="notificationCount">0</span>
+                </div>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h3>Recent Notifications</h3>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <!-- Notifications will be dynamically added here -->
+                    </div>
+                    <div class="notification-footer">
+                        <a href="notifications.php">View All Notifications</a>
+                    </div>
+                </div>
             </div>
-            <div class="notification-list">
-                <!-- Notifications will be dynamically added here -->
-            </div>
-        </div>
-    </div>
-</div>
+
             <!-- Stats Cards Section -->
             <div class="stats-cards">
                 <div class="stat-card">
@@ -853,86 +976,53 @@ $urgentRecipients = getUrgentRecipients($conn);
                         try {
                             const data = JSON.parse(response);
                             // Update notification count
-                            $('.notification-count').text(data.unread_count);
+                            $('#notificationCount').text(data.unread_count);
                             
-                            // Update notification list
-                            let notificationHTML = '';
-                            data.notifications.forEach(notification => {
-                                notificationHTML += `
-                                    <div class="notification-item ${notification.is_read ? '' : 'unread'}" 
-                                         onclick="window.location.href='${notification.link_url}'">
-                                        <div class="notification-content">${notification.message}</div>
-                                        <div class="notification-time">${notification.created_at}</div>
-                                    </div>
-                                `;
+                            // Clear existing notifications
+                            const notificationList = $('#notificationList');
+                            notificationList.empty();
+                            
+                            // Add new notifications
+                            data.notifications.forEach(function(notification) {
+                                const notificationItem = $('<div>').addClass('notification-item');
+                                
+                                // Add type badge
+                                const badge = $('<span>')
+                                    .addClass('notification-badge')
+                                    .addClass('type-' + notification.type)
+                                    .text(notification.type.replace('_', ' '));
+                                
+                                // Add message and time
+                                const content = $('<div>').addClass('notification-content');
+                                content.append($('<p>').addClass('notification-message').text(notification.message));
+                                content.append($('<span>').addClass('notification-time').text(notification.time_ago));
+                                
+                                // Add link if available
+                                if (notification.link_url) {
+                                    notificationItem.css('cursor', 'pointer');
+                                    notificationItem.click(function() {
+                                        window.location.href = notification.link_url;
+                                    });
+                                }
+                                
+                                notificationItem.append(badge).append(content);
+                                notificationList.append(notificationItem);
                             });
                             
-                            $('.notification-list').html(notificationHTML);
+                            // Show "No notifications" message if empty
+                            if (data.notifications.length === 0) {
+                                notificationList.append(
+                                    $('<div>')
+                                        .addClass('no-notifications')
+                                        .text('No unread notifications')
+                                );
+                            }
                         } catch (e) {
                             console.error('Error parsing notifications:', e);
                         }
-                    }
-                });
-            }
-            
-            function viewMatchDetails(matchId) {
-                console.log('View button clicked for match ID:', matchId);
-                $.ajax({
-                    url: 'get_match_details.php',
-                    method: 'GET',
-                    data: { match_id: matchId },
-                    success: function(response) {
-                        try {
-                            const match = typeof response === 'string' ? JSON.parse(response) : response;
-                            if (match) {
-                                const matchDate = new Date(match.match_date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                });
-
-                                const content = `
-                                    <div class="match-details">
-                                        <div class="detail-section match-info">
-                                            <h3><i class="fas fa-handshake"></i> Match Information</h3>
-                                            <p><strong>Match ID:</strong> <span>${match.match_id}</span></p>
-                                            <p><strong>Match Date:</strong> <span>${matchDate}</span></p>
-                                            <p><strong>Made By Hospital:</strong> <span>${match.match_made_by_hospital_name || 'N/A'}</span></p>
-                                            <p><strong>Blood Group:</strong> <span>${match.blood_group || 'N/A'}</span></p>
-                                            <p><strong>Organ Type:</strong> <span>${match.organ_type || 'N/A'}</span></p>
-                                        </div>
-                                        
-                                        <div class="detail-section donor-info">
-                                            <h3><i class="fas fa-user-plus"></i> Donor Information</h3>
-                                            <p><strong>Name:</strong> <span>${match.donor_name || 'N/A'}</span></p>
-                                            <p><strong>ID:</strong> <span>${match.donor_id || 'N/A'}</span></p>
-                                            <p><strong>Hospital Name:</strong> <span>${match.donor_hospital_name || 'N/A'}</span></p>
-                                            <p><strong>Hospital ID:</strong> <span>${match.donor_hospital_id || 'N/A'}</span></p>
-                                        </div>
-                                        
-                                        <div class="detail-section recipient-info">
-                                            <h3><i class="fas fa-user"></i> Recipient Information</h3>
-                                            <p><strong>Name:</strong> <span>${match.recipient_name || 'N/A'}</span></p>
-                                            <p><strong>ID:</strong> <span>${match.recipient_id || 'N/A'}</span></p>
-                                            <p><strong>Hospital Name:</strong> <span>${match.recipient_hospital_name || 'N/A'}</span></p>
-                                            <p><strong>Hospital ID:</strong> <span>${match.recipient_hospital_id || 'N/A'}</span></p>
-                                        </div>
-                                    </div>
-                                `;
-                                
-                                $('#matchDetailsContent').html(content);
-                                $('#matchDetailsModal').fadeIn(300);
-                            } else {
-                                alert('Match details not found');
-                            }
-                        } catch (e) {
-                            console.error('Error:', e);
-                            alert('Error loading match details');
-                        }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        alert('Error fetching match details');
+                        console.error('Error fetching notifications:', error);
                     }
                 });
             }
