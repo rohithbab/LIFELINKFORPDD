@@ -239,12 +239,12 @@ function getMatchDetails($conn, $match_id) {
 // Function to create notification for new match
 function createMatchNotification($conn, $match_id) {
     try {
-        // Get match details from made_matches_by_hospitals
+        // Get match details for notification
         $sql = "SELECT 
             m.*,
             h.name as match_made_by_hospital_name,
             d.name as donor_name,
-            r.name as recipient_name,
+            r.full_name as recipient_name,
             dh.name as donor_hospital_name,
             rh.name as recipient_hospital_name
         FROM made_matches_by_hospitals m
@@ -256,11 +256,11 @@ function createMatchNotification($conn, $match_id) {
         WHERE m.match_id = :match_id";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':match_id', $match_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(['match_id' => $match_id]);
         $match = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($match) {
+            // Create message with all required details
             $message = sprintf(
                 "New organ match made by %s: Donor %s (%s) with Recipient %s (%s) for %s",
                 $match['match_made_by_hospital_name'],
@@ -271,13 +271,22 @@ function createMatchNotification($conn, $match_id) {
                 $match['organ_type']
             );
 
-            createNotification(
-                $conn,
-                'organ_match',
-                'created',
-                $match_id,
-                $message
-            );
+            // Insert into notifications table
+            $sql = "INSERT INTO notifications (
+                type, action, entity_id, message, is_read, created_at, link_url
+            ) VALUES (
+                'organ_match', 'created', :match_id, :message, 0, NOW(), :link_url
+            )";
+
+            $link_url = "organ_match_info_for_admin.php?match_id=" . $match_id;
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                'match_id' => $match_id,
+                'message' => $message,
+                'link_url' => $link_url
+            ]);
+
             return true;
         }
         return false;

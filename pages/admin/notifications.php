@@ -136,18 +136,23 @@ $notifications = getAdminNotifications($conn, 50);
         }
 
         .type-hospital {
-            background-color: #e3f2fd;
-            color: #1976D2;
+            background-color: #E3F2FD;
+            color: #1565C0;
         }
 
         .type-donor {
-            background-color: #e8f5e9;
-            color: #388E3C;
+            background-color: #FCE4EC;
+            color: #C2185B;
         }
 
         .type-recipient {
-            background-color: #fce4ec;
-            color: #C2185B;
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .type-organ_match {
+            background-color: #FFF3E0;
+            color: #E65100;
         }
 
         .empty-notifications {
