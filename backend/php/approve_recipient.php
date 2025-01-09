@@ -18,6 +18,20 @@ try {
     // Start transaction
     $conn->begin_transaction();
 
+    // Get recipient details
+    $query = "SELECT r.full_name, r.blood_type, r.organ_required 
+              FROM recipient_registration r 
+              WHERE r.id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $recipient_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $recipient = $result->fetch_assoc();
+
+    if (!$recipient) {
+        throw new Exception('Recipient not found');
+    }
+
     // Update approval status
     $query = "UPDATE hospital_recipient_approvals 
               SET status = 'approved', 
@@ -32,10 +46,10 @@ try {
         throw new Exception('No matching recipient approval request found');
     }
 
-    // Create notification
-    $message = "Your recipient registration has been approved.";
-    $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id) 
-              VALUES (?, 'recipient_approval', ?, ?)";
+    // Create notification with recipient details
+    $message = "New recipient {$recipient['full_name']} (Blood Type: {$recipient['blood_type']}) needs {$recipient['organ_required']} transplant";
+    $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id, is_read, created_at, link_url) 
+              VALUES (?, 'recipient_registration', ?, ?, 0, NOW(), 'hospitals_handles_recipients_status.php')";
     
     $stmt = $conn->prepare($query);
     $stmt->bind_param('isi', $hospital_id, $message, $recipient_id);

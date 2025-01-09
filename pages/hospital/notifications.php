@@ -12,6 +12,9 @@ $hospital_id = $_SESSION['hospital_id'];
 
 // Get all notifications for this hospital
 try {
+    $request_notifications = [];
+    $registration_notifications = [];
+
     // Get donor requests notifications
     $stmt = $conn->prepare("
         SELECT 
@@ -30,36 +33,65 @@ try {
             NULL as is_read,
             dr.request_date as created_at,
             NULL as notification_id,
-            NULL as link_url
+            NULL as link_url,
+            NULL as person_name,
+            NULL as blood_info,
+            NULL as organ_info
         FROM donor_requests dr
         JOIN hospitals h ON (h.hospital_id = dr.requesting_hospital_id OR h.hospital_id = dr.donor_hospital_id)
         JOIN donor d ON d.donor_id = dr.donor_id
         JOIN hospital_donor_approvals ha ON ha.donor_id = d.donor_id
         WHERE (dr.requesting_hospital_id = ? OR dr.donor_hospital_id = ?)
     ");
-    $stmt->execute([$hospital_id, $hospital_id]);
-    $request_notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($stmt->execute([$hospital_id, $hospital_id])) {
+        $request_notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        error_log("Error fetching donor requests for hospital_id: $hospital_id");
+    }
 
     // Get registration notifications
     $stmt = $conn->prepare("
-        SELECT *
-        FROM hospital_notifications
-        WHERE hospital_id = ? 
-        AND (type = 'donor_registration' OR type = 'recipient_registration')
+        SELECT n.*, 
+            CASE 
+                WHEN n.type = 'donor_registration' THEN d.name
+                WHEN n.type = 'recipient_registration' THEN r.full_name
+            END as person_name,
+            CASE 
+                WHEN n.type = 'donor_registration' THEN d.blood_group
+                WHEN n.type = 'recipient_registration' THEN r.blood_type
+            END as blood_info,
+            CASE 
+                WHEN n.type = 'donor_registration' THEN d.organs_to_donate
+                WHEN n.type = 'recipient_registration' THEN r.organ_required
+            END as organ_info
+        FROM hospital_notifications n
+        LEFT JOIN donor d ON (n.type = 'donor_registration' AND d.donor_id = n.related_id)
+        LEFT JOIN recipient_registration r ON (n.type = 'recipient_registration' AND r.id = n.related_id)
+        WHERE n.hospital_id = ? 
     ");
-    $stmt->execute([$hospital_id]);
-    $registration_notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($stmt->execute([$hospital_id])) {
+        $registration_notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        error_log("Error fetching registration notifications for hospital_id: $hospital_id");
+    }
 
-    // Merge and sort notifications by date
-    $notifications = array_merge($request_notifications, $registration_notifications);
-    usort($notifications, function($a, $b) {
-        $date_a = isset($a['request_date']) ? $a['request_date'] : $a['created_at'];
-        $date_b = isset($b['request_date']) ? $b['request_date'] : $b['created_at'];
-        return strtotime($date_b) - strtotime($date_a);
-    });
+    // Safely merge notifications
+    $notifications = [];
+    if (!empty($request_notifications) || !empty($registration_notifications)) {
+        $notifications = array_merge($request_notifications, $registration_notifications);
+        
+        // Sort notifications by date
+        usort($notifications, function($a, $b) {
+            $date_a = isset($a['request_date']) ? $a['request_date'] : $a['created_at'];
+            $date_b = isset($b['request_date']) ? $b['request_date'] : $b['created_at'];
+            return strtotime($date_b) - strtotime($date_a);
+        });
+    }
 
 } catch(PDOException $e) {
-    error_log("Error: " . $e->getMessage());
+    error_log("Database error in notifications.php: " . $e->getMessage());
     $notifications = [];
 }
 ?>
@@ -158,14 +190,11 @@ try {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-        .view-btn {
             background: var(--primary-blue);
             color: white;
         }
 
-        .view-btn:hover {
+        .action-btn:hover {
             background: var(--primary-green);
         }
 
@@ -244,17 +273,29 @@ try {
                                             <strong>Response:</strong> <?php echo htmlspecialchars($notification['response_message']); ?>
                                         </p>
                                     <?php endif; ?>
-                                <?php else: ?>
-                                    <p><?php echo $notification['message']; ?></p>
+                                <?php elseif ($notification['type'] === 'donor_registration'): ?>
+                                    <p>New donor <strong><?php echo htmlspecialchars($notification['person_name']); ?></strong> 
+                                       (Blood Group: <?php echo htmlspecialchars($notification['blood_info']); ?>) 
+                                       has registered to donate <?php echo htmlspecialchars($notification['organ_info']); ?></p>
+                                <?php elseif ($notification['type'] === 'recipient_registration'): ?>
+                                    <p>New recipient <strong><?php echo htmlspecialchars($notification['person_name']); ?></strong> 
+                                       (Blood Type: <?php echo htmlspecialchars($notification['blood_info']); ?>) 
+                                       needs <?php echo htmlspecialchars($notification['organ_info']); ?> transplant</p>
                                 <?php endif; ?>
                             </div>
                             <div class="notification-actions">
                                 <?php if ($notification['type'] === 'donor_request'): ?>
-                                    <a href="donor_requests.php?type=<?php echo $notification['requesting_hospital_id'] == $hospital_id ? 'outgoing' : 'incoming'; ?>" class="action-btn view-btn">
+                                    <a href="donor_requests.php?type=<?php echo $notification['requesting_hospital_id'] == $hospital_id ? 'outgoing' : 'incoming'; ?>" class="action-btn">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                 <?php else: ?>
-                                    <a href="<?php echo $notification['link_url']; ?>" class="action-btn view-btn" onclick="markAsRead(<?php echo $notification['notification_id']; ?>)">
+                                    <a href="<?php 
+                                        echo $notification['type'] === 'donor_registration' 
+                                            ? 'hospitals_handles_donors_status.php' 
+                                            : 'hospitals_handles_recipients_status.php'; 
+                                        ?>" 
+                                       class="action-btn" 
+                                       onclick="markAsRead(<?php echo $notification['notification_id']; ?>)">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                 <?php endif; ?>
@@ -278,6 +319,11 @@ try {
             })
         });
     }
+
+    // Auto-refresh notifications every 30 seconds
+    setInterval(function() {
+        location.reload();
+    }, 30000);
     </script>
 </body>
 </html>

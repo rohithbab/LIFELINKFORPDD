@@ -13,7 +13,7 @@ try {
 
         // Get existing donor approvals for this hospital
         $stmt = $conn->prepare("
-            SELECT hda.*, h.name as hospital_name, d.name as donor_name, d.blood_group
+            SELECT hda.*, h.name as hospital_name, d.name as donor_name, d.blood_group, d.organs_to_donate
             FROM hospital_donor_approvals hda
             JOIN hospitals h ON h.hospital_id = hda.hospital_id
             JOIN donor d ON d.donor_id = hda.donor_id
@@ -30,7 +30,7 @@ try {
 
         // Create notifications for donor approvals
         foreach ($donor_approvals as $approval) {
-            $message = "New donor {$approval['donor_name']} ({$approval['blood_group']}) has registered for organ donation";
+            $message = "New donor {$approval['donor_name']} (Blood Group: {$approval['blood_group']}) has registered to donate {$approval['organs_to_donate']}";
             $stmt = $conn->prepare("
                 INSERT INTO hospital_notifications 
                 (hospital_id, type, message, is_read, created_at, link_url, related_id)
@@ -47,7 +47,7 @@ try {
 
         // Get existing recipient approvals for this hospital
         $stmt = $conn->prepare("
-            SELECT hra.*, h.name as hospital_name, r.full_name as recipient_name, r.blood_type as blood_group
+            SELECT hra.*, h.name as hospital_name, r.full_name as recipient_name, r.blood_type, r.organ_required
             FROM hospital_recipient_approvals hra
             JOIN hospitals h ON h.hospital_id = hra.hospital_id
             JOIN recipient_registration r ON r.id = hra.recipient_id
@@ -64,7 +64,7 @@ try {
 
         // Create notifications for recipient approvals
         foreach ($recipient_approvals as $approval) {
-            $message = "New recipient {$approval['recipient_name']} ({$approval['blood_group']}) has registered for organ transplant";
+            $message = "New recipient {$approval['recipient_name']} (Blood Type: {$approval['blood_type']}) needs {$approval['organ_required']} transplant";
             $stmt = $conn->prepare("
                 INSERT INTO hospital_notifications 
                 (hospital_id, type, message, is_read, created_at, link_url, related_id)

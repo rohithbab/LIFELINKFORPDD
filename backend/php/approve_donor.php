@@ -18,6 +18,20 @@ try {
     // Start transaction
     $conn->begin_transaction();
 
+    // Get donor details
+    $query = "SELECT d.name, d.blood_group, d.organs_to_donate 
+              FROM donor d 
+              WHERE d.donor_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $donor_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $donor = $result->fetch_assoc();
+
+    if (!$donor) {
+        throw new Exception('Donor not found');
+    }
+
     // Update approval status
     $query = "UPDATE hospital_donor_approvals 
               SET status = 'approved', 
@@ -32,10 +46,10 @@ try {
         throw new Exception('No matching donor approval request found');
     }
 
-    // Create notification
-    $message = "Your donor registration has been approved.";
-    $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id) 
-              VALUES (?, 'donor_approval', ?, ?)";
+    // Create notification with donor details
+    $message = "New donor {$donor['name']} (Blood Group: {$donor['blood_group']}) has registered to donate {$donor['organs_to_donate']}";
+    $query = "INSERT INTO hospital_notifications (hospital_id, type, message, related_id, is_read, created_at, link_url) 
+              VALUES (?, 'donor_registration', ?, ?, 0, NOW(), 'hospitals_handles_donors_status.php')";
     
     $stmt = $conn->prepare($query);
     $stmt->bind_param('isi', $hospital_id, $message, $donor_id);
