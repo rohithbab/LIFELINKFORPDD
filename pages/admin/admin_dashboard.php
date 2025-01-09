@@ -537,6 +537,21 @@ $urgentRecipients = getUrgentRecipients($conn);
 
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Notification Bell -->
+<div class="notification-bell-container">
+    <div class="notification-bell" id="notificationBell">
+        <i class="fas fa-bell"></i>
+        <span class="notification-count">0</span>
+        <div class="notification-dropdown">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+            </div>
+            <div class="notification-list">
+                <!-- Notifications will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+</div>
             <!-- Stats Cards Section -->
             <div class="stats-cards">
                 <div class="stat-card">
