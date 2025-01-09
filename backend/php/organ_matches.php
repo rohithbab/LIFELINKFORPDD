@@ -1,5 +1,6 @@
 <?php
 require_once 'connection.php';
+require_once 'queries.php';
 
 // Create organ_matches table if it doesn't exist
 function createOrganMatchesTable($conn) {
@@ -16,21 +17,26 @@ function createOrganMatchesTable($conn) {
 // Add new organ match
 function addOrganMatch($conn, $data) {
     try {
-        $sql = "INSERT INTO organ_matches (
-            donor_name, donor_email, recipient_name, recipient_email,
-            hospital_name, hospital_email, organ_type, match_date,
-            status, reason_for_match, admin_notes, donor_id_proof_path,
-            recipient_medical_records_path, urgency_level
+        $sql = "INSERT INTO made_matches_by_hospitals (
+            donor_id, recipient_id, match_made_by,
+            donor_hospital_id, recipient_hospital_id,
+            organ_type, match_date, status
         ) VALUES (
-            :donor_name, :donor_email, :recipient_name, :recipient_email,
-            :hospital_name, :hospital_email, :organ_type, :match_date,
-            :status, :reason_for_match, :admin_notes, :donor_id_proof_path,
-            :recipient_medical_records_path, :urgency_level
+            :donor_id, :recipient_id, :match_made_by,
+            :donor_hospital_id, :recipient_hospital_id,
+            :organ_type, NOW(), 'Pending'
         )";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute($data);
-        return $conn->lastInsertId();
+        $match_id = $conn->lastInsertId();
+
+        if ($match_id) {
+            // Create notification for the new match
+            createMatchNotification($conn, $match_id);
+        }
+
+        return $match_id;
     } catch (PDOException $e) {
         error_log("Error adding organ match: " . $e->getMessage());
         return false;
@@ -51,7 +57,26 @@ function updateOrganMatchStatus($conn, $match_id, $status, $admin_notes = null) 
         if ($admin_notes !== null) {
             $params['admin_notes'] = $admin_notes;
         }
-        return $stmt->execute($params);
+        
+        $success = $stmt->execute($params);
+
+        // Create notification for status update
+        if ($success) {
+            // Get match details for the notification message
+            $match = getMatchDetails($conn, $match_id);
+            if ($match) {
+                $message = "Organ match status updated to {$status} for {$match['donor_name']} (Donor) and {$match['recipient_name']} (Recipient)";
+                createNotification(
+                    $conn,
+                    'organ_match',
+                    $status,
+                    $match_id,
+                    $message
+                );
+            }
+        }
+
+        return $success;
     } catch (PDOException $e) {
         error_log("Error updating organ match status: " . $e->getMessage());
         return false;
@@ -207,6 +232,107 @@ function getMatchDetails($conn, $match_id) {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Error in getMatchDetails: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to create notification for new match
+function createMatchNotification($conn, $match_id) {
+    try {
+        // Get match details from made_matches_by_hospitals
+        $sql = "SELECT 
+            m.*,
+            h.name as match_made_by_hospital_name,
+            d.name as donor_name,
+            r.name as recipient_name,
+            dh.name as donor_hospital_name,
+            rh.name as recipient_hospital_name
+        FROM made_matches_by_hospitals m
+        LEFT JOIN hospitals h ON m.match_made_by = h.hospital_id
+        LEFT JOIN donor d ON m.donor_id = d.donor_id
+        LEFT JOIN recipient_registration r ON m.recipient_id = r.id
+        LEFT JOIN hospitals dh ON m.donor_hospital_id = dh.hospital_id
+        LEFT JOIN hospitals rh ON m.recipient_hospital_id = rh.hospital_id
+        WHERE m.match_id = :match_id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':match_id', $match_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $match = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($match) {
+            $message = sprintf(
+                "New organ match made by %s: Donor %s (%s) with Recipient %s (%s) for %s",
+                $match['match_made_by_hospital_name'],
+                $match['donor_name'],
+                $match['donor_hospital_name'],
+                $match['recipient_name'],
+                $match['recipient_hospital_name'],
+                $match['organ_type']
+            );
+
+            createNotification(
+                $conn,
+                'organ_match',
+                'created',
+                $match_id,
+                $message
+            );
+            return true;
+        }
+        return false;
+    } catch (PDOException $e) {
+        error_log("Error creating match notification: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Update match status and create notification
+function updateMatchStatus($conn, $match_id, $new_status) {
+    try {
+        $sql = "UPDATE made_matches_by_hospitals SET status = :status WHERE match_id = :match_id";
+        $stmt = $conn->prepare($sql);
+        $success = $stmt->execute([
+            'status' => $new_status,
+            'match_id' => $match_id
+        ]);
+
+        if ($success) {
+            // Get match details and create notification
+            $sql = "SELECT 
+                m.*,
+                d.name as donor_name,
+                r.name as recipient_name
+            FROM made_matches_by_hospitals m
+            LEFT JOIN donor d ON m.donor_id = d.donor_id
+            LEFT JOIN recipient_registration r ON m.recipient_id = r.id
+            WHERE m.match_id = :match_id";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute(['match_id' => $match_id]);
+            $match = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($match) {
+                $message = sprintf(
+                    "Match status updated to %s for Donor %s and Recipient %s",
+                    $new_status,
+                    $match['donor_name'],
+                    $match['recipient_name']
+                );
+
+                createNotification(
+                    $conn,
+                    'organ_match',
+                    $new_status,
+                    $match_id,
+                    $message
+                );
+            }
+        }
+
+        return $success;
+    } catch (PDOException $e) {
+        error_log("Error updating match status: " . $e->getMessage());
         return false;
     }
 }

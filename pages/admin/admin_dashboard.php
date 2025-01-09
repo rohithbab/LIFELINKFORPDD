@@ -826,6 +826,55 @@ $urgentRecipients = getUrgentRecipients($conn);
             </div>
 
             <script>
+            $(document).ready(function() {
+                // Initialize notification system
+                updateNotifications();
+                
+                // Toggle notification dropdown
+                $('#notificationBell').click(function(e) {
+                    e.stopPropagation();
+                    $('.notification-dropdown').toggleClass('show');
+                });
+                
+                // Close dropdown when clicking outside
+                $(document).click(function() {
+                    $('.notification-dropdown').removeClass('show');
+                });
+                
+                // Update notifications every 30 seconds
+                setInterval(updateNotifications, 30000);
+            });
+            
+            function updateNotifications() {
+                $.ajax({
+                    url: '../../backend/php/get_recent_notifications.php',
+                    method: 'GET',
+                    success: function(response) {
+                        try {
+                            const data = JSON.parse(response);
+                            // Update notification count
+                            $('.notification-count').text(data.unread_count);
+                            
+                            // Update notification list
+                            let notificationHTML = '';
+                            data.notifications.forEach(notification => {
+                                notificationHTML += `
+                                    <div class="notification-item ${notification.is_read ? '' : 'unread'}" 
+                                         onclick="window.location.href='${notification.link_url}'">
+                                        <div class="notification-content">${notification.message}</div>
+                                        <div class="notification-time">${notification.created_at}</div>
+                                    </div>
+                                `;
+                            });
+                            
+                            $('.notification-list').html(notificationHTML);
+                        } catch (e) {
+                            console.error('Error parsing notifications:', e);
+                        }
+                    }
+                });
+            }
+            
             function viewMatchDetails(matchId) {
                 console.log('View button clicked for match ID:', matchId);
                 $.ajax({
