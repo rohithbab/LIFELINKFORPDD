@@ -10,6 +10,9 @@ if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in'])
 
 $hospital_id = $_SESSION['hospital_id'];
 
+// Get filter from URL parameter, default to 'all'
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+
 // Get all notifications for this hospital
 try {
     $request_notifications = [];
@@ -30,9 +33,9 @@ try {
             d.name as donor_name,
             d.blood_group,
             ha.organ_type,
-            NULL as is_read,
+            0 as is_read,
             dr.request_date as created_at,
-            NULL as notification_id,
+            dr.request_id as notification_id,
             NULL as link_url,
             NULL as person_name,
             NULL as blood_info,
@@ -68,7 +71,7 @@ try {
         FROM hospital_notifications n
         LEFT JOIN donor d ON (n.type = 'donor_registration' AND d.donor_id = n.related_id)
         LEFT JOIN recipient_registration r ON (n.type = 'recipient_registration' AND r.id = n.related_id)
-        WHERE n.hospital_id = ? 
+        WHERE n.hospital_id = ?
     ");
     
     if ($stmt->execute([$hospital_id])) {
@@ -88,6 +91,14 @@ try {
             $date_b = isset($b['request_date']) ? $b['request_date'] : $b['created_at'];
             return strtotime($date_b) - strtotime($date_a);
         });
+
+        // Filter notifications based on read status
+        if ($filter !== 'all') {
+            $notifications = array_filter($notifications, function($notification) use ($filter) {
+                $is_read = isset($notification['is_read']) ? $notification['is_read'] : 0;
+                return ($filter === 'read' && $is_read) || ($filter === 'unread' && !$is_read);
+            });
+        }
     }
 
 } catch(PDOException $e) {
@@ -109,6 +120,32 @@ try {
             padding: 2rem;
         }
 
+        .notification-filters {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: 2px solid var(--primary-blue);
+            border-radius: 20px;
+            background: white;
+            color: var(--primary-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
         .notification-card {
             background: white;
             border-radius: 10px;
@@ -117,6 +154,7 @@ try {
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
             border-left: 4px solid transparent;
+            position: relative;
         }
 
         .notification-card.unread {
@@ -125,6 +163,41 @@ try {
 
         .notification-card:hover {
             transform: translateY(-2px);
+        }
+
+        .read-toggle {
+            position: absolute;
+            top: auto;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: #ccc;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .read-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .read-toggle.read {
+            color: #4CAF50;
+        }
+
+        .read-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .read-toggle::after {
+            content: attr(title);
+            font-size: 0.9rem;
+            color: #666;
         }
 
         .notification-header {
@@ -228,15 +301,32 @@ try {
             </div>
 
             <div class="notifications-container">
+                <div class="notification-filters">
+                    <a href="?filter=all" class="filter-btn <?php echo $filter === 'all' ? 'active' : ''; ?>">
+                        All
+                    </a>
+                    <a href="?filter=unread" class="filter-btn <?php echo $filter === 'unread' ? 'active' : ''; ?>">
+                        Unread
+                    </a>
+                    <a href="?filter=read" class="filter-btn <?php echo $filter === 'read' ? 'active' : ''; ?>">
+                        Read
+                    </a>
+                </div>
+
                 <?php if (empty($notifications)): ?>
                     <div class="empty-state">
                         <i class="fas fa-bell-slash"></i>
                         <h2>No Notifications</h2>
-                        <p>You don't have any notifications at the moment.</p>
+                        <p>You don't have any <?php echo $filter !== 'all' ? $filter . ' ' : ''; ?>notifications at the moment.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($notifications as $notification): ?>
-                        <div class="notification-card <?php echo isset($notification['is_read']) && !$notification['is_read'] ? 'unread' : ''; ?>">
+                        <div class="notification-card <?php echo !$notification['is_read'] ? 'unread' : ''; ?>">
+                            <button class="read-toggle <?php echo $notification['is_read'] ? 'read' : ''; ?>" 
+                                    onclick="toggleRead(<?php echo $notification['notification_id']; ?>, this)"
+                                    title="<?php echo $notification['is_read'] ? 'Mark as unread' : 'Mark as read'; ?>">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
                             <div class="notification-header">
                                 <span class="notification-type">
                                     <?php if ($notification['type'] === 'donor_request'): ?>
@@ -308,6 +398,32 @@ try {
     </div>
 
     <script>
+    function toggleRead(notificationId, button) {
+        const isCurrentlyRead = button.classList.contains('read');
+        const newReadStatus = !isCurrentlyRead;
+        
+        fetch('../../backend/php/toggle_notification_read.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                notification_id: notificationId,
+                is_read: newReadStatus ? 1 : 0
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Toggle the read status visually
+                button.classList.toggle('read');
+                button.closest('.notification-card').classList.toggle('unread');
+                button.title = newReadStatus ? 'Mark as unread' : 'Mark as read';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     function markAsRead(notificationId) {
         fetch('../../backend/php/mark_notification_read.php', {
             method: 'POST',
@@ -322,7 +438,8 @@ try {
 
     // Auto-refresh notifications every 30 seconds
     setInterval(function() {
-        location.reload();
+        const currentFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
+        window.location.href = `?filter=${currentFilter}`;
     }, 30000);
     </script>
 </body>
