@@ -155,6 +155,33 @@ try {
 
         debug_log("SQL executed successfully");
 
+        $hospital_id = $conn->insert_id;
+        debug_log('Hospital data inserted successfully. ID: ' . $hospital_id);
+
+        // Create notification for new hospital registration
+        $sql = "INSERT INTO notifications (
+            type, action, entity_id, message, is_read, created_at, link_url
+        ) VALUES (
+            'hospital', 'registered', ?, ?, 0, NOW(), ?
+        )";
+
+        $message = sprintf(
+            "New hospital registration: %s",
+            $name
+        );
+
+        $link_url = "manage_hospitals.php?id=" . $hospital_id;
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss",
+            $hospital_id,
+            $message,
+            $link_url
+        );
+        $stmt->execute();
+
+        debug_log('Notification created successfully');
+
         // Commit transaction
         $conn->commit();
         debug_log("Transaction committed");
