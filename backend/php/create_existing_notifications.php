@@ -11,71 +11,71 @@ try {
     foreach ($hospitals as $hospital) {
         $hospital_id = $hospital['hospital_id'];
 
-        // Get existing donors for this hospital
+        // Get existing donor approvals for this hospital
         $stmt = $conn->prepare("
-            SELECT d.*, ha.organ_type
-            FROM donors d
-            JOIN hospital_donor_approvals ha ON ha.donor_id = d.donor_id
-            WHERE ha.hospital_id = ?
+            SELECT hda.*, h.name as hospital_name, d.name as donor_name, d.blood_group
+            FROM hospital_donor_approvals hda
+            JOIN hospitals h ON h.hospital_id = hda.hospital_id
+            JOIN donor d ON d.donor_id = hda.donor_id
+            WHERE hda.hospital_id = ?
             AND NOT EXISTS (
                 SELECT 1 FROM hospital_notifications n 
                 WHERE n.hospital_id = ? 
                 AND n.type = 'donor_registration' 
-                AND n.related_id = d.donor_id
+                AND n.related_id = hda.donor_id
             )
         ");
         $stmt->execute([$hospital_id, $hospital_id]);
-        $donors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $donor_approvals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Create notifications for donors
-        foreach ($donors as $donor) {
-            $message = "New donor {$donor['name']} ({$donor['blood_group']}) has registered for {$donor['organ_type']} donation";
+        // Create notifications for donor approvals
+        foreach ($donor_approvals as $approval) {
+            $message = "New donor {$approval['donor_name']} ({$approval['blood_group']}) has registered for organ donation";
             $stmt = $conn->prepare("
                 INSERT INTO hospital_notifications 
                 (hospital_id, type, message, is_read, created_at, link_url, related_id)
                 VALUES 
-                (?, 'donor_registration', ?, 0, ?, ?, ?)
+                (?, 'donor_registration', ?, 0, NOW(), ?, ?)
             ");
             $stmt->execute([
                 $hospital_id,
                 $message,
-                $donor['registration_date'],
-                "../pages/hospital/view_donor.php?id=" . $donor['donor_id'],
-                $donor['donor_id']
+                "hospitals_handles_donors_status.php",
+                $approval['donor_id']
             ]);
         }
 
-        // Get existing recipients for this hospital
+        // Get existing recipient approvals for this hospital
         $stmt = $conn->prepare("
-            SELECT r.*, ha.organ_type
-            FROM recipients r
-            JOIN hospital_recipient_approvals ha ON ha.recipient_id = r.recipient_id
-            WHERE ha.hospital_id = ?
+            SELECT hra.*, h.name as hospital_name, r.full_name as recipient_name, r.blood_type as blood_group
+            FROM hospital_recipient_approvals hra
+            JOIN hospitals h ON h.hospital_id = hra.hospital_id
+            JOIN recipient_registration r ON r.id = hra.recipient_id
+            WHERE hra.hospital_id = ?
             AND NOT EXISTS (
                 SELECT 1 FROM hospital_notifications n 
                 WHERE n.hospital_id = ? 
                 AND n.type = 'recipient_registration' 
-                AND n.related_id = r.recipient_id
+                AND n.related_id = hra.recipient_id
             )
         ");
         $stmt->execute([$hospital_id, $hospital_id]);
-        $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $recipient_approvals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Create notifications for recipients
-        foreach ($recipients as $recipient) {
-            $message = "New recipient {$recipient['name']} ({$recipient['blood_group']}) has registered needing {$recipient['organ_type']}";
+        // Create notifications for recipient approvals
+        foreach ($recipient_approvals as $approval) {
+            $message = "New recipient {$approval['recipient_name']} ({$approval['blood_group']}) has registered for organ transplant";
             $stmt = $conn->prepare("
                 INSERT INTO hospital_notifications 
                 (hospital_id, type, message, is_read, created_at, link_url, related_id)
                 VALUES 
-                (?, 'recipient_registration', ?, 0, ?, ?, ?)
+                (?, 'recipient_registration', ?, 0, NOW(), ?, ?)
             ");
             $stmt->execute([
                 $hospital_id,
                 $message,
-                $recipient['registration_date'],
-                "../pages/hospital/view_recipient.php?id=" . $recipient['recipient_id'],
-                $recipient['recipient_id']
+                "hospitals_handles_recipients_status.php",
+                $approval['recipient_id']
             ]);
         }
     }
