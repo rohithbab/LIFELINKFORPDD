@@ -250,10 +250,9 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="notificationsBtn">
+                        <a href="recipients_notifications.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'recipients_notifications.php' ? 'active' : ''; ?>">
                             <i class="fas fa-bell"></i>
                             <span>Notifications</span>
-                            <span class="notification-badge">2</span>
                         </a>
                     </li>
                     <li>
