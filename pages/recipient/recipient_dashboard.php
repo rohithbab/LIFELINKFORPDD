@@ -59,8 +59,13 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Recipient Dashboard - LifeLink</title>
     <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
         .dashboard-container {
             display: flex;
             min-height: 100vh;
@@ -381,6 +386,32 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             gap: 10px;
         }
+
+        /* Add gradient text styles */
+        .gradient-text {
+            background: linear-gradient(120deg, #28a745, #2196F3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            margin: 0;
+            padding: 10px 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .table-header h2 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
     </style>
 </head>
 <body>
@@ -391,7 +422,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="main-section">
                 <header class="dashboard-header">
                     <div class="header-left">
-                        <h1>Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?>!</h1>
+                        <h1 class="gradient-text">Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?>!</h1>
                     </div>
                     <div class="header-right">
                         <div class="notification-icon" id="notificationIcon">
@@ -532,7 +563,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Modern Table Section -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2><i class="fas fa-clock"></i> Pending Requests</h2>
+                        <h2 class="gradient-text"><i class="fas fa-clock"></i>Pending Requests</h2>
                         <div class="table-actions">
                             <div class="search-box">
                                 <i class="fas fa-search"></i>
