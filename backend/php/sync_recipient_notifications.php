@@ -5,7 +5,7 @@ try {
     // Start transaction
     $conn->beginTransaction();
 
-    // Sync request status notifications from hospital_recipient_approvals
+    // Sync request status notifications
     $stmt = $conn->prepare("
         INSERT INTO recipient_notifications (recipient_id, type, reference_id, message, created_at)
         SELECT 
@@ -40,7 +40,7 @@ try {
     ");
     $stmt->execute();
 
-    // Sync match notifications from made_matches_by_hospitals
+    // Sync match notifications
     $stmt = $conn->prepare("
         INSERT INTO recipient_notifications (recipient_id, type, reference_id, message, created_at)
         SELECT 
@@ -64,23 +64,9 @@ try {
     // Commit transaction
     $conn->commit();
 
-    // Count total notifications
-    $stmt = $conn->query("SELECT COUNT(*) as total FROM recipient_notifications");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Notifications synced successfully',
-        'total_notifications' => $result['total']
-    ]);
-
 } catch(PDOException $e) {
     // Rollback transaction on error
     $conn->rollBack();
     error_log("Error syncing notifications: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error: ' . $e->getMessage()
-    ]);
 }
 ?>

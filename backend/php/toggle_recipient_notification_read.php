@@ -1,5 +1,6 @@
 <?php
 session_start();
+header('Content-Type: application/json');
 require_once '../../config/db_connect.php';
 
 // Check if recipient is logged in
@@ -22,18 +23,20 @@ try {
     // Update notification read status
     $stmt = $conn->prepare("
         UPDATE recipient_notifications 
-        SET is_read = ?, 
-            can_delete = ? 
+        SET is_read = ?
         WHERE notification_id = ? 
         AND recipient_id = ?
     ");
     
-    $can_delete = $is_read ? 1 : 0;
-    $stmt->execute([$is_read, $can_delete, $notification_id, $_SESSION['recipient_id']]);
+    $result = $stmt->execute([$is_read, $notification_id, $_SESSION['recipient_id']]);
     
-    echo json_encode(['success' => true]);
+    if ($result) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update notification']);
+    }
 } catch(PDOException $e) {
     error_log("Error updating notification: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error']);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>

@@ -204,36 +204,43 @@ try {
             gap: 10px;
         }
 
-        .read-toggle, .delete-btn {
+        .read-toggle, .delete-btn, .read-indicator {
             background: none;
             border: none;
-            cursor: pointer;
             font-size: 20px;
-            color: #ccc;
-            transition: all 0.3s ease;
             width: 35px;
             height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
         }
 
-        .read-toggle:hover, .delete-btn:hover {
+        .read-toggle {
+            cursor: pointer;
+            color: #ccc;
+        }
+
+        .read-toggle:hover {
             background: rgba(0,0,0,0.05);
+            color: #4CAF50;
+            transform: scale(1.1);
         }
 
-        .read-toggle.read {
+        .read-indicator {
             color: #4CAF50;
+            cursor: default;
         }
 
         .delete-btn {
             color: #ff4444;
-            display: none;
+            cursor: pointer;
         }
 
-        .notification-card:not(.unread) .delete-btn {
-            display: flex;
+        .delete-btn:hover {
+            background: rgba(255,0,0,0.05);
+            transform: scale(1.1);
         }
 
         /* Responsive Design */
@@ -326,12 +333,16 @@ try {
                                 </span>
                             </div>
                             <div class="action-buttons">
-                                <button class="read-toggle <?php echo $notification['is_read'] ? 'read' : ''; ?>" 
-                                        onclick="toggleRead(<?php echo $notification['notification_id']; ?>, this)"
-                                        title="<?php echo $notification['is_read'] ? 'Mark as unread' : 'Mark as read'; ?>">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
-                                <?php if ($notification['is_read']): ?>
+                                <?php if (!$notification['is_read']): ?>
+                                    <button class="read-toggle" 
+                                            onclick="toggleRead(<?php echo $notification['notification_id']; ?>, this)"
+                                            title="Mark as read">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <span class="read-indicator">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
                                     <button class="delete-btn" 
                                             onclick="deleteNotification(<?php echo $notification['notification_id']; ?>, this)"
                                             title="Delete notification">
@@ -348,8 +359,9 @@ try {
 
     <script>
     function toggleRead(notificationId, button) {
-        const isCurrentlyRead = button.classList.contains('read');
-        const newReadStatus = !isCurrentlyRead;
+        // Show loading state
+        button.style.opacity = '0.5';
+        button.style.pointerEvents = 'none';
         
         fetch('../../backend/php/toggle_recipient_notification_read.php', {
             method: 'POST',
@@ -358,33 +370,46 @@ try {
             },
             body: JSON.stringify({
                 notification_id: notificationId,
-                is_read: newReadStatus ? 1 : 0
+                is_read: 1
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                button.classList.toggle('read');
-                button.title = newReadStatus ? 'Mark as unread' : 'Mark as read';
                 const card = button.closest('.notification-card');
-                card.classList.toggle('unread');
+                card.classList.remove('unread');
                 
-                // Show/hide delete button based on read status
-                const deleteBtn = card.querySelector('.delete-btn');
-                if (deleteBtn) {
-                    deleteBtn.style.display = newReadStatus ? 'flex' : 'none';
-                } else if (newReadStatus) {
-                    const actionButtons = card.querySelector('.action-buttons');
-                    const newDeleteBtn = document.createElement('button');
-                    newDeleteBtn.className = 'delete-btn';
-                    newDeleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                    newDeleteBtn.title = 'Delete notification';
-                    newDeleteBtn.onclick = () => deleteNotification(notificationId, newDeleteBtn);
-                    actionButtons.appendChild(newDeleteBtn);
-                }
+                // Replace the toggle button with static indicator and delete button
+                const actionButtons = card.querySelector('.action-buttons');
+                actionButtons.innerHTML = `
+                    <span class="read-indicator">
+                        <i class="fas fa-check-circle"></i>
+                    </span>
+                    <button class="delete-btn" 
+                            onclick="deleteNotification(${notificationId}, this)"
+                            title="Delete notification">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+
+                // Animate the change
+                actionButtons.style.opacity = '0';
+                setTimeout(() => {
+                    actionButtons.style.opacity = '1';
+                }, 50);
+            } else {
+                // Reset button state on error
+                button.style.opacity = '1';
+                button.style.pointerEvents = 'auto';
+                console.error('Failed to mark as read:', data.message);
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            // Reset button state on error
+            button.style.opacity = '1';
+            button.style.pointerEvents = 'auto';
+            console.error('Error:', error);
+        });
     }
 
     function deleteNotification(notificationId, button) {
