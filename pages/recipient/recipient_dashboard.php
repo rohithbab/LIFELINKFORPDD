@@ -214,22 +214,247 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #6c757d;
             margin-right: 8px;
         }
+
+        /* Notification Dropdown Styles */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-icon i {
+            font-size: 20px;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .notification-icon:hover i {
+            color: #2196F3;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 12px;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 350px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-top: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #e3f2fd;
+        }
+
+        .notification-item.unread:hover {
+            background-color: #bbdefb;
+        }
+
+        .notification-icon-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(33, 150, 243, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2196F3;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-message {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .dropdown-footer {
+            padding: 12px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .view-all-link {
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .view-all-link:hover {
+            color: #1976D2;
+        }
+
+        /* Custom Scrollbar */
+        .notification-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notification-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .notification-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .notification-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Update header-right styles */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <?php require_once 'includes/sidebar_for_recipients_dashboard.php'; ?>
-        
+
         <main class="main-content">
             <div class="main-section">
                 <header class="dashboard-header">
                     <div class="header-left">
-                        <h1>Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?></h1>
+                        <h1>Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?>!</h1>
                     </div>
                     <div class="header-right">
-                        <div class="notification-icon">
+                        <div class="notification-icon" id="notificationIcon">
                             <i class="fas fa-bell"></i>
-                            <span class="badge" id="headerNotificationCount">0</span>
+                            <?php
+                            // Get unread count
+                            $stmt = $conn->prepare("
+                                SELECT COUNT(*) as unread_count 
+                                FROM recipient_notifications 
+                                WHERE recipient_id = ? AND is_read = 0
+                            ");
+                            $stmt->execute([$_SESSION['recipient_id']]);
+                            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                            $unread_count = $result['unread_count'];
+                            
+                            if ($unread_count > 0): ?>
+                                <span class="notification-badge"><?php echo $unread_count; ?></span>
+                            <?php endif; ?>
+
+                            <!-- Notification Dropdown -->
+                            <div class="notification-dropdown" id="notificationDropdown">
+                                <div class="dropdown-header">
+                                    <h3>Notifications</h3>
+                                </div>
+                                <div class="notification-list">
+                                    <?php
+                                    // Get recent notifications
+                                    $stmt = $conn->prepare("
+                                        SELECT * FROM recipient_notifications 
+                                        WHERE recipient_id = ? 
+                                        ORDER BY created_at DESC 
+                                        LIMIT 3
+                                    ");
+                                    $stmt->execute([$_SESSION['recipient_id']]);
+                                    $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    if (!empty($notifications)):
+                                        foreach ($notifications as $notification): ?>
+                                            <div class="notification-item <?php echo !$notification['is_read'] ? 'unread' : ''; ?>">
+                                                <div class="notification-icon-small">
+                                                    <i class="fas <?php echo $notification['type'] === 'request_status' ? 'fa-file-medical' : 'fa-handshake'; ?>"></i>
+                                                </div>
+                                                <div class="notification-content">
+                                                    <p class="notification-message"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                                    <span class="notification-time">
+                                                        <?php 
+                                                        $date = new DateTime($notification['created_at']);
+                                                        echo $date->format('M d, h:i A'); 
+                                                        ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <div class="notification-item">
+                                            <p class="notification-message" style="text-align: center; width: 100%;">No notifications</p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="dropdown-footer">
+                                    <a href="recipients_notifications.php" class="view-all-link">View All Notifications</a>
+                                </div>
+                            </div>
                         </div>
                         <div class="profile-section">
                             <button class="profile-trigger" onclick="toggleProfile()">
@@ -401,6 +626,28 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 form.submit();
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationIcon = document.getElementById('notificationIcon');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+
+            notificationIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationIcon.contains(e.target)) {
+                    notificationDropdown.classList.remove('show');
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside it
+            notificationDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
     </script>
 </body>
 </html>
