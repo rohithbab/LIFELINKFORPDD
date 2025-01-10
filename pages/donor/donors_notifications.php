@@ -215,6 +215,33 @@ try {
             color: #4CAF50;
         }
 
+        .delete-btn {
+            position: absolute;
+            top: 20px;
+            right: 70px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #dc3545;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #c82333;
+        }
+
+        .delete-btn i {
+            color: inherit;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .notifications-container {
@@ -250,6 +277,13 @@ try {
             }
 
             .read-toggle {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 10px auto 0;
+            }
+
+            .delete-btn {
                 position: relative;
                 top: auto;
                 right: auto;
@@ -354,6 +388,11 @@ try {
                                     title="<?php echo $notification['is_read'] ? 'Mark as unread' : 'Mark as read'; ?>">
                                 <i class="fas fa-check-circle"></i>
                             </button>
+                            <?php if ($notification['is_read']): ?>
+                            <button class="delete-btn" onclick="deleteNotification(<?php echo $notification['notification_id']; ?>, this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -383,9 +422,54 @@ try {
                 button.title = newReadStatus ? 'Mark as unread' : 'Mark as read';
                 const card = button.closest('.notification-card');
                 card.classList.toggle('unread');
+                if (newReadStatus) {
+                    const deleteBtn = card.querySelector('.delete-btn');
+                    if (!deleteBtn) {
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('delete-btn');
+                        deleteButton.onclick = function() {
+                            deleteNotification(notificationId, this);
+                        };
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                        card.appendChild(deleteButton);
+                    }
+                } else {
+                    const deleteBtn = card.querySelector('.delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.remove();
+                    }
+                }
             }
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function deleteNotification(notificationId, button) {
+        if (!confirm('Are you sure you want to delete this notification?')) {
+            return;
+        }
+
+        fetch('../../backend/php/delete_donor_notification.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'notification_id=' + notificationId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the notification item from the UI
+                const notificationItem = button.closest('.notification-card');
+                notificationItem.remove();
+            } else {
+                alert(data.error || 'Failed to delete notification');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the notification');
+        });
     }
 
     // Auto-refresh notifications every 30 seconds
