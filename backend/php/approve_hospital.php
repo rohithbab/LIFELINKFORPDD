@@ -2,6 +2,7 @@
 session_start();
 require_once '../../config/connection.php';
 require '../../vendor/autoload.php'; // For PHPMailer
+require_once 'helpers/mailer.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -74,6 +75,15 @@ try {
     ";
 
     $mail->send();
+    
+    // Send approval email
+    $mailer = new Mailer();
+    $mailer->sendApprovalNotification(
+        $hospital['email'],
+        $hospital['name'],
+        'hospital',
+        $odmlId
+    );
     
     // Commit transaction
     $conn->commit();

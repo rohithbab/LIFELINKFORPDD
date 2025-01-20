@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'connection.php';
+require_once 'helpers/mailer.php';
 
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
@@ -54,6 +55,15 @@ try {
     $stmt = $conn->prepare($query);
     $stmt->bind_param('isi', $hospital_id, $message, $recipient_id);
     $stmt->execute();
+
+    // Send approval email
+    $mailer = new Mailer();
+    $mailer->sendApprovalNotification(
+        $recipient['email'],
+        $recipient['full_name'],
+        'recipient',
+        $recipient['id']
+    );
 
     // Commit transaction
     $conn->commit();

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'connection.php';
+require_once 'helpers/mailer.php';
 
 header('Content-Type: application/json');
 
@@ -25,6 +26,21 @@ try {
     $result = $stmt->execute([$data['odml_id'], $data['recipient_id']]);
 
     if ($result) {
+        // Get recipient details
+        $stmt = $conn->prepare("SELECT name, email FROM recipient_registration WHERE id = ?");
+        $stmt->execute([$data['recipient_id']]);
+        $result = $stmt->get_result();
+        $recipient = $result->fetch_assoc();
+
+        // Send ODML ID assignment email
+        $mailer = new Mailer();
+        $mailer->sendODMLAssignment(
+            $recipient['email'],
+            $recipient['name'],
+            $data['odml_id'],
+            'recipient'
+        );
+
         // Log the update for debugging
         error_log("Successfully updated recipient ODML ID. Recipient ID: " . $data['recipient_id'] . ", New ODML ID: " . $data['odml_id']);
         

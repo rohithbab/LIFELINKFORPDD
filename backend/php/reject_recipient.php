@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'connection.php';
+require_once 'helpers/mailer.php';
 
 // Check if hospital is logged in
 if (!isset($_SESSION['hospital_logged_in']) || !$_SESSION['hospital_logged_in']) {
@@ -42,6 +43,22 @@ try {
     $stmt = $conn->prepare($query);
     $stmt->bind_param('isi', $hospital_id, $message, $recipient_id);
     $stmt->execute();
+
+    // Get recipient details
+    $stmt = $conn->prepare("SELECT name, email FROM recipients WHERE id = ?");
+    $stmt->bind_param("i", $recipient_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $recipient = $result->fetch_assoc();
+
+    // Send rejection email
+    $mailer = new Mailer();
+    $mailer->sendRejectionNotification(
+        $recipient['email'],
+        $recipient['name'],
+        'recipient',
+        $reason
+    );
 
     // Commit transaction
     $conn->commit();

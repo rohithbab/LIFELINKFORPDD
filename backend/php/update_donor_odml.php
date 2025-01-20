@@ -2,6 +2,7 @@
 session_start();
 require_once 'connection.php';
 require_once 'queries.php';
+require_once 'helpers/mailer.php';
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
@@ -34,7 +35,23 @@ try {
     $stmt->bind_param("si", $odml_id, $donor_id);
     
     if ($stmt->execute()) {
-        echo json_encode(['success' => true]);
+        // Get donor details
+        $stmt = $conn->prepare("SELECT name, email FROM donor WHERE donor_id = ?");
+        $stmt->bind_param("i", $donor_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $donor = $result->fetch_assoc();
+        
+        // Send ODML ID assignment email
+        $mailer = new Mailer();
+        $mailer->sendODMLAssignment(
+            $donor['email'],
+            $donor['name'],
+            $odml_id,
+            'donor'
+        );
+        
+        echo json_encode(['success' => true, 'message' => 'ODML ID assigned successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to update ODML ID']);
     }

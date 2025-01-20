@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ff4444;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .rejection-reason {
+            background-color: #f8f8f8;
+            border-left: 4px solid #ff4444;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Account Status Update</h1>
+        </div>
+        <div class="content">
+            <p>Dear {NAME},</p>
+            <p>We have reviewed your application for registration as a {USER_TYPE} on the LifeLink platform.</p>
+            <p>Unfortunately, we are unable to approve your account at this time for the following reason:</p>
+            <div class="rejection-reason">
+                {REASON}
+            </div>
+            <p>You may address these concerns and submit a new application at any time.</p>
+            <p>If you believe this decision was made in error or need further clarification, please contact our support team.</p>
+            <p>Best regards,<br>The LifeLink Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message, please do not reply to this email.</p>
+            <p>© 2025 LifeLink. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
