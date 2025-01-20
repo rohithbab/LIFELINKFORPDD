@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 
 require_once 'connection.php';
 require_once 'queries.php';
+require_once 'helpers/email_validator.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -114,12 +115,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
+        // Sanitize and validate email
+        $email = trim(filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL));
+        
+        // Validate email format and check if it's real
+        $emailValidator = new EmailValidator();
+        try {
+            $emailValidator->validateEmail($email);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+        
+        // Check if email already exists
+        $check_email_sql = "SELECT id FROM donors WHERE email = ?";
+        $check_stmt = $conn->prepare($check_email_sql);
+        $check_stmt->bind_param("s", $email);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
+        if ($result->num_rows > 0) {
+            throw new Exception("This email address is already registered. Please use a different email.");
+        }
+
         // Get and sanitize input
         $name = sanitize_input($_POST['fullName']);
         $gender = sanitize_input($_POST['gender']);
         $dob = sanitize_input($_POST['dob']);
         $blood_group = sanitize_input($_POST['bloodGroup']);
-        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
         $phone = sanitize_input($_POST['phone']);
         $address = sanitize_input($_POST['address']);
         $medical_conditions = isset($_POST['medicalConditions']) ? sanitize_input($_POST['medicalConditions']) : null;
@@ -175,13 +196,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Begin transaction
         $conn->beginTransaction();
-
-        // Check if email already exists
-        $stmt = $conn->prepare("SELECT donor_id FROM donor WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->fetch()) {
-            throw new Exception("Email already registered");
-        }
 
         // Insert donor
         $sql = "INSERT INTO donor (

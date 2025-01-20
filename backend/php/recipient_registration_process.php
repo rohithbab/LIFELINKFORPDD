@@ -2,6 +2,7 @@
 session_start();
 require_once 'connection.php';
 require_once 'queries.php';
+require_once 'helpers/email_validator.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -49,12 +50,30 @@ function handle_file_upload($file, $target_dir) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
+        // Sanitize and validate email
+        $email = trim(filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL));
+        
+        // Validate email format and check if it's real
+        $emailValidator = new EmailValidator();
+        try {
+            $emailValidator->validateEmail($email);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+        
+        // Check if email already exists
+        $check_email_sql = "SELECT id FROM recipient_registration WHERE email = ?";
+        $stmt = $conn->prepare($check_email_sql);
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            throw new Exception("This email address is already registered. Please use a different email.");
+        }
+
         // Get and sanitize input
         $full_name = sanitize_input($_POST['fullName']);
         $date_of_birth = sanitize_input($_POST['dob']);
         $gender = sanitize_input($_POST['gender']);
         $phone_number = sanitize_input($_POST['phone']);
-        $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
         $address = sanitize_input($_POST['address']);
         $medical_condition = sanitize_input($_POST['medicalCondition']);
         $blood_type = sanitize_input($_POST['bloodType']);
@@ -95,18 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-        // Validate email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("Invalid email format.");
-        }
-
-        // Check if email already exists
-        $stmt = $conn->prepare("SELECT id FROM recipient_registration WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->fetch()) {
-            throw new Exception("Email already registered.");
-        }
 
         // Begin transaction
         $conn->beginTransaction();

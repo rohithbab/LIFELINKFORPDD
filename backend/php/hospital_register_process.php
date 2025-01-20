@@ -16,6 +16,8 @@ debug_log('POST data: ' . print_r($_POST, true));
 debug_log('FILES data: ' . print_r($_FILES, true));
 
 require_once '../../config/connection.php';
+require_once 'queries.php';
+require_once 'helpers/email_validator.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     debug_log('Not a POST request');
@@ -34,6 +36,25 @@ try {
     $name = trim(filter_var($_POST['hospital_name'] ?? '', FILTER_SANITIZE_STRING));
     $email = trim(filter_var($_POST['hospital_email'] ?? '', FILTER_SANITIZE_EMAIL));
     $phone = trim(filter_var($_POST['hospital_phone'] ?? '', FILTER_SANITIZE_STRING));
+    
+    // Validate email format and check if it's real
+    $emailValidator = new EmailValidator();
+    try {
+        $emailValidator->validateEmail($email);
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage());
+    }
+    
+    // Check if email already exists
+    $check_email_sql = "SELECT id FROM hospitals WHERE email = ?";
+    $check_stmt = $conn->prepare($check_email_sql);
+    $check_stmt->bind_param("s", $email);
+    $check_stmt->execute();
+    $result = $check_stmt->get_result();
+    if ($result->num_rows > 0) {
+        throw new Exception("This email address is already registered. Please use a different email.");
+    }
+    
     $license_number = trim(filter_var($_POST['license_number'] ?? '', FILTER_SANITIZE_STRING));
     $password = $_POST['password'] ?? '';
     
@@ -56,35 +77,6 @@ try {
         empty($license_number) || empty($password)) {
         throw new Exception("All fields are required");
     }
-
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception("Invalid email format");
-    }
-
-    // Check if email already exists
-    $stmt = $conn->prepare("SELECT hospital_id FROM hospitals WHERE email = ?");
-    if (!$stmt) {
-        throw new Exception("Database error: " . $conn->error);
-    }
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        throw new Exception("This email is already registered");
-    }
-    $stmt->close();
-
-    // Check if license number already exists
-    $stmt = $conn->prepare("SELECT hospital_id FROM hospitals WHERE license_number = ?");
-    if (!$stmt) {
-        throw new Exception("Database error: " . $conn->error);
-    }
-    $stmt->bind_param("s", $license_number);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        throw new Exception("This license number is already registered");
-    }
-    $stmt->close();
 
     // Handle file upload
     if (!isset($_FILES['license_document']) || $_FILES['license_document']['error'] === UPLOAD_ERR_NO_FILE) {
