@@ -7,50 +7,56 @@ header('Content-Type: application/json');
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
 // Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
+$contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+if ($contentType === 'application/json') {
+    $data = json_decode(file_get_contents('php://input'), true);
+} else {
+    $data = $_POST;
+}
 
 // Validate required fields
 if (!isset($data['recipient_id']) || !isset($data['odml_id'])) {
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit();
 }
 
 try {
+    $recipient_id = $data['recipient_id'];
+    $odml_id = $data['odml_id'];
+    
     // Update recipient ODML ID
     $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ? WHERE id = ?");
-    $result = $stmt->execute([$data['odml_id'], $data['recipient_id']]);
-
-    if ($result) {
+    $stmt->bind_param("si", $odml_id, $recipient_id);
+    
+    if ($stmt->execute()) {
         // Get recipient details
         $stmt = $conn->prepare("SELECT name, email FROM recipient_registration WHERE id = ?");
-        $stmt->execute([$data['recipient_id']]);
+        $stmt->bind_param("i", $recipient_id);
+        $stmt->execute();
         $result = $stmt->get_result();
         $recipient = $result->fetch_assoc();
-
+        
         // Send ODML ID assignment email
         $mailer = new Mailer();
         $mailer->sendODMLAssignment(
             $recipient['email'],
             $recipient['name'],
-            $data['odml_id'],
+            $odml_id,
             'recipient'
         );
-
-        // Log the update for debugging
-        error_log("Successfully updated recipient ODML ID. Recipient ID: " . $data['recipient_id'] . ", New ODML ID: " . $data['odml_id']);
         
         echo json_encode(['success' => true, 'message' => 'ODML ID updated successfully']);
     } else {
-        error_log("Failed to update recipient ODML ID. Recipient ID: " . $data['recipient_id']);
-        echo json_encode(['success' => false, 'message' => 'Failed to update ODML ID']);
+        throw new Exception("Error updating ODML ID");
     }
-} catch (PDOException $e) {
-    error_log("Error in update_recipient_odml.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>
