@@ -120,8 +120,8 @@ try {
         $sql = "INSERT INTO hospitals (
             name, email, phone, address, region,
             license_number, license_file, password,
-            status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
+            status, registration_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
@@ -206,4 +206,3 @@ try {
     header("Location: ../../pages/hospital_registration.php");
     exit();
 }
-?>

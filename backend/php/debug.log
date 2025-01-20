@@ -14176,3 +14176,372 @@ Data: []
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
 2025-01-09 06:37:10: SQL executed successfully
 2025-01-09 06:37:10: Transaction committed
+2025-01-20 07:48:46: Registration process started
+2025-01-20 07:48:46: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 07:48:46: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php3773.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 07:51:20: Registration process started
+2025-01-20 07:51:20: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 07:51:20: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php8EE0.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 07:51:41: Registration process started
+2025-01-20 07:51:41: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 07:51:41: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\phpE202.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 07:55:50: Registration process started
+2025-01-20 07:55:50: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 07:55:50: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\phpAF76.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 07:57:18: Registration process started
+2025-01-20 07:57:18: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 07:57:18: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php6AB.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 08:02:40: Registration process started
+2025-01-20 08:02:40: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 08:02:40: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\phpEE68.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 08:03:58: Registration process started
+2025-01-20 08:03:58: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 08:03:58: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php216B.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 08:04:28: Registration process started
+2025-01-20 08:04:28: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram12345
+    [confirm_password] => #Ram12345
+    [terms] => on
+)
+
+2025-01-20 08:04:28: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php9573.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-20 08:33:47: Registration process started
+2025-01-20 08:33:47: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553222667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ram@123
+    [confirm_password] => #Ram@123
+    [terms] => on
+)
+
+2025-01-20 08:33:47: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\Users\91915\AppData\Local\Temp\php6B0E.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+

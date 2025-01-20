@@ -352,11 +352,22 @@ session_start();
                 return;
             }
 
-            // Password strength validation
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-            if (!passwordRegex.test(password)) {
+            // Password strength validation - more flexible regex
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            const isLongEnough = password.length >= 8;
+
+            if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar && isLongEnough)) {
                 e.preventDefault();
-                alert('Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters.');
+                let message = 'Password must contain:\n';
+                if (!isLongEnough) message += '- At least 8 characters\n';
+                if (!hasUpperCase) message += '- At least one uppercase letter\n';
+                if (!hasLowerCase) message += '- At least one lowercase letter\n';
+                if (!hasNumbers) message += '- At least one number\n';
+                if (!hasSpecialChar) message += '- At least one special character (!@#$%^&*(),.?":{}|<>)\n';
+                alert(message);
                 return;
             }
         });
