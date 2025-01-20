@@ -1,6 +1,13 @@
 {
     "require": {
-        "phpmailer/phpmailer": "^6.8",
-        "guzzlehttp/guzzle": "^7.0"
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "config": {
+        "disable-tls": true,
+        "secure-http": false,
+        "platform-check": false,
+        "platform": {
+            "php": "7.4"
+        }
     }
 }

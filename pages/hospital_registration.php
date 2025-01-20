@@ -9,6 +9,7 @@ session_start();
     <title>Hospital Registration - LifeLink</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
+    <script src="../assets/js/email-validation.js"></script>
     <style>
         .form-container {
             max-width: 800px;
@@ -177,8 +178,11 @@ session_start();
                             <input type="text" name="hospital_name" required>
                         </div>
                         <div class="form-group">
-                            <label class="required">Hospital Email</label>
-                            <input type="email" name="hospital_email" required>
+                            <label for="email" class="required">Hospital Email</label>
+                            <input type="email" id="email" name="hospital_email" required 
+                                   onblur="handleEmailValidation(this)" 
+                                   class="form-control">
+                            <div class="validation-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label class="required">Hospital Phone</label>
@@ -237,8 +241,11 @@ session_start();
                             <input type="tel" name="contact_phone" required>
                         </div>
                         <div class="form-group">
-                            <label class="required">Contact Email</label>
-                            <input type="email" name="contact_email" required>
+                            <label for="email" class="required">Contact Email</label>
+                            <input type="email" id="email" name="contact_email" required 
+                                   onblur="handleEmailValidation(this)" 
+                                   class="form-control">
+                            <div class="validation-feedback"></div>
                         </div>
                     </div>
                 </div>

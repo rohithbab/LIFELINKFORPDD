@@ -1,0 +1,24 @@
+Please make these changes in your C:\xampp\php\php.ini file:
+
+1. Find the extension_dir line and make sure it points to the correct path:
+extension_dir = "C:\xampp\php\ext"
+
+2. Make sure these extensions are enabled (remove semicolon if present):
+extension=openssl
+extension=zip
+extension=curl
+extension=fileinfo
+extension=mbstring
+extension=pdo_mysql
+
+3. If you don't see php_zip.dll in C:\xampp\php\ext, you may need to:
+   a. Download a fresh copy of XAMPP
+   b. Copy the php_zip.dll from the new download to your C:\xampp\php\ext directory
+   
+After making these changes:
+1. Save php.ini
+2. Restart Apache in XAMPP Control Panel
+3. Run these commands in your project directory:
+   del composer.lock
+   del /s /q vendor
+   composer install

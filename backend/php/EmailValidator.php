@@ -1,15 +1,12 @@
 <?php
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 class EmailValidator {
-    private $apiKey;
-    
-    public function __construct() {
-        $config = require __DIR__ . '/../../config/email_config.php';
-        $this->apiKey = $config['abstract_api_key'];
-    }
+    private $disposableDomains = [
+        'tempmail.com', 'temp-mail.org', 'throwawaymail.com',
+        'mailinator.com', 'yopmail.com', 'guerrillamail.com'
+    ];
     
     public function validateEmail($email) {
+        // Basic format validation
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return [
                 'valid' => false,
@@ -17,36 +14,29 @@ class EmailValidator {
             ];
         }
 
-        try {
-            $client = new GuzzleHttp\Client();
-            $response = $client->get("https://emailvalidation.abstractapi.com/v1/", [
-                'query' => [
-                    'api_key' => $this->apiKey,
-                    'email' => $email
-                ]
-            ]);
+        // Get domain
+        $domain = substr(strrchr($email, "@"), 1);
 
-            $result = json_decode($response->getBody(), true);
-
-            // Check if email is valid and not disposable
-            if ($result['deliverability'] === 'UNDELIVERABLE' || $result['is_disposable_email']['value']) {
-                return [
-                    'valid' => false,
-                    'message' => 'Email address is invalid or disposable'
-                ];
-            }
-
+        // Check for disposable email domains
+        if (in_array(strtolower($domain), $this->disposableDomains)) {
             return [
-                'valid' => true,
-                'message' => 'Email is valid'
-            ];
-        } catch (Exception $e) {
-            // If API call fails, fall back to basic validation
-            return [
-                'valid' => true,
-                'message' => 'Basic validation passed'
+                'valid' => false,
+                'message' => 'Disposable email addresses are not allowed'
             ];
         }
+
+        // Check domain has valid MX record
+        if (!checkdnsrr($domain, 'MX')) {
+            return [
+                'valid' => false,
+                'message' => 'Invalid email domain'
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'message' => 'Email is valid'
+        ];
     }
 }
 

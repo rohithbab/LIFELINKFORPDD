@@ -1,0 +1,20 @@
+To fix OpenSSL in XAMPP:
+
+1. Go to C:\xampp\apache\bin and find these files:
+   - libeay32.dll
+   - ssleay32.dll
+   
+2. Copy these files to C:\xampp\php
+
+3. Make sure these lines are uncommented in C:\xampp\php\php.ini:
+   extension=openssl
+   extension=sockets
+
+4. If php_openssl.dll is missing from C:\xampp\php\ext:
+   - Download it from: https://windows.php.net/downloads/pecl/releases/openssl/
+   - Choose the version matching your PHP version
+   - Copy it to C:\xampp\php\ext
+
+5. Restart Apache in XAMPP Control Panel
+
+After making these changes, run test_email_debug.php to see detailed error messages.

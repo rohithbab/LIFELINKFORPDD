@@ -1,0 +1,21 @@
+Please enable these extensions in your C:\xampp\php\php.ini file:
+
+1. Find and uncomment these lines (remove the semicolon ; from the start):
+extension=openssl
+extension=zip
+
+Steps to do this:
+1. Open XAMPP Control Panel
+2. Click on "Config" button for Apache
+3. Choose "PHP (php.ini)"
+4. Press Ctrl+F and search for "extension=openssl"
+5. Remove the semicolon (;) from the start of both lines:
+   extension=openssl
+   extension=zip
+6. Save the file
+7. Restart Apache in XAMPP Control Panel
+
+After making these changes:
+1. Restart Apache in XAMPP
+2. Run this command again in your project directory:
+   composer install
