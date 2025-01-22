@@ -236,14 +236,14 @@ function addNotification($conn, $type, $message, $user_id = null) {
 function getAdminNotifications($conn, $limit = 10) {
     $stmt = $conn->prepare("
         SELECT 
-            notification_id,
+            id,
             type,
-            action,
-            entity_id,
+            subtype,
+            ref_id,
             message,
             is_read,
-            DATE_FORMAT(created_at, '%M %d, %Y at %h:%i %p') as formatted_time,
-            link_url
+            created_at,
+            link
         FROM notifications 
         ORDER BY created_at DESC 
         LIMIT :limit
