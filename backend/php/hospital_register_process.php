@@ -33,7 +33,7 @@ debug_log("Manage hospitals page URL: $manage_hospitals_page");
 
 require_once $base_path . '/config/connection.php';
 require_once __DIR__ . '/queries.php';
-require_once __DIR__ . '/helpers/email_validator.php';
+require_once __DIR__ . '/helpers/enhanced_email_validator.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     debug_log('Not a POST request');
@@ -53,12 +53,18 @@ try {
     $email = trim(filter_var($_POST['hospital_email'] ?? '', FILTER_SANITIZE_EMAIL));
     $phone = trim(htmlspecialchars($_POST['hospital_phone'] ?? '', ENT_QUOTES, 'UTF-8'));
     
+    // Initialize email validator
+    $emailValidator = new EnhancedEmailValidator($conn, $config['email_validator_api_key']);
+
     // Validate email format and check if it's real
-    $emailValidator = new EmailValidator();
     try {
-        $emailValidator->validateEmail($email);
+        $emailValidator->validateEmail($email, 'hospitals', 'email');
     } catch (Exception $e) {
-        throw new Exception($e->getMessage());
+        // If it's a typo suggestion, we'll show it to the user
+        if (strpos($e->getMessage(), "Did you mean") !== false) {
+            $_SESSION['email_suggestion'] = $e->getMessage();
+        }
+        throw new Exception("This email address is already registered. Please use a different email.");
     }
     
     // Check if email already exists

@@ -93,6 +93,41 @@ session_start();
             font-size: 0.9rem;
             margin-top: 0.3rem;
         }
+        .email-input-container {
+            position: relative;
+        }
+        .validation-feedback {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .invalid-tooltip {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-right: 5px;
+            white-space: nowrap;
+            display: none;
+        }
+        .validation-feedback:hover .invalid-tooltip {
+            display: block;
+        }
+        input.is-valid {
+            border-color: #28a745 !important;
+            padding-right: 40px !important;
+        }
+        input.is-invalid {
+            border-color: #dc3545 !important;
+            padding-right: 40px !important;
+        }
     </style>
 </head>
 <body>
@@ -142,7 +177,7 @@ session_start();
         }
         ?>
         
-        <form action="../backend/php/recipient_registration_process.php" method="POST" enctype="multipart/form-data" id="recipientForm">
+        <form action="../backend/php/recipient_registration_process.php" method="POST" enctype="multipart/form-data" data-validation-endpoint="../backend/php/validate_email.php" id="recipientForm">
             <!-- Personal Details Section -->
             <div class="form-section">
                 <h3><i class="fas fa-user"></i> Personal Details</h3>
@@ -170,7 +205,9 @@ session_start();
                     </div>
                     <div class="form-group">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" required>
+                        <div class="email-input-container">
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="address">Address *</label>
@@ -374,5 +411,6 @@ session_start();
             }
         }
     </script>
+    <script src="../assets/js/email-validator.js"></script>
 </body>
 </html>

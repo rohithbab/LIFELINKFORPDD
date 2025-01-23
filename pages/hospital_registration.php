@@ -142,6 +142,43 @@ unset($_SESSION['error']); // Clear the error message
             content: " *";
             color: red;
         }
+
+        /* Add these styles for email validation */
+        .email-input-container {
+            position: relative;
+        }
+        .validation-feedback {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .invalid-tooltip {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-right: 5px;
+            white-space: nowrap;
+            display: none;
+        }
+        .validation-feedback:hover .invalid-tooltip {
+            display: block;
+        }
+        input.is-valid {
+            border-color: #28a745 !important;
+            padding-right: 40px !important;
+        }
+        input.is-invalid {
+            border-color: #dc3545 !important;
+            padding-right: 40px !important;
+        }
     </style>
 </head>
 <body>
@@ -186,7 +223,7 @@ unset($_SESSION['error']); // Clear the error message
                 -webkit-text-fill-color: transparent;
             ">Hospital Registration</h2>
 
-            <form action="<?php echo $process_url; ?>" method="POST" enctype="multipart/form-data" id="hospitalRegistrationForm">
+            <form action="<?php echo $process_url; ?>" method="POST" enctype="multipart/form-data" data-validation-endpoint="../backend/php/validate_email.php" id="hospitalRegistrationForm">
                 <!-- Hospital Details Section -->
                 <div class="form-section">
                     <h3><i class="fas fa-hospital"></i> Hospital Details</h3>
@@ -197,10 +234,12 @@ unset($_SESSION['error']); // Clear the error message
                         </div>
                         <div class="form-group">
                             <label for="hospital_email" class="required">Hospital Email</label>
-                            <input type="email" id="hospital_email" name="hospital_email" required 
-                                   onblur="handleEmailValidation(this)" 
-                                   class="form-control">
-                            <div class="validation-feedback"></div>
+                            <div class="email-input-container">
+                                <input type="email" id="hospital_email" name="hospital_email" required 
+                                       onblur="handleEmailValidation(this)" 
+                                       class="form-control">
+                                <div class="validation-feedback"></div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="required">Hospital Phone</label>
@@ -260,10 +299,12 @@ unset($_SESSION['error']); // Clear the error message
                         </div>
                         <div class="form-group">
                             <label for="contact_email" class="required">Contact Email</label>
-                            <input type="email" id="contact_email" name="contact_email" required 
-                                   onblur="handleEmailValidation(this)" 
-                                   class="form-control">
-                            <div class="validation-feedback"></div>
+                            <div class="email-input-container">
+                                <input type="email" id="contact_email" name="contact_email" required 
+                                       onblur="handleEmailValidation(this)" 
+                                       class="form-control">
+                                <div class="validation-feedback"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -390,5 +431,7 @@ unset($_SESSION['error']); // Clear the error message
             }
         });
     </script>
+    <!-- Add email validation script -->
+    <script src="../assets/js/email-validator.js"></script>
 </body>
 </html>

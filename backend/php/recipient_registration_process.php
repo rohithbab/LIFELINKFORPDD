@@ -2,7 +2,7 @@
 session_start();
 require_once 'connection.php';
 require_once 'queries.php';
-require_once 'helpers/email_validator.php';
+require_once 'helpers/enhanced_email_validator.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -50,17 +50,31 @@ function handle_file_upload($file, $target_dir) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
+        // Validate required fields
+        $required_fields = ['fullName', 'dob', 'gender', 'phone', 'email', 'address', 
+                          'medicalCondition', 'bloodType', 'organRequired', 'organReason', 
+                          'urgencyLevel', 'idType', 'idNumber', 'password'];
+        foreach ($required_fields as $field) {
+            if (empty($_POST[$field])) {
+                throw new Exception("Required field missing: " . $field);
+            }
+        }
+
         // Sanitize and validate email
         $email = trim(filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL));
         
-        // Validate email format and check if it's real
-        $emailValidator = new EmailValidator();
+        // Enhanced email validation
+        $emailValidator = new EnhancedEmailValidator($conn);
         try {
-            $emailValidator->validateEmail($email);
+            $emailValidator->validateEmail($email, 'recipient_registration', 'email');
         } catch (Exception $e) {
+            // If it's a typo suggestion, we'll show it to the user
+            if (strpos($e->getMessage(), "Did you mean") !== false) {
+                $_SESSION['email_suggestion'] = $e->getMessage();
+            }
             throw new Exception($e->getMessage());
         }
-        
+
         // Check if email already exists
         $check_email_sql = "SELECT id FROM recipient_registration WHERE email = ?";
         $stmt = $conn->prepare($check_email_sql);
@@ -79,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $blood_type = sanitize_input($_POST['bloodType']);
         $organ_required = sanitize_input($_POST['organRequired']);
         $organ_reason = sanitize_input($_POST['organReason']);
-        $urgency_level = sanitize_input($_POST['urgencyLevel']); // Added urgency level
+        $urgency_level = sanitize_input($_POST['urgencyLevel']); 
         $id_proof_type = sanitize_input($_POST['idType']);
         $id_proof_number = sanitize_input($_POST['idNumber']);
         

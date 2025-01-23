@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 
 require_once 'connection.php';
 require_once 'queries.php';
-require_once 'helpers/email_validator.php';
+require_once 'helpers/enhanced_email_validator.php';
 
 // Function to sanitize input
 function sanitize_input($data) {
@@ -118,22 +118,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Sanitize and validate email
         $email = trim(filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL));
         
-        // Validate email format and check if it's real
-        $emailValidator = new EmailValidator();
+        // Enhanced email validation
+        $emailValidator = new EnhancedEmailValidator($conn);
         try {
-            $emailValidator->validateEmail($email);
+            $emailValidator->validateEmail($email, 'donor', 'email');
         } catch (Exception $e) {
+            // If it's a typo suggestion, we'll show it to the user
+            if (strpos($e->getMessage(), "Did you mean") !== false) {
+                $_SESSION['email_suggestion'] = $e->getMessage();
+            }
             throw new Exception($e->getMessage());
-        }
-        
-        // Check if email already exists
-        $check_email_sql = "SELECT id FROM donors WHERE email = ?";
-        $check_stmt = $conn->prepare($check_email_sql);
-        $check_stmt->bind_param("s", $email);
-        $check_stmt->execute();
-        $result = $check_stmt->get_result();
-        if ($result->num_rows > 0) {
-            throw new Exception("This email address is already registered. Please use a different email.");
         }
 
         // Get and sanitize input
@@ -152,7 +146,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $guardian_name = isset($_POST['guardianName']) ? sanitize_input($_POST['guardianName']) : null;
         $guardian_email = isset($_POST['guardianEmail']) ? sanitize_input($_POST['guardianEmail']) : null;
         $guardian_phone = isset($_POST['guardianPhone']) ? sanitize_input($_POST['guardianPhone']) : null;
-        
+
+        // Validate guardian email if provided
+        if (!empty($guardian_email)) {
+            try {
+                $emailValidator->validateEmail($guardian_email, 'donor', 'guardian_email');
+            } catch (Exception $e) {
+                // If it's a typo suggestion, we'll show it to the user
+                if (strpos($e->getMessage(), "Did you mean") !== false) {
+                    $_SESSION['guardian_email_suggestion'] = $e->getMessage();
+                }
+                throw new Exception("Guardian " . strtolower($e->getMessage()));
+            }
+        }
+
         // Handle ID proof (required)
         $id_proof_path = null;
         if (isset($_FILES['id_proof']) && $_FILES['id_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
