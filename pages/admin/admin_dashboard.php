@@ -28,6 +28,9 @@ $urgentRecipients = getUrgentRecipients($conn);
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <link rel="stylesheet" href="../../assets/css/notification-bell.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Custom Styles -->
     <style>
@@ -585,6 +588,35 @@ $urgentRecipients = getUrgentRecipients($conn);
             text-decoration: underline;
         }
     </style>
+    <style>
+    .update-odml-btn {
+        background: linear-gradient(45deg, #3498db, #2ecc71);
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .update-odml-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background: linear-gradient(45deg, #2980b9, #27ae60);
+    }
+
+    .update-odml-btn i {
+        margin-right: 5px;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+</style>
 
     <!-- JavaScript Dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -743,42 +775,34 @@ $urgentRecipients = getUrgentRecipients($conn);
                             <tr>
                                 <th>Hospital Name</th>
                                 <th>Email</th>
-                                <th>ODML ID</th>
+                                <th>Phone</th>
+                                <th>Update ODML ID</th>
                                 <th>Actions</th>
                                 <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($pendingHospitals as $hospital): ?>
-                            <tr id="hospital_row_<?php echo $hospital['hospital_id']; ?>">
+                            <tr>
                                 <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
                                 <td><?php echo htmlspecialchars($hospital['email']); ?></td>
+                                <td><?php echo htmlspecialchars($hospital['phone'] ?? 'Not Available'); ?></td>
                                 <td>
-                                    <div class="action-cell">
-                                        <input type="text" 
-                                               class="odml-input"
-                                               id="odml_id_<?php echo $hospital['hospital_id']; ?>"
-                                               value="<?php echo htmlspecialchars($hospital['odml_id'] ?? ''); ?>"
-                                               placeholder="Enter ODML ID">
-                                        <button class="update-btn" 
-                                                data-hospital-id="<?php echo $hospital['hospital_id']; ?>">
-                                            <i class="fas fa-save"></i> Update
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm update-odml-btn" 
+                                            onclick="showODMLUpdateModal('hospital', <?php echo $hospital['hospital_id']; ?>, '<?php echo htmlspecialchars($hospital['hospital_name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
+                                        <i class="fas fa-plus-circle"></i> Update ODML ID
+                                    </button>
                                 </td>
                                 <td>
-                                    <div class="action-cell">
-                                        <button class="approve-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'Approved')">
-                                            <i class="fas fa-check"></i> Approve
-                                        </button>
-                                        <button class="reject-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'Rejected')">
-                                            <i class="fas fa-times"></i> Reject
-                                        </button>
-                                    </div>
+                                    <button class="approve-btn" onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Approved')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="reject-btn" onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Rejected')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
                                 </td>
                                 <td>
-                                    <a href="view_hospital_details_in_pending.php?id=<?php echo $hospital['hospital_id']; ?>" 
-                                       class="view-btn">
+                                    <a href="view_hospital_details.php?id=<?php echo $hospital['hospital_id']; ?>" class="view-btn">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                 </td>
@@ -811,14 +835,10 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 <td><?php echo htmlspecialchars($donor['email']); ?></td>
                                 <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
                                 <td>
-                                    <div class="odml-container">
-                                        <input type="text" class="odml-input" 
-                                               value="<?php echo htmlspecialchars($donor['odml_id'] ?? ''); ?>" 
-                                               placeholder="Enter ODML ID">
-                                        <button class="update-btn" onclick="updateDonorODMLID('<?php echo htmlspecialchars($donor['donor_id']); ?>', this)">
-                                            <i class="fas fa-save"></i> Update
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm update-odml-btn" 
+                                            onclick="showODMLUpdateModal('donor', <?php echo $donor['donor_id']; ?>, '<?php echo htmlspecialchars($donor['name']); ?>', '<?php echo htmlspecialchars($donor['email']); ?>')">
+                                        <i class="fas fa-plus-circle"></i> Update ODML ID
+                                    </button>
                                 </td>
                                 <td>
                                     <button class="approve-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Approved')">
@@ -864,15 +884,10 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 <td><?php echo htmlspecialchars($recipient['email']); ?></td>
                                 <td><?php echo htmlspecialchars($recipient['blood_type']); ?></td>
                                 <td>
-                                    <div style="display: flex; align-items: center;">
-                                        <input type="text" class="odml-input" 
-                                               value="<?php echo htmlspecialchars($recipient['odml_id'] ?? ''); ?>" 
-                                               placeholder="Enter ODML ID"
-                                               id="odml-<?php echo $recipient['id']; ?>">
-                                        <button class="update-odml-btn" onclick="updateRecipientODML(<?php echo $recipient['id']; ?>)">
-                                            <i class="fas fa-sync-alt"></i> Update
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm update-odml-btn" 
+                                            onclick="showODMLUpdateModal('recipient', <?php echo $recipient['id']; ?>, '<?php echo htmlspecialchars($recipient['name']); ?>', '<?php echo htmlspecialchars($recipient['email']); ?>')">
+                                        <i class="fas fa-plus-circle"></i> Update ODML ID
+                                    </button>
                                 </td>
                                 <td><?php echo htmlspecialchars($recipient['urgency'] ?? 'Not Set'); ?></td>
                                 <td class="action-cell">
@@ -1261,5 +1276,6 @@ $urgentRecipients = getUrgentRecipients($conn);
             }
         </script>
         <script src="../../assets/js/notifications.js"></script>
+        <script src="../../assets/js/odml-update.js"></script>
     </body>
 </html>

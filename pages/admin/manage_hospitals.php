@@ -90,6 +90,8 @@ if ($result) {
     <title>Manage Hospitals - LifeLink Admin</title>
     <link rel="stylesheet" href="../../assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Existing styles remain... */
@@ -525,6 +527,7 @@ if ($result) {
                             <th>Registration Date</th>
                             <th>Status</th>
                             <th>Actions</th>
+                            <th>ODML ID</th>
                             <th>Details</th>
                         </tr>
                     </thead>
@@ -551,6 +554,16 @@ if ($result) {
                                         <button class="reject-btn" onclick="showRejectModal(<?php echo $row['hospital_id']; ?>)">
                                             <i class="fas fa-times"></i> Reject
                                         </button>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (empty($row['odml_id'])): ?>
+                                        <button class="btn btn-primary btn-sm" 
+                                                onclick="showODMLUpdateModal('hospital', <?php echo $row['hospital_id']; ?>, '<?php echo htmlspecialchars($row['name']); ?>', '<?php echo htmlspecialchars($row['email']); ?>')">
+                                            <i class="fas fa-plus-circle"></i> Add ODML ID
+                                        </button>
+                                    <?php else: ?>
+                                        <?php echo htmlspecialchars($row['odml_id']); ?>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -762,5 +775,6 @@ if ($result) {
             }
         });
     </script>
+    <script src="../../assets/js/odml-update.js"></script>
 </body>
 </html>

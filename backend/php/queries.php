@@ -68,7 +68,21 @@ function getDashboardStats($conn, $tables = ['hospitals', 'donor', 'recipient_re
 // Get pending hospitals
 function getPendingHospitals($conn) {
     try {
-        $stmt = $conn->prepare("SELECT hospital_id, name as hospital_name, email, odml_id FROM hospitals WHERE status = 'Pending'");
+        $stmt = $conn->prepare("
+            SELECT 
+                hospital_id, 
+                name as hospital_name, 
+                email,
+                phone,
+                registration_date,
+                odml_id,
+                status,
+                created_at,
+                updated_at
+            FROM hospitals 
+            WHERE status = 'Pending'
+            ORDER BY created_at DESC
+        ");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
