@@ -243,7 +243,8 @@ function getAdminNotifications($conn, $limit = 10) {
             message,
             is_read,
             created_at,
-            link_url
+            link_url,
+            DATE_FORMAT(created_at, '%Y-%m-%d %h:%i %p') as formatted_time
         FROM notifications 
         ORDER BY created_at DESC 
         LIMIT :limit
