@@ -29,8 +29,15 @@ $urgentRecipients = getUrgentRecipients($conn);
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <link rel="stylesheet" href="../../assets/css/notification-bell.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/admin_dashboard.css">
+    <link rel="stylesheet" href="css/rejection_modal.css">
+    
+    <!-- JavaScript Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/admin_rejection.js"></script>
     
     <!-- Custom Styles -->
     <style>
@@ -797,7 +804,11 @@ $urgentRecipients = getUrgentRecipients($conn);
                                     <button class="approve-btn" onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Approved')">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
-                                    <button class="reject-btn" onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Rejected')">
+                                    <button class="reject-btn" 
+                                            data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($hospital['hospital_name']); ?>"
+                                            data-email="<?php echo htmlspecialchars($hospital['email']); ?>"
+                                            onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Rejected')">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </td>
@@ -844,7 +855,11 @@ $urgentRecipients = getUrgentRecipients($conn);
                                     <button class="approve-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Approved')">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
-                                    <button class="reject-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Rejected')">
+                                    <button class="reject-btn" 
+                                            data-donor-id="<?php echo $donor['donor_id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($donor['name']); ?>"
+                                            data-email="<?php echo htmlspecialchars($donor['email']); ?>"
+                                            onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Rejected')">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </td>
@@ -891,10 +906,14 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 </td>
                                 <td><?php echo htmlspecialchars($recipient['urgency'] ?? 'Not Set'); ?></td>
                                 <td class="action-cell">
-                                    <button class="btn btn-sm btn-approve" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'accepted')" style="margin-right: 5px;">
+                                    <button class="btn btn-sm btn-approve" onclick="updateRecipientStatus('<?php echo $recipient['id']; ?>', 'Approved')">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
-                                    <button class="btn btn-sm btn-reject" onclick="updateRecipientStatus(<?php echo $recipient['id']; ?>, 'rejected')">
+                                    <button class="btn btn-sm btn-reject" 
+                                            data-recipient-id="<?php echo $recipient['id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($recipient['name']); ?>"
+                                            data-email="<?php echo htmlspecialchars($recipient['email']); ?>"
+                                            onclick="updateRecipientStatus('<?php echo $recipient['id']; ?>', 'Rejected')">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </td>
@@ -1274,6 +1293,57 @@ $urgentRecipients = getUrgentRecipients($conn);
                     });
                 }
             }
+        </script>
+        <script>
+        // Debug code to check if files are loaded
+        window.onload = function() {
+            console.log('Page loaded');
+            if (typeof showRejectionModal === 'function') {
+                console.log('Rejection modal function exists');
+            } else {
+                console.log('Rejection modal function NOT found');
+            }
+        }
+
+        // Override the existing update functions
+        function updateHospitalStatus(hospitalId, status) {
+            console.log('updateHospitalStatus called:', hospitalId, status);
+            if (status === 'Rejected') {
+                const button = document.querySelector(`button[data-hospital-id="${hospitalId}"]`);
+                const name = button.getAttribute('data-name');
+                const email = button.getAttribute('data-email');
+                console.log('Hospital data:', { name, email });
+                showRejectionModal('hospital', hospitalId, name, email);
+                return;
+            }
+            // Your existing code for approval
+        }
+
+        function updateDonorStatus(donorId, status) {
+            console.log('updateDonorStatus called:', donorId, status);
+            if (status === 'Rejected') {
+                const button = document.querySelector(`button[data-donor-id="${donorId}"]`);
+                const name = button.getAttribute('data-name');
+                const email = button.getAttribute('data-email');
+                console.log('Donor data:', { name, email });
+                showRejectionModal('donor', donorId, name, email);
+                return;
+            }
+            // Your existing code for approval
+        }
+
+        function updateRecipientStatus(recipientId, status) {
+            console.log('updateRecipientStatus called:', recipientId, status);
+            if (status === 'Rejected') {
+                const button = document.querySelector(`button[data-recipient-id="${recipientId}"]`);
+                const name = button.getAttribute('data-name');
+                const email = button.getAttribute('data-email');
+                console.log('Recipient data:', { name, email });
+                showRejectionModal('recipient', recipientId, name, email);
+                return;
+            }
+            // Your existing code for approval
+        }
         </script>
         <script src="../../assets/js/notifications.js"></script>
         <script src="../../assets/js/odml-update.js"></script>

@@ -156,4 +156,46 @@ class Mailer {
             throw $e;
         }
     }
+    
+    public function sendRejectionNotification2($email, $name, $type, $reason) {
+        $subject = "Your {$type} registration has been rejected";
+        $message = "
+        Dear {$name},
+        
+        We regret to inform you that your {$type} registration has been rejected.
+        
+        Reason for rejection:
+        {$reason}
+        
+        If you have any questions or would like to submit a new application, please contact us.
+        
+        Best regards,
+        LIFELINK Team
+        ";
+        
+        return $this->sendEmail($email, $subject, $message);
+    }
+    
+    private function sendEmail($email, $subject, $message) {
+        try {
+            $mail = $this->createMailer();
+            
+            echo "Setting up email...\n";
+            $mail->addAddress($email);
+            $mail->Subject = $subject;
+            $mail->Body = $message;
+            
+            echo "Attempting to send email to $email...\n";
+            if ($mail->send()) {
+                echo "Email sent successfully!\n";
+                return true;
+            }
+        } catch (Exception $e) {
+            echo "Error details: " . $e->getMessage() . "\n";
+            if (isset($mail)) {
+                echo "SMTP Error Info: " . $mail->ErrorInfo . "\n";
+            }
+            throw $e;
+        }
+    }
 }

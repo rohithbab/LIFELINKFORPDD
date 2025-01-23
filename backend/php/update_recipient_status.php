@@ -2,6 +2,7 @@
 session_start();
 require_once 'connection.php';
 require_once 'queries.php';
+require_once 'Mailer.php'; // Assuming Mailer class is in Mailer.php file
 
 header('Content-Type: application/json');
 
@@ -31,19 +32,35 @@ try {
     // Begin transaction
     $conn->beginTransaction();
 
-    // Get recipient details for notification
-    $stmt = $conn->prepare("SELECT full_name FROM recipient_registration WHERE id = ?");
+    // Get recipient details
+    $stmt = $conn->prepare("SELECT name, email FROM recipient_registration WHERE id = ?");
     $stmt->execute([$data['recipient_id']]);
     $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    if (!$recipient) {
+        throw new Exception("Recipient not found");
+    }
+
     // Update recipient status
     $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ? WHERE id = ?");
     $result = $stmt->execute([$data['status'], $data['recipient_id']]);
 
     if ($result) {
-        // Create notification based on status
+        // Send rejection email if status is rejected and reason is provided
+        if ($data['status'] === 'Rejected' && isset($data['reason']) && !empty($data['reason'])) {
+            $mailer = new Mailer();
+            $mailer->sendRejectionNotification(
+                $recipient['email'],
+                $recipient['name'],
+                'recipient',
+                $data['reason']
+            );
+        }
+
+        // Create notification
         $action = strtolower($data['status']);
-        $message = "Recipient " . $recipient['full_name'] . " has been " . $action;
+        $message = "Recipient " . $recipient['name'] . " has been " . $action . 
+            ($data['status'] === 'Rejected' && !empty($data['reason']) ? "\nReason: " . $data['reason'] : "");
         
         createNotification(
             $conn,
@@ -71,5 +88,11 @@ try {
     }
     error_log("Error in update_recipient_status.php: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollback();
+    }
+    error_log("Error in update_recipient_status.php: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

@@ -1,0 +1,38 @@
+.rejection-form {
+    text-align: left;
+    padding: 10px;
+}
+
+.rejection-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.swal2-popup {
+    font-size: 0.9rem !important;
+}
+
+.swal2-textarea {
+    font-size: 0.9rem !important;
+    min-height: 120px !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.small {
+    font-size: 0.875rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}

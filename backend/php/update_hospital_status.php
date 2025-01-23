@@ -40,7 +40,7 @@ try {
     $conn->beginTransaction();
 
     // Get hospital details
-    $stmt = $conn->prepare("SELECT hospital_name, email FROM hospitals WHERE hospital_id = ?");
+    $stmt = $conn->prepare("SELECT name, email FROM hospitals WHERE hospital_id = ?");
     $stmt->bind_param("i", $hospital_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -52,13 +52,25 @@ try {
 
     // Update hospital status
     if (updateHospitalStatus($conn, $hospital_id, $status, $_SESSION['admin_id'])) {
+        // Send rejection email if status is rejected and reason is provided
+        if ($status === 'rejected' && isset($data['reason']) && !empty($data['reason'])) {
+            $mailer = new Mailer();
+            $mailer->sendRejectionNotification(
+                $hospital['email'],
+                $hospital['name'],
+                'hospital',
+                $data['reason']
+            );
+        }
+
         // Create notification
         createNotification(
             $conn,
             'hospital',
             $status,
             $hospital_id,
-            "Hospital " . $hospital['hospital_name'] . " has been " . $status
+            "Hospital " . $hospital['name'] . " has been " . $status . 
+            ($status === 'rejected' && !empty($data['reason']) ? "\nReason: " . $data['reason'] : "")
         );
 
         // Commit transaction
