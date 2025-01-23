@@ -186,21 +186,22 @@ function getRecentOrganMatches($conn, $limit = 5) {
 function getAllOrganMatches($conn) {
     try {
         $query = "SELECT 
-            match_id,
-            match_made_by,
-            donor_id,
-            donor_name,
-            donor_hospital_id,
-            donor_hospital_name,
-            recipient_id,
-            recipient_name,
-            recipient_hospital_id,
-            recipient_hospital_name,
-            organ_type,
-            blood_group,
-            match_date
-        FROM made_matches_by_hospitals
-        ORDER BY match_date DESC";
+            m.match_id,
+            m.match_made_by,
+            m.donor_id,
+            m.donor_name,
+            m.donor_blood_group,
+            m.donor_hospital_id,
+            m.donor_hospital_name,
+            m.recipient_id,
+            m.recipient_name,
+            m.recipient_blood_group,
+            m.recipient_hospital_id,
+            m.recipient_hospital_name,
+            m.organ_type,
+            m.match_date
+        FROM made_matches_by_hospitals m
+        ORDER BY m.match_date DESC";
 
         $stmt = $conn->prepare($query);
         $stmt->execute();
@@ -208,6 +209,12 @@ function getAllOrganMatches($conn) {
         // Debug: Log the number of rows returned
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         error_log("Number of matches found: " . count($results));
+        
+        // Debug: Log the first result if exists
+        if (!empty($results)) {
+            error_log("First match data: " . print_r($results[0], true));
+        }
+        
         return $results;
     } catch (PDOException $e) {
         error_log("Error in getAllOrganMatches: " . $e->getMessage());

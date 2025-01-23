@@ -124,14 +124,15 @@ error_log("Number of matches in page: " . count($matches));
                                 <th>Match Made By</th>
                                 <th>Donor ID</th>
                                 <th>Donor Name</th>
+                                <th>Donor Blood Group</th>
                                 <th>Donor Hospital ID</th>
                                 <th>Donor Hospital</th>
                                 <th>Recipient ID</th>
                                 <th>Recipient Name</th>
+                                <th>Recipient Blood Group</th>
                                 <th>Recipient Hospital ID</th>
                                 <th>Recipient Hospital</th>
                                 <th>Organ Type</th>
-                                <th>Blood Group</th>
                                 <th>Match Date</th>
                             </tr>
                         </thead>
@@ -145,22 +146,23 @@ error_log("Number of matches in page: " . count($matches));
                                     <td><?php echo htmlspecialchars($match['match_made_by']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_id']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['donor_blood_group']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_hospital_id']); ?></td>
                                     <td><?php echo htmlspecialchars($match['donor_hospital_name']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_id']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($match['recipient_blood_group']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_hospital_id']); ?></td>
                                     <td><?php echo htmlspecialchars($match['recipient_hospital_name']); ?></td>
                                     <td><?php echo htmlspecialchars($match['organ_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($match['blood_group']); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($match['match_date'])); ?></td>
+                                    <td><?php echo htmlspecialchars($match['match_date']); ?></td>
                                 </tr>
                             <?php 
                                 endforeach; 
                             else: 
                             ?>
                                 <tr>
-                                    <td colspan="13" style="text-align: center;">No matches found</td>
+                                    <td colspan="14" class="no-matches">No matches found</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
