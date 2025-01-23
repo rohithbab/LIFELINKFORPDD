@@ -28,28 +28,82 @@ $rejectionStats = getAnalyticsRejectionStats($conn);
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        .admin-container {
+            width: 100%;
+            min-height: 100vh;
+            background: #f5f5f5;
+            position: relative;
+            padding: 0;
+            margin: 0;
+        }
         .analytics-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(300px, 1fr));
             gap: 20px;
             padding: 20px;
+            max-width: 100%;
+            margin: 0;
+            justify-content: start;
         }
         .chart-card {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+        .chart-card h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2rem;
+            text-align: center;
         }
         .chart-container {
             position: relative;
             height: 300px;
+            margin: 0;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+        .back-button:hover {
+            transform: translateY(-2px);
+        }
+        .main-content {
+            padding-top: 60px;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding-left: 0;
+        }
+        @media (max-width: 1200px) {
+            .analytics-grid {
+                grid-template-columns: repeat(2, minmax(300px, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body>
+<body style="margin: 0; padding: 0;">
     <div class="admin-container">
-        <!-- Sidebar -->
-        <?php include '../../components/admin_sidebar.php'; ?>
+        <!-- Back to Dashboard Button -->
+        <a href="admin_dashboard.php" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
 
         <!-- Main Content -->
         <div class="main-content">
