@@ -802,7 +802,7 @@ $urgentRecipients = getUrgentRecipients($conn);
                                     </button>
                                 </td>
                                 <td>
-                                    <a href="view_hospital_details.php?id=<?php echo $hospital['hospital_id']; ?>" class="view-btn">
+                                    <a href="view_hospital_details_in_pending.php?id=<?php echo $hospital['hospital_id']; ?>" class="view-btn">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                 </td>

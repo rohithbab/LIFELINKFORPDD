@@ -31,14 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $odml_id = $data['odml_id'];
         
         // Get hospital details
-        $stmt = $conn->prepare("SELECT name, email FROM hospitals WHERE id = ?");
+        $stmt = $conn->prepare("SELECT name, email FROM hospitals WHERE hospital_id = ?");
         $stmt->bind_param("i", $hospital_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $hospital = $result->fetch_assoc();
         
         // Update ODML ID
-        $stmt = $conn->prepare("UPDATE hospitals SET odml_id = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE hospitals SET odml_id = ? WHERE hospital_id = ?");
         $stmt->bind_param("si", $odml_id, $hospital_id);
         
         if ($stmt->execute()) {
