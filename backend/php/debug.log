@@ -14863,3 +14863,456 @@ Data: []
 
 )
 
+2025-01-23 06:28:22: Registration process started
+2025-01-23 06:28:22: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:28:22: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpEA2B.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:28:22: Database connection successful
+2025-01-23 06:37:27: Registration process started
+2025-01-23 06:37:27: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:37:27: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php3A87.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:37:27: Database connection successful
+2025-01-23 06:37:27: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:38:00: Registration process started
+2025-01-23 06:38:00: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ramg123
+    [confirm_password] => #Ramg123
+    [terms] => on
+)
+
+2025-01-23 06:38:00: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpB8B1.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:38:00: Database connection successful
+2025-01-23 06:38:00: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:42:12: Registration process started
+2025-01-23 06:42:12: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:42:12: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php922B.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:42:12: Database connection successful
+2025-01-23 06:42:12: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:42:12: Redirecting back to registration page due to error
+2025-01-23 06:44:10: Registration process started
+2025-01-23 06:44:10: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 4324253880
+    [street] => no.12 Kancheepuram,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600080
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ram
+    [designation] => dean
+    [contact_phone] => 0553322667
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li002
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:44:10: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5E41.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:44:10: Database connection successful
+2025-01-23 06:44:10: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:44:10: Session error set: Array
+(
+    [error] => SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+)
+
+2025-01-23 06:50:09: Registration process started
+2025-01-23 06:50:09: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 7658756432
+    [street] => no.12 thuraipaakam,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ramg
+    [designation] => dean
+    [contact_phone] => 432425380
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0001
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:50:09: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpDA9E.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:50:09: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-23 06:50:09: Success page path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-23 06:50:09: Registration page path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-23 06:50:09: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-23 06:50:09: Manage hospitals page path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/manage_hospitals.php
+2025-01-23 06:50:09: Database connection successful
+2025-01-23 06:50:09: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:50:09: Session error set: Array
+(
+    [error] => SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+)
+
+2025-01-23 06:51:37: Registration process started
+2025-01-23 06:51:37: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 7658756432
+    [street] => no.12 thuraipaakam,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ramg
+    [designation] => dean
+    [contact_phone] => 432425380
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0001
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:51:37: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php30B9.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:51:37: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-23 06:51:37: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-23 06:51:37: Success page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-23 06:51:37: Registration page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-23 06:51:37: Manage hospitals page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/manage_hospitals.php
+2025-01-23 06:51:37: Database connection successful
+2025-01-23 06:51:37: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:51:37: Session error set: Array
+(
+    [error] => SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+)
+
+2025-01-23 06:52:08: Registration process started
+2025-01-23 06:52:08: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 7658756432
+    [street] => no.12 thuraipaakam,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ramg
+    [designation] => dean
+    [contact_phone] => 4324253890
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0001
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:52:08: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\phpAC43.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:52:08: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-23 06:52:08: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-23 06:52:08: Success page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-23 06:52:08: Registration page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-23 06:52:08: Manage hospitals page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/manage_hospitals.php
+2025-01-23 06:52:08: Database connection successful
+2025-01-23 06:52:08: Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+2025-01-23 06:52:08: Session error set: Array
+(
+    [error] => SQLSTATE[42S22]: Column not found: 1054 Unknown column 'id' in 'field list'
+)
+
+2025-01-23 06:56:17: Registration process started
+2025-01-23 06:56:17: POST data: Array
+(
+    [hospital_name] => ramg hospitals
+    [hospital_email] => ramg65244@gmail.com
+    [hospital_phone] => 7658756432
+    [street] => no.12 thuraipaakam,
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => ramg
+    [designation] => dean
+    [contact_phone] => 4324253890
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0001
+    [username] => ramgg
+    [password] => #Ramg1234
+    [confirm_password] => #Ramg1234
+    [terms] => on
+)
+
+2025-01-23 06:56:17: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php7794.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-23 06:56:17: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-23 06:56:17: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-23 06:56:17: Success page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-23 06:56:17: Registration page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-23 06:56:17: Manage hospitals page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/manage_hospitals.php
+2025-01-23 06:56:17: Database connection successful
+2025-01-23 06:56:17: Sanitized inputs: name=ramg hospitals, email=ramg65244@gmail.com, phone=7658756432
+2025-01-23 06:56:17: Address: no.12 thuraipaakam,, chennai, India, 600081, India
+2025-01-23 06:56:17: Region: India
+2025-01-23 06:56:17: Transaction started
+2025-01-23 06:56:17: SQL prepared: INSERT INTO hospitals (
+            name, email, phone, address, region,
+            license_number, license_file, password,
+            status, registration_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+2025-01-23 06:56:17: SQL executed successfully
+2025-01-23 06:56:17: Hospital data inserted successfully. ID: 4
+2025-01-23 06:56:17: Notification created successfully
+2025-01-23 06:56:17: Transaction committed
+2025-01-23 06:56:17: Session variables set: Array
+(
+    [registration_success] => 1
+    [hospital_name] => ramg hospitals
+)
+
+2025-01-23 06:56:17: Redirecting to success page: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-23 06:56:17: Session data on success page: Array
+(
+    [registration_success] => 1
+    [hospital_name] => ramg hospitals
+)
+
+2025-01-23 06:56:17: Displaying success page for hospital: ramg hospitals

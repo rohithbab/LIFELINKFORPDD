@@ -15,13 +15,29 @@ debug_log('Registration process started');
 debug_log('POST data: ' . print_r($_POST, true));
 debug_log('FILES data: ' . print_r($_FILES, true));
 
-require_once '../../config/connection.php';
-require_once 'queries.php';
-require_once 'helpers/email_validator.php';
+// Define base paths for file system operations
+$base_path = realpath(__DIR__ . '/../../');
+$upload_dir = $base_path . '/uploads/hospitals/license_file/';
+
+// Define web paths for redirects
+$web_root = '/LIFELINKFORPDD-main/LIFELINKFORPDD';
+$success_page = $web_root . '/pages/hospital_registration_success.php';
+$registration_page = $web_root . '/pages/hospital_registration.php';
+$manage_hospitals_page = $web_root . '/manage_hospitals.php';
+
+debug_log("Base path: $base_path");
+debug_log("Upload directory path: $upload_dir");
+debug_log("Success page URL: $success_page");
+debug_log("Registration page URL: $registration_page");
+debug_log("Manage hospitals page URL: $manage_hospitals_page");
+
+require_once $base_path . '/config/connection.php';
+require_once __DIR__ . '/queries.php';
+require_once __DIR__ . '/helpers/email_validator.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     debug_log('Not a POST request');
-    header("Location: ../../pages/hospital_registration.php");
+    header("Location: $registration_page");
     exit();
 }
 
@@ -33,9 +49,9 @@ try {
     debug_log('Database connection successful');
 
     // Get and sanitize input
-    $name = trim(filter_var($_POST['hospital_name'] ?? '', FILTER_SANITIZE_STRING));
+    $name = trim(htmlspecialchars($_POST['hospital_name'] ?? '', ENT_QUOTES, 'UTF-8'));
     $email = trim(filter_var($_POST['hospital_email'] ?? '', FILTER_SANITIZE_EMAIL));
-    $phone = trim(filter_var($_POST['hospital_phone'] ?? '', FILTER_SANITIZE_STRING));
+    $phone = trim(htmlspecialchars($_POST['hospital_phone'] ?? '', ENT_QUOTES, 'UTF-8'));
     
     // Validate email format and check if it's real
     $emailValidator = new EmailValidator();
@@ -46,16 +62,15 @@ try {
     }
     
     // Check if email already exists
-    $check_email_sql = "SELECT id FROM hospitals WHERE email = ?";
+    $check_email_sql = "SELECT hospital_id FROM hospitals WHERE email = ?";
     $check_stmt = $conn->prepare($check_email_sql);
-    $check_stmt->bind_param("s", $email);
-    $check_stmt->execute();
-    $result = $check_stmt->get_result();
-    if ($result->num_rows > 0) {
+    $check_stmt->execute([$email]);
+    $result = $check_stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (count($result) > 0) {
         throw new Exception("This email address is already registered. Please use a different email.");
     }
     
-    $license_number = trim(filter_var($_POST['license_number'] ?? '', FILTER_SANITIZE_STRING));
+    $license_number = trim(htmlspecialchars($_POST['license_number'] ?? '', ENT_QUOTES, 'UTF-8'));
     $password = $_POST['password'] ?? '';
     
     // Combine address fields
@@ -83,7 +98,6 @@ try {
         throw new Exception("Please upload your license document");
     }
 
-    $upload_dir = __DIR__ . '/../../uploads/hospitals/license_file/';
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -112,7 +126,7 @@ try {
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Start transaction
-    $conn->begin_transaction();
+    $conn->beginTransaction();
     debug_log("Transaction started");
 
     try {
@@ -130,7 +144,7 @@ try {
 
         debug_log("SQL prepared: $sql");
 
-        $stmt->bind_param("ssssssss",
+        $stmt->execute([
             $name,
             $email,
             $phone,
@@ -139,15 +153,15 @@ try {
             $license_number,
             $filename,
             $hashed_password
-        );
+        ]);
 
-        if (!$stmt->execute()) {
+        if (!$stmt) {
             throw new Exception("Failed to register hospital: " . $stmt->error);
         }
 
         debug_log("SQL executed successfully");
 
-        $hospital_id = $conn->insert_id;
+        $hospital_id = $conn->lastInsertId();
         debug_log('Hospital data inserted successfully. ID: ' . $hospital_id);
 
         // Create notification for new hospital registration
@@ -162,16 +176,14 @@ try {
             $name
         );
 
-        $link_url = "manage_hospitals.php?id=" . $hospital_id;
+        $link_url = $manage_hospitals_page . "?id=" . $hospital_id;
 
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss",
+        $stmt->execute([
             $hospital_id,
             $message,
             $link_url
-        );
-        $stmt->execute();
-
+        ]);
         debug_log('Notification created successfully');
 
         // Commit transaction
@@ -181,14 +193,19 @@ try {
         // Set success session variables
         $_SESSION['registration_success'] = true;
         $_SESSION['hospital_name'] = $name;
+        debug_log("Session variables set: " . print_r($_SESSION, true));
+
+        // Make sure session is written before redirect
+        session_write_close();
 
         // Redirect to success page
-        header("Location: ../../pages/hospital_registration_success.php");
+        debug_log("Redirecting to success page: $success_page");
+        header("Location: $success_page");
         exit();
 
     } catch (Exception $e) {
         // Rollback transaction on error
-        $conn->rollback();
+        $conn->rollBack();
         debug_log("Transaction rolled back: " . $e->getMessage());
         
         // Delete uploaded file if exists
@@ -203,6 +220,11 @@ try {
 } catch (Exception $e) {
     debug_log("Error: " . $e->getMessage());
     $_SESSION['error'] = $e->getMessage();
-    header("Location: ../../pages/hospital_registration.php");
+    debug_log("Session error set: " . print_r($_SESSION, true));
+    
+    // Make sure session is written before redirect
+    session_write_close();
+    
+    header("Location: $registration_page");
     exit();
 }

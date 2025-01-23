@@ -1,5 +1,17 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Define web paths
+$web_root = '/LIFELINKFORPDD-main/LIFELINKFORPDD';
+$process_url = $web_root . '/backend/php/hospital_register_process.php';
+$styles_css = $web_root . '/assets/css/styles.css';
+
+// Get any error message
+$error_message = isset($_SESSION['error']) ? $_SESSION['error'] : '';
+unset($_SESSION['error']); // Clear the error message
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +20,7 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Registration - LifeLink</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="<?php echo $styles_css; ?>">
     <script src="../assets/js/email-validation.js"></script>
     <style>
         .form-container {
@@ -160,6 +172,12 @@ session_start();
 
     <div class="container">
         <div class="form-container">
+            <?php if ($error_message): ?>
+            <div class="alert alert-danger">
+                <?php echo htmlspecialchars($error_message); ?>
+            </div>
+            <?php endif; ?>
+
             <h2 class="text-center" style="
                 font-size: 2rem;
                 margin-bottom: 2rem;
@@ -168,7 +186,7 @@ session_start();
                 -webkit-text-fill-color: transparent;
             ">Hospital Registration</h2>
 
-            <form action="../backend/php/hospital_register_process.php" method="POST" enctype="multipart/form-data" id="hospitalRegistrationForm">
+            <form action="<?php echo $process_url; ?>" method="POST" enctype="multipart/form-data" id="hospitalRegistrationForm">
                 <!-- Hospital Details Section -->
                 <div class="form-section">
                     <h3><i class="fas fa-hospital"></i> Hospital Details</h3>
@@ -178,8 +196,8 @@ session_start();
                             <input type="text" name="hospital_name" required>
                         </div>
                         <div class="form-group">
-                            <label for="email" class="required">Hospital Email</label>
-                            <input type="email" id="email" name="hospital_email" required 
+                            <label for="hospital_email" class="required">Hospital Email</label>
+                            <input type="email" id="hospital_email" name="hospital_email" required 
                                    onblur="handleEmailValidation(this)" 
                                    class="form-control">
                             <div class="validation-feedback"></div>
@@ -241,8 +259,8 @@ session_start();
                             <input type="tel" name="contact_phone" required>
                         </div>
                         <div class="form-group">
-                            <label for="email" class="required">Contact Email</label>
-                            <input type="email" id="email" name="contact_email" required 
+                            <label for="contact_email" class="required">Contact Email</label>
+                            <input type="email" id="contact_email" name="contact_email" required 
                                    onblur="handleEmailValidation(this)" 
                                    class="form-control">
                             <div class="validation-feedback"></div>
