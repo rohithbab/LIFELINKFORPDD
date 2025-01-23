@@ -546,4 +546,124 @@ function createNotification($conn, $type, $action, $entity_id, $message = '') {
     }
 }
 
+function getAnalyticsDonorStats($conn) {
+    $stats = [];
+    
+    // Get approved donors count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM donor WHERE status = 'Approved'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['approved'] = $result['count'];
+
+    // Get rejected donors count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM donor WHERE status = 'Rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['rejected'] = $result['count'];
+
+    // Get pending donors count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM donor WHERE status = 'Pending'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['pending'] = $result['count'];
+
+    return $stats;
+}
+
+function getAnalyticsRecipientStats($conn) {
+    $stats = [];
+    
+    // Get approved recipients count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM recipient_registration WHERE request_status = 'accepted'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['approved'] = $result['count'];
+
+    // Get rejected recipients count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM recipient_registration WHERE request_status = 'rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['rejected'] = $result['count'];
+
+    // Get pending recipients count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM recipient_registration WHERE request_status = 'pending'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['pending'] = $result['count'];
+
+    return $stats;
+}
+
+function getAnalyticsHospitalStats($conn) {
+    $stats = [];
+    
+    // Get approved hospitals count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM hospitals WHERE status = 'Approved'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['approved'] = $result['count'];
+
+    // Get rejected hospitals count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM hospitals WHERE status = 'Rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['rejected'] = $result['count'];
+
+    // Get pending hospitals count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM hospitals WHERE status = 'Pending'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['pending'] = $result['count'];
+
+    return $stats;
+}
+
+function getAnalyticsOrganMatchStats($conn) {
+    $stats = [];
+    
+    // For now, let's consider all matches in the system as successful
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM made_matches_by_hospitals");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['approved'] = $result['count'];
+
+    // For now, set these to 0 as we don't track failed/pending matches
+    $stats['rejected'] = 0;
+    $stats['pending'] = 0;
+
+    return $stats;
+}
+
+function getAnalyticsTotalUsersStats($conn) {
+    $stats = [];
+    
+    // Get total donors count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM donor");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['donors'] = $result['count'];
+
+    // Get total recipients count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM recipient_registration");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['recipients'] = $result['count'];
+
+    // Get total hospitals count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM hospitals");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['hospitals'] = $result['count'];
+
+    return $stats;
+}
+
+function getAnalyticsRejectionStats($conn) {
+    $stats = [];
+    
+    // Get donor rejections count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM donor WHERE status = 'Rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['donor_rejections'] = $result['count'];
+
+    // Get recipient rejections count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM recipient_registration WHERE request_status = 'rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['recipient_rejections'] = $result['count'];
+
+    // Get hospital rejections count
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM hospitals WHERE status = 'Rejected'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['hospital_rejections'] = $result['count'];
+
+    return $stats;
+}
+
 ?>
