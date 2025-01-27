@@ -42,12 +42,25 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
+        .admin-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 0;
+            width: 100%;
+        }
         .details-container {
             background: white;
             border-radius: 10px;
             padding: 30px;
-            margin: 20px;
+            margin: 20px auto;
+            max-width: 1200px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .details-header {
@@ -82,22 +95,6 @@ try {
         .detail-item p {
             color: #333;
             margin: 0;
-        }
-        .view-document {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--primary-blue);
-            text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .view-document:hover {
-            background-color: rgba(0, 123, 255, 0.1);
-        }
-        .view-document i {
-            font-size: 0.9rem;
         }
         .action-button {
             padding: 10px 20px;
@@ -142,26 +139,26 @@ try {
         .back-btn i {
             font-size: 0.9rem;
         }
+        .view-document {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .view-document:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .view-document i {
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><span class="logo-gradient">LifeLink</span> Admin</h2>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="admin_dashboard.php" class="nav-link">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <!-- Other sidebar items -->
-            </ul>
-        </div>
-
         <!-- Main Content -->
         <div class="main-content">
             <div class="details-container">
@@ -171,10 +168,10 @@ try {
                         <a href="admin_dashboard.php" class="back-btn">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
-                        <button class="action-button approve-button" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Approved')">
+                        <button class="action-button approve-button" onclick="showApproveModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>', '<?php echo htmlspecialchars($donor['email']); ?>')">
                             <i class="fas fa-check"></i> Approve
                         </button>
-                        <button class="action-button reject-button" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Rejected')">
+                        <button class="action-button reject-button" onclick="showRejectModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>')">
                             <i class="fas fa-times"></i> Reject
                         </button>
                     </div>
@@ -228,7 +225,7 @@ try {
                         <p>
                             <a href="../../uploads/donors/id_proof_path/<?php echo htmlspecialchars($donor['id_proof_path']); ?>" 
                                target="_blank" class="view-document">
-                                View ID Proof <i class="fas fa-external-link-alt"></i>
+                                <i class="fas fa-external-link-alt"></i> View ID Proof
                             </a>
                         </p>
                     </div>
@@ -238,7 +235,7 @@ try {
                         <p>
                             <a href="../../uploads/donors/medical_reports_path/<?php echo htmlspecialchars($donor['medical_reports_path']); ?>" 
                                target="_blank" class="view-document">
-                                View Medical Reports <i class="fas fa-external-link-alt"></i>
+                                <i class="fas fa-external-link-alt"></i> View Medical Reports
                             </a>
                         </p>
                     </div>
@@ -262,7 +259,7 @@ try {
                         <p>
                             <a href="../../uploads/donors/guardian_id_proof_path/<?php echo htmlspecialchars($donor['guardian_id_proof_path']); ?>" 
                                target="_blank" class="view-document">
-                                View Guardian ID Proof <i class="fas fa-external-link-alt"></i>
+                                <i class="fas fa-external-link-alt"></i> View Guardian ID Proof
                             </a>
                         </p>
                     </div>
@@ -282,37 +279,169 @@ try {
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function updateDonorStatus(donorId, status) {
-            // Capitalize first letter of status
-            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this donor?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_donor_status.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        donor_id: donorId,
-                        status: status
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response); // Debug log
-                        if (response.success) {
-                            alert(`Donor ${status.toLowerCase()} successfully`);
-                            window.location.href = 'admin_dashboard.php';
-                        } else {
-                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.error('Response:', xhr.responseText); // Debug log
-                        alert('Error updating donor status. Please check the console for details.');
+        function showApproveModal(donorId, donorName, donorEmail) {
+            Swal.fire({
+                title: 'Approve Donor',
+                html: `
+                    <div>
+                        <p><strong>Donor Name:</strong> ${donorName}</p>
+                        <p><strong>Email:</strong> ${donorEmail}</p>
+                        <div style="margin: 20px 0;">
+                            <input type="text" id="odml_id" class="swal2-input" placeholder="Enter ODML ID">
+                        </div>
+                        <p style="font-size: 0.9em; color: #666;">
+                            An email notification will be sent to the donor upon approval.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Approve & Update',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const odmlId = document.getElementById('odml_id').value;
+                    if (!odmlId) {
+                        Swal.showValidationMessage('Please enter ODML ID');
+                        return false;
                     }
-                });
-            }
+                    return odmlId;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateDonorWithODML(donorId, result.value);
+                }
+            });
+        }
+
+        function showRejectModal(donorId, donorName) {
+            Swal.fire({
+                title: 'Reject Donor',
+                html: `
+                    <div>
+                        <p><strong>Donor Name:</strong> ${donorName}</p>
+                        <div style="margin: 20px 0;">
+                            <textarea id="rejection_reason" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
+                        </div>
+                        <p style="font-size: 0.9em; color: #666;">
+                            An email notification with the rejection reason will be sent to the donor.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Reject',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const reason = document.getElementById('rejection_reason').value;
+                    if (!reason) {
+                        Swal.showValidationMessage('Please enter rejection reason');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    rejectDonor(donorId, result.value);
+                }
+            });
+        }
+
+        function updateDonorWithODML(donorId, odmlId) {
+            $.ajax({
+                url: '../../backend/php/update_donor_odml.php',
+                method: 'POST',
+                data: {
+                    donor_id: donorId,
+                    odml_id: odmlId,
+                    action: 'approve'
+                },
+                success: function(response) {
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Donor has been approved successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to approve donor.'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
+        }
+
+        function rejectDonor(donorId, reason) {
+            $.ajax({
+                url: '../../backend/php/update_donor_status.php',
+                method: 'POST',
+                data: {
+                    donor_id: donorId,
+                    status: 'rejected',
+                    reason: reason
+                },
+                success: function(response) {
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Donor has been rejected successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to reject donor.'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
         }
     </script>
 </body>

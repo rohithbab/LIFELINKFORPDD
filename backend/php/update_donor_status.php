@@ -1,8 +1,7 @@
 <?php
 session_start();
 require_once 'connection.php';
-require_once 'Mailer.php'; // Assuming Mailer class is in Mailer.php file
-require_once 'notification.php'; // Assuming notification functions are in notification.php file
+require_once 'helpers/mailer.php';
 
 header('Content-Type: application/json');
 
@@ -13,7 +12,12 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
+$contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+if ($contentType === 'application/json') {
+    $data = json_decode(file_get_contents('php://input'), true);
+} else {
+    $data = $_POST;
+}
 
 // Validate required fields
 if (!isset($data['donor_id']) || !isset($data['status'])) {
@@ -22,19 +26,10 @@ if (!isset($data['donor_id']) || !isset($data['status'])) {
 }
 
 // Validate status
-$allowed_statuses = ['Pending', 'Approved', 'Rejected'];
-if (!in_array($data['status'], $allowed_statuses)) {
+$allowed_statuses = ['pending', 'approved', 'rejected'];
+if (!in_array(strtolower($data['status']), $allowed_statuses)) {
     echo json_encode(['success' => false, 'message' => 'Invalid status']);
     exit();
-}
-
-function updateDonorStatus($conn, $donor_id, $status, $admin_id) {
-    $stmt = $conn->prepare("UPDATE donor SET status = ?, updated_by = ? WHERE donor_id = ?");
-    return $stmt->execute([$status, $admin_id, $donor_id]);
-}
-
-function createNotification($conn, $type, $status, $donor_id, $message) {
-    // Assuming this function is defined in notification.php file
 }
 
 try {
@@ -43,51 +38,43 @@ try {
 
     // Get donor details
     $stmt = $conn->prepare("SELECT name, email FROM donor WHERE donor_id = ?");
-    $stmt->bind_param("i", $data['donor_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $donor = $result->fetch_assoc();
+    $stmt->execute([$data['donor_id']]);
+    $donor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$donor) {
-        throw new Exception("Donor not found");
+        throw new Exception('Donor not found');
     }
 
     // Update donor status
-    if (updateDonorStatus($conn, $data['donor_id'], $data['status'], $_SESSION['admin_id'])) {
-        // Send rejection email if status is rejected and reason is provided
-        if ($data['status'] === 'Rejected' && isset($data['reason']) && !empty($data['reason'])) {
-            $mailer = new Mailer();
-            $mailer->sendRejectionNotification(
-                $donor['email'],
-                $donor['name'],
-                'donor',
-                $data['reason']
-            );
+    $stmt = $conn->prepare("UPDATE donor SET status = ?, updated_at = NOW() WHERE donor_id = ?");
+    $stmt->execute([strtolower($data['status']), $data['donor_id']]);
+
+    // Send email notification
+    $mailer = new Mailer();
+    if ($data['status'] === 'rejected') {
+        if (!isset($data['reason'])) {
+            throw new Exception('Rejection reason is required');
         }
-
-        // Create notification
-        createNotification(
-            $conn,
-            'donor',
-            $data['status'],
-            $data['donor_id'],
-            "Donor " . $donor['name'] . " has been " . $data['status'] . 
-            ($data['status'] === 'Rejected' && !empty($data['reason']) ? "\nReason: " . $data['reason'] : "")
+        $mailer->sendRejectionNotification(
+            $donor['email'],
+            $donor['name'],
+            $data['reason'],
+            'donor'
         );
-
-        // Commit transaction
-        $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Donor status updated successfully']);
-    } else {
-        throw new Exception("Failed to update donor status");
     }
-} catch (PDOException $e) {
-    $conn->rollBack();
-    error_log("Error in update_donor_status.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+
+    // Commit transaction
+    $conn->commit();
+
+    echo json_encode(['success' => true, 'message' => 'Status updated successfully']);
+
 } catch (Exception $e) {
-    $conn->rollBack();
-    error_log("Error in update_donor_status.php: " . $e->getMessage());
+    // Rollback transaction on error
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+
+    error_log("Error updating donor status: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
