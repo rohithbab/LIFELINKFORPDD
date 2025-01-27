@@ -1,4 +1,8 @@
 <?php
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'backend/php/EmailValidator.php';
 require_once 'vendor/autoload.php';
 require_once 'backend/php/helpers/mailer.php';
@@ -58,10 +62,16 @@ try {
 
 try {
     $mailer = new Mailer();
+    // Change this to your email address
     $result = $mailer->sendTestEmail('yourlifelink.org@gmail.com');
-    echo "\nTest email sent successfully!";
+    if ($result) {
+        echo "<h2 style='color: green;'>Test email sent successfully!</h2>";
+        echo "<p>Please check your email inbox (and spam folder).</p>";
+    } else {
+        echo "<h2 style='color: red;'>Failed to send email.</h2>";
+    }
 } catch (Exception $e) {
-    echo "\nError sending email: " . $e->getMessage();
-    error_log($e->getMessage());
+    echo "<h2 style='color: red;'>Error sending email:</h2>";
+    echo "<pre>" . $e->getMessage() . "</pre>";
 }
 ?>
