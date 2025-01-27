@@ -468,11 +468,6 @@ $urgentRecipients = getUrgentRecipients($conn);
             flex: 1;
             text-align: right;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
         
         /* ... other styles ... */
         
@@ -801,9 +796,6 @@ $urgentRecipients = getUrgentRecipients($conn);
                                     </button>
                                 </td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Approved')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
                                     <button class="reject-btn" 
                                             data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
                                             data-name="<?php echo htmlspecialchars($hospital['hospital_name']); ?>"
@@ -852,14 +844,11 @@ $urgentRecipients = getUrgentRecipients($conn);
                                     </button>
                                 </td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Approved')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
                                     <button class="reject-btn" 
                                             data-donor-id="<?php echo $donor['donor_id']; ?>"
                                             data-name="<?php echo htmlspecialchars($donor['name']); ?>"
                                             data-email="<?php echo htmlspecialchars($donor['email']); ?>"
-                                            onclick="updateDonorStatus('<?php echo htmlspecialchars($donor['donor_id']); ?>', 'Rejected')">
+                                            onclick="updateDonorStatus('<?php echo $donor['donor_id']; ?>', 'Rejected')">
                                         <i class="fas fa-times"></i> Reject
                                     </button>
                                 </td>
@@ -906,9 +895,6 @@ $urgentRecipients = getUrgentRecipients($conn);
                                 </td>
                                 <td><?php echo htmlspecialchars($recipient['urgency'] ?? 'Not Set'); ?></td>
                                 <td class="action-cell">
-                                    <button class="btn btn-sm btn-approve" onclick="updateRecipientStatus('<?php echo $recipient['id']; ?>', 'Approved')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
                                     <button class="btn btn-sm btn-reject" 
                                             data-recipient-id="<?php echo $recipient['id']; ?>"
                                             data-name="<?php echo htmlspecialchars($recipient['name']); ?>"

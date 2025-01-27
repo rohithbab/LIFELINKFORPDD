@@ -179,7 +179,7 @@ $rejectionStats = getAnalyticsRejectionStats($conn);
                             <div class="stat-color" style="background: #FFC107;"></div>
                             <span class="stat-label">Pending:</span>
                             <span class="stat-value"><?php echo $recipientStats['pending']; ?></span>
-                        </div>
+                        </div>  
                     </div>
                 </div>
 
