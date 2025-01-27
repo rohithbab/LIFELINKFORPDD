@@ -12,27 +12,18 @@ class Mailer {
         try {
             $mail = new PHPMailer();
             
-            // Basic settings
+            // Server settings
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
-            
-            // Try SSL instead of TLS
-            $mail->SMTPSecure = 'ssl';
-            $mail->Port = 465;  // SSL port
-            
-            // Enable debugging
-            $mail->SMTPDebug = 2; // Enable verbose debug output
-            
-            // Auth settings
+            $mail->Port = 587;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->SMTPAuth = true;
+            
+            // Gmail credentials
             $mail->Username = 'yourlifelink.org@gmail.com';
             $mail->Password = 'rnda lowl zgel ddim';
             
-            // Timeout settings
-            $mail->Timeout = 30;
-            $mail->SMTPKeepAlive = true;
-            
-            // Email settings
+            // Default settings
             $mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink Admin');
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';
@@ -46,81 +37,34 @@ class Mailer {
 
     public function sendTestEmail($to) {
         try {
-            echo "Creating mailer...<br>";
             $mail = $this->createMailer();
-            
-            echo "Setting up test email...<br>";
             $mail->addAddress($to);
             $mail->Subject = 'LifeLink Test Email';
             $mail->Body = '<h2>LifeLink Email Test</h2>
                           <p>This is a test email from the LifeLink system.</p>
                           <p>If you received this email, it means your email configuration is working correctly!</p>';
-            $mail->AltBody = 'This is a test email from LifeLink system.';
             
-            echo "Attempting to send...<br>";
-            if (!$mail->send()) {
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            echo "Email sent successfully!<br>";
-            return true;
-            
-        } catch (Exception $e) {
-            $error = "Failed to send test email: " . $e->getMessage();
-            error_log($error);
-            echo "<strong>Error:</strong> $error<br>";
-            return false;
-        }
-    }
-
-    public function sendEmail($to, $subject, $template, $data = []) {
-        try {
-            $mail = $this->createMailer();
-            $mail->addAddress($to);
-            $mail->Subject = $subject;
-            
-            // Get template content
-            $templatePath = $this->getTemplatePath($template);
-            if (!file_exists($templatePath)) {
-                throw new Exception("Email template not found: $template");
-            }
-            
-            $content = file_get_contents($templatePath);
-            
-            // Replace placeholders with data
-            foreach ($data as $key => $value) {
-                $content = str_replace("{{" . $key . "}}", $value, $content);
-            }
-            
-            $mail->Body = $content;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending email: " . $e->getMessage());
-            throw new Exception("Failed to send email: " . $e->getMessage());
+            error_log("Error sending test email: " . $e->getMessage());
+            throw new Exception("Failed to send test email: " . $e->getMessage());
         }
     }
 
-    private function getTemplatePath($template) {
-        return __DIR__ . '/../../../email_templates/' . $template . '.html';
-    }
-
-    // Hospital emails
     public function sendHospitalApproval($email, $hospitalName, $odmlId) {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Hospital Registration Approved';
+            $mail->Subject = 'Hospital Registration Approved - LifeLink';
             
-            $replacements = [
-                '{HOSPITAL_NAME}' => $hospitalName,
-                '{ODML_ID}' => $odmlId
-            ];
+            $template = file_get_contents($this->getTemplatePath('hospital_approval'));
+            $template = str_replace(['{{hospitalName}}', '{{odmlId}}'], [$hospitalName, $odmlId], $template);
             
-            $mail->Body = $this->loadTemplate('hospital_approval.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending hospital approval email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending hospital approval: " . $e->getMessage());
+            throw new Exception("Failed to send hospital approval email: " . $e->getMessage());
         }
     }
 
@@ -128,38 +72,33 @@ class Mailer {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Hospital Registration Update';
+            $mail->Subject = 'Hospital Registration Status - LifeLink';
             
-            $replacements = [
-                '{HOSPITAL_NAME}' => $hospitalName,
-                '{REASON}' => $reason
-            ];
+            $template = file_get_contents($this->getTemplatePath('hospital_rejection'));
+            $template = str_replace(['{{hospitalName}}', '{{reason}}'], [$hospitalName, $reason], $template);
             
-            $mail->Body = $this->loadTemplate('hospital_rejection.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending hospital rejection email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending hospital rejection: " . $e->getMessage());
+            throw new Exception("Failed to send hospital rejection email: " . $e->getMessage());
         }
     }
 
-    // Donor emails
     public function sendDonorApproval($email, $donorName, $odmlId) {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Donor Registration Approved';
+            $mail->Subject = 'Donor Registration Approved - LifeLink';
             
-            $replacements = [
-                '{DONOR_NAME}' => $donorName,
-                '{ODML_ID}' => $odmlId
-            ];
+            $template = file_get_contents($this->getTemplatePath('donor_approval'));
+            $template = str_replace(['{{donorName}}', '{{odmlId}}'], [$donorName, $odmlId], $template);
             
-            $mail->Body = $this->loadTemplate('donor_approval.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending donor approval email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending donor approval: " . $e->getMessage());
+            throw new Exception("Failed to send donor approval email: " . $e->getMessage());
         }
     }
 
@@ -167,38 +106,33 @@ class Mailer {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Donor Registration Update';
+            $mail->Subject = 'Donor Registration Status - LifeLink';
             
-            $replacements = [
-                '{DONOR_NAME}' => $donorName,
-                '{REASON}' => $reason
-            ];
+            $template = file_get_contents($this->getTemplatePath('donor_rejection'));
+            $template = str_replace(['{{donorName}}', '{{reason}}'], [$donorName, $reason], $template);
             
-            $mail->Body = $this->loadTemplate('donor_rejection.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending donor rejection email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending donor rejection: " . $e->getMessage());
+            throw new Exception("Failed to send donor rejection email: " . $e->getMessage());
         }
     }
 
-    // Recipient emails
     public function sendRecipientApproval($email, $recipientName, $odmlId) {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Recipient Registration Approved';
+            $mail->Subject = 'Recipient Registration Approved - LifeLink';
             
-            $replacements = [
-                '{RECIPIENT_NAME}' => $recipientName,
-                '{ODML_ID}' => $odmlId
-            ];
+            $template = file_get_contents($this->getTemplatePath('recipient_approval'));
+            $template = str_replace(['{{recipientName}}', '{{odmlId}}'], [$recipientName, $odmlId], $template);
             
-            $mail->Body = $this->loadTemplate('recipient_approval.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending recipient approval email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending recipient approval: " . $e->getMessage());
+            throw new Exception("Failed to send recipient approval email: " . $e->getMessage());
         }
     }
 
@@ -206,27 +140,20 @@ class Mailer {
         try {
             $mail = $this->createMailer();
             $mail->addAddress($email);
-            $mail->Subject = 'LifeLink - Recipient Registration Update';
+            $mail->Subject = 'Recipient Registration Status - LifeLink';
             
-            $replacements = [
-                '{RECIPIENT_NAME}' => $recipientName,
-                '{REASON}' => $reason
-            ];
+            $template = file_get_contents($this->getTemplatePath('recipient_rejection'));
+            $template = str_replace(['{{recipientName}}', '{{reason}}'], [$recipientName, $reason], $template);
             
-            $mail->Body = $this->loadTemplate('recipient_rejection.html', $replacements);
+            $mail->Body = $template;
             return $mail->send();
         } catch (Exception $e) {
-            error_log("Error sending recipient rejection email: " . $e->getMessage());
-            throw $e;
+            error_log("Error sending recipient rejection: " . $e->getMessage());
+            throw new Exception("Failed to send recipient rejection email: " . $e->getMessage());
         }
     }
 
-    private function loadTemplate($templateFile, $replacements) {
-        $template = file_get_contents($this->getTemplatePath($templateFile));
-        if ($template === false) {
-            throw new Exception("Could not load template: $templateFile");
-        }
-        
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
+    private function getTemplatePath($template) {
+        return __DIR__ . '/../../../email_templates/' . $template . '.html';
     }
 }
