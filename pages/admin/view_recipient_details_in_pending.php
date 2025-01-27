@@ -18,7 +18,7 @@ $recipient_id = $_GET['id'];
 
 // Get recipient details
 try {
-    $stmt = $conn->prepare("SELECT * FROM recipient_registration WHERE id = ?");
+    $stmt = $conn->prepare("SELECT * FROM recipient_registration WHERE id = ? AND request_status = 'pending'");
     $stmt->execute([$recipient_id]);
     $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -40,6 +40,7 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         .details-container {
             max-width: 800px;
@@ -248,50 +249,183 @@ try {
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button onclick="window.location.href='admin_dashboard.php'" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </button>
-            <button onclick="updateRecipientStatus(<?php echo $recipient_id; ?>, 'accepted')" class="approve-btn">
+            <button class="approve-btn" onclick="showApproveModal('<?php echo htmlspecialchars($recipient['id']); ?>', '<?php echo htmlspecialchars($recipient['full_name']); ?>', '<?php echo htmlspecialchars($recipient['email']); ?>')">
                 <i class="fas fa-check"></i> Approve
             </button>
-            <button onclick="updateRecipientStatus(<?php echo $recipient_id; ?>, 'rejected')" class="reject-btn">
+            <button class="reject-btn" onclick="showRejectModal('<?php echo htmlspecialchars($recipient['id']); ?>', '<?php echo htmlspecialchars($recipient['full_name']); ?>')">
                 <i class="fas fa-times"></i> Reject
             </button>
         </div>
+        
+        <a href="admin_dashboard.php" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function updateRecipientStatus(recipientId, status) {
-            // Capitalize first letter of status
-            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            
-            if (confirm(`Are you sure you want to ${status.toLowerCase()} this recipient?`)) {
-                $.ajax({
-                    url: '../../backend/php/update_recipient_status.php',
-                    method: 'POST',
-                    data: JSON.stringify({
-                        recipient_id: recipientId,
-                        status: status
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log('Response:', response);
-                        if (response.success) {
-                            alert(`Recipient ${status.toLowerCase()} successfully`);
-                            window.location.href = 'admin_dashboard.php';
-                        } else {
-                            alert('Failed to update status: ' + (response.message || 'Unknown error'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.error('Response:', xhr.responseText);
-                        alert('Error updating recipient status. Please check the console for details.');
+        function showApproveModal(recipientId, recipientName, recipientEmail) {
+            Swal.fire({
+                title: 'Approve Recipient',
+                html: `
+                    <div>
+                        <p><strong>Recipient Name:</strong> ${recipientName}</p>
+                        <p><strong>Email:</strong> ${recipientEmail}</p>
+                        <div style="margin: 20px 0;">
+                            <input type="text" id="odml_id" class="swal2-input" placeholder="Enter ODML ID">
+                        </div>
+                        <p style="font-size: 0.9em; color: #666;">
+                            An email notification will be sent to the recipient upon approval.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Approve & Update',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const odmlId = document.getElementById('odml_id').value;
+                    if (!odmlId) {
+                        Swal.showValidationMessage('Please enter ODML ID');
+                        return false;
                     }
-                });
-            }
+                    return odmlId;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateRecipientWithODML(recipientId, result.value);
+                }
+            });
+        }
+
+        function showRejectModal(recipientId, recipientName) {
+            Swal.fire({
+                title: 'Reject Recipient',
+                html: `
+                    <div>
+                        <p><strong>Recipient Name:</strong> ${recipientName}</p>
+                        <div style="margin: 20px 0;">
+                            <textarea id="rejection_reason" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
+                        </div>
+                        <p style="font-size: 0.9em; color: #666;">
+                            An email notification with the rejection reason will be sent to the recipient.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Reject',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const reason = document.getElementById('rejection_reason').value;
+                    if (!reason) {
+                        Swal.showValidationMessage('Please enter rejection reason');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    rejectRecipient(recipientId, result.value);
+                }
+            });
+        }
+
+        function updateRecipientWithODML(recipientId, odmlId) {
+            $.ajax({
+                url: '../../backend/php/update_recipient_odml.php',
+                method: 'POST',
+                data: {
+                    recipient_id: recipientId,
+                    odml_id: odmlId,
+                    action: 'approve'
+                },
+                success: function(response) {
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Recipient has been approved successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to approve recipient.'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
+        }
+
+        function rejectRecipient(recipientId, reason) {
+            $.ajax({
+                url: '../../backend/php/update_recipient_status.php',
+                method: 'POST',
+                data: {
+                    recipient_id: recipientId,
+                    status: 'rejected',
+                    reason: reason
+                },
+                success: function(response) {
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Recipient has been rejected successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to reject recipient.'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
         }
     </script>
 </body>
