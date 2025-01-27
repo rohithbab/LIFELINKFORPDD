@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+        }
+        .odml-id {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .important-points {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .next-steps {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to LifeLink!</h1>
+    </div>
+    <div class="content">
+        <p>Dear {RECIPIENT_NAME},</p>
+        
+        <p>We are pleased to inform you that your recipient registration with LifeLink has been approved.</p>
+        
+        <div class="odml-id">
+            <strong>Your ODML ID:</strong><br>
+            {ODML_ID}
+        </div>
+        
+        <div class="important-points">
+            <strong>Important Information:</strong>
+            <ul>
+                <li>Keep your ODML ID safe for all future communications</li>
+                <li>Ensure your medical information is always up to date</li>
+                <li>Stay in regular contact with your healthcare provider</li>
+                <li>Keep your contact information current</li>
+            </ul>
+        </div>
+        
+        <div class="next-steps">
+            <strong>Next Steps:</strong>
+            <ul>
+                <li>Complete your medical profile if not already done</li>
+                <li>Upload any pending medical documents</li>
+                <li>Set up notifications for potential matches</li>
+                <li>Review and understand the matching process</li>
+            </ul>
+        </div>
+        
+        <p>We understand this is an important journey for you, and we're here to help every step of the way.</p>
+        
+        <a href="https://lifelink.org/login" class="button">Access Your Account</a>
+        
+        <p>If you have any questions or need assistance, our support team is always available to help.</p>
+        
+        <p>Best wishes,<br>The LifeLink Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+        <p>© 2024 LifeLink. All rights reserved.</p>
+    </div>
+</body>
+</html>

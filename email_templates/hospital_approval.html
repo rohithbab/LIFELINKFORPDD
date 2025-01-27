@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+        }
+        .odml-id {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .important-points {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to LifeLink!</h1>
+    </div>
+    <div class="content">
+        <p>Dear {HOSPITAL_NAME},</p>
+        
+        <p>Congratulations! Your hospital registration with LifeLink has been approved. We are pleased to welcome you to our organ donation management platform.</p>
+        
+        <div class="odml-id">
+            <strong>Your ODML ID:</strong><br>
+            {ODML_ID}
+        </div>
+        
+        <div class="important-points">
+            <strong>Important Information:</strong>
+            <ul>
+                <li>Please use this ODML ID for all future communications</li>
+                <li>Keep your login credentials secure</li>
+                <li>Update your hospital's organ requirements regularly</li>
+                <li>Maintain accurate records of all organ donation activities</li>
+            </ul>
+        </div>
+        
+        <p>We trust that you will use our platform responsibly to help save lives through efficient organ donation management.</p>
+        
+        <a href="https://lifelink.org/login" class="button">Access Your Dashboard</a>
+        
+        <p>For any assistance, please don't hesitate to contact our support team.</p>
+        
+        <p>Best regards,<br>The LifeLink Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+        <p>© 2024 LifeLink. All rights reserved.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+        }
+        .reason {
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .next-steps {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hospital Registration Update</h1>
+    </div>
+    <div class="content">
+        <p>Dear {HOSPITAL_NAME},</p>
+        
+        <p>We have reviewed your hospital registration application for LifeLink. Unfortunately, we are unable to approve your registration at this time.</p>
+        
+        <div class="reason">
+            <strong>Reason for Rejection:</strong><br>
+            {REASON}
+        </div>
+        
+        <div class="next-steps">
+            <strong>Next Steps:</strong>
+            <ul>
+                <li>Review and address the concerns mentioned above</li>
+                <li>Ensure all required documentation is complete and valid</li>
+                <li>Submit a new registration application</li>
+                <li>Contact our support team if you need clarification</li>
+            </ul>
+        </div>
+        
+        <p>If you believe this decision was made in error or need additional information, please don't hesitate to contact our support team.</p>
+        
+        <a href="https://lifelink.org/contact" class="button">Contact Support</a>
+        
+        <p>We appreciate your interest in joining LifeLink and hope to welcome you to our platform soon.</p>
+        
+        <p>Best regards,<br>The LifeLink Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+        <p>© 2024 LifeLink. All rights reserved.</p>
+    </div>
+</body>
+</html>

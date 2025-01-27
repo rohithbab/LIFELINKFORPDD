@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+        }
+        .odml-id {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .important-points {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .thank-you {
+            color: #4CAF50;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Thank You for Being a Donor!</h1>
+    </div>
+    <div class="content">
+        <p>Dear {DONOR_NAME},</p>
+        
+        <div class="thank-you">
+            Thank you for your noble decision to register as an organ donor with LifeLink.
+        </div>
+        
+        <p>We are pleased to inform you that your donor registration has been approved.</p>
+        
+        <div class="odml-id">
+            <strong>Your ODML ID:</strong><br>
+            {ODML_ID}
+        </div>
+        
+        <div class="important-points">
+            <strong>Important Points:</strong>
+            <ul>
+                <li>Keep your ODML ID safe for future reference</li>
+                <li>Update your medical information regularly</li>
+                <li>Inform your family about your decision</li>
+                <li>Use our platform to stay updated about potential matches</li>
+            </ul>
+        </div>
+        
+        <p>Your decision to become an organ donor could save multiple lives. We deeply appreciate your commitment to this noble cause.</p>
+        
+        <a href="https://lifelink.org/login" class="button">Access Your Account</a>
+        
+        <p>For any queries or assistance, our support team is always here to help.</p>
+        
+        <p>Warm regards,<br>The LifeLink Team</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+        <p>© 2024 LifeLink. All rights reserved.</p>
+    </div>
+</body>
+</html>

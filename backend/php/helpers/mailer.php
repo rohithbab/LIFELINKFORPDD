@@ -21,8 +21,8 @@ class Mailer {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'yourlifelink.org@gmail.com';
-        $mail->Password = 'gfnb wnxc pmgj eikm';
+        $mail->Username = 'yourlifelink.org@gmail.com';  // Your Gmail address
+        $mail->Password = 'gfnb wnxc pmgj eikm';        // Your app password
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
         
@@ -195,6 +195,27 @@ class Mailer {
             if (isset($mail)) {
                 echo "SMTP Error Info: " . $mail->ErrorInfo . "\n";
             }
+            throw $e;
+        }
+    }
+    
+    public function sendTestEmail($to) {
+        try {
+            $mail = $this->createMailer();
+            
+            $mail->addAddress($to);
+            $mail->Subject = 'LifeLink Email Test';
+            $mail->Body = '
+                <h2>LifeLink Email Test</h2>
+                <p>This is a test email from LifeLink system.</p>
+                <p>If you received this email, it means your email configuration is working correctly!</p>
+                <br>
+                <p>Best regards,<br>LifeLink Team</p>
+            ';
+            
+            return $mail->send();
+        } catch (Exception $e) {
+            error_log("Error sending test email: " . $e->getMessage());
             throw $e;
         }
     }

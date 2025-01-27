@@ -1,6 +1,7 @@
 <?php
 require_once 'backend/php/EmailValidator.php';
 require_once 'vendor/autoload.php';
+require_once 'backend/php/helpers/mailer.php';
 
 // Test email validation
 $validator = new EmailValidator();
@@ -53,5 +54,14 @@ try {
     echo "Test email sent successfully!\n";
 } catch (Exception $e) {
     echo "Error sending test email: {$mail->ErrorInfo}\n";
+}
+
+try {
+    $mailer = new Mailer();
+    $result = $mailer->sendTestEmail('yourlifelink.org@gmail.com');
+    echo "\nTest email sent successfully!";
+} catch (Exception $e) {
+    echo "\nError sending email: " . $e->getMessage();
+    error_log($e->getMessage());
 }
 ?>
