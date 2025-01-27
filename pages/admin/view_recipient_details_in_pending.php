@@ -141,6 +141,108 @@ try {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
+        /* Custom Modal Styles */
+        .custom-modal {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-content {
+            padding: 20px 0;
+        }
+        .recipient-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        .info-item i {
+            width: 20px;
+        }
+        .input-container {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .custom-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+        .custom-input:focus {
+            border-color: #2196F3;
+        }
+        .custom-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+            resize: vertical;
+        }
+        .custom-textarea:focus {
+            border-color: #dc3545;
+        }
+        .notification-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .custom-confirm-button, .custom-cancel-button {
+            padding: 12px 24px;
+            font-weight: 500;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        .custom-confirm-button:hover, .custom-cancel-button:hover {
+            transform: translateY(-2px);
+        }
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -20px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+            to {
+                opacity: 0;
+                transform: translate3d(0, -20px, 0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -267,24 +369,47 @@ try {
     <script>
         function showApproveModal(recipientId, recipientName, recipientEmail) {
             Swal.fire({
-                title: 'Approve Recipient',
+                title: '<h2 style="color: #2196F3;">Approve Recipient</h2>',
                 html: `
-                    <div>
-                        <p><strong>Recipient Name:</strong> ${recipientName}</p>
-                        <p><strong>Email:</strong> ${recipientEmail}</p>
-                        <div style="margin: 20px 0;">
-                            <input type="text" id="odml_id" class="swal2-input" placeholder="Enter ODML ID">
+                    <div class="modal-content">
+                        <div class="recipient-info">
+                            <div class="info-item">
+                                <i class="fas fa-user" style="color: #2196F3;"></i>
+                                <span><strong>Name:</strong> ${recipientName}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-envelope" style="color: #2196F3;"></i>
+                                <span><strong>Email:</strong> ${recipientEmail}</span>
+                            </div>
                         </div>
-                        <p style="font-size: 0.9em; color: #666;">
+                        <div class="input-container">
+                            <label for="odml_id" class="input-label">Enter ODML ID</label>
+                            <input type="text" id="odml_id" class="custom-input" placeholder="ODML ID">
+                        </div>
+                        <p class="notification-text">
+                            <i class="fas fa-bell" style="color: #666;"></i>
                             An email notification will be sent to the recipient upon approval.
                         </p>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: 'Approve & Update',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check"></i> Approve & Update',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                confirmButtonColor: '#4CAF50',
+                cancelButtonColor: '#666',
+                customClass: {
+                    popup: 'custom-modal',
+                    confirmButton: 'custom-confirm-button',
+                    cancelButton: 'custom-cancel-button'
+                },
+                width: '500px',
+                backdrop: 'rgba(0,0,0,0.6)',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
                 preConfirm: () => {
                     const odmlId = document.getElementById('odml_id').value;
                     if (!odmlId) {
@@ -302,23 +427,43 @@ try {
 
         function showRejectModal(recipientId, recipientName) {
             Swal.fire({
-                title: 'Reject Recipient',
+                title: '<h2 style="color: #dc3545;">Reject Recipient</h2>',
                 html: `
-                    <div>
-                        <p><strong>Recipient Name:</strong> ${recipientName}</p>
-                        <div style="margin: 20px 0;">
-                            <textarea id="rejection_reason" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
+                    <div class="modal-content">
+                        <div class="recipient-info">
+                            <div class="info-item">
+                                <i class="fas fa-user" style="color: #dc3545;"></i>
+                                <span><strong>Name:</strong> ${recipientName}</span>
+                            </div>
                         </div>
-                        <p style="font-size: 0.9em; color: #666;">
+                        <div class="input-container">
+                            <label for="rejection_reason" class="input-label">Reason for Rejection</label>
+                            <textarea id="rejection_reason" class="custom-textarea" placeholder="Enter detailed reason for rejection"></textarea>
+                        </div>
+                        <p class="notification-text">
+                            <i class="fas fa-bell" style="color: #666;"></i>
                             An email notification with the rejection reason will be sent to the recipient.
                         </p>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: 'Reject',
-                cancelButtonText: 'Cancel',
+                confirmButtonText: '<i class="fas fa-times"></i> Reject',
+                cancelButtonText: '<i class="fas fa-arrow-left"></i> Cancel',
                 confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
+                cancelButtonColor: '#666',
+                customClass: {
+                    popup: 'custom-modal',
+                    confirmButton: 'custom-confirm-button',
+                    cancelButton: 'custom-cancel-button'
+                },
+                width: '500px',
+                backdrop: 'rgba(0,0,0,0.6)',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
                 preConfirm: () => {
                     const reason = document.getElementById('rejection_reason').value;
                     if (!reason) {
