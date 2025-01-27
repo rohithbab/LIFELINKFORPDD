@@ -19,7 +19,7 @@ if (!$hospital_id) {
 
 // Get hospital details
 try {
-    $stmt = $conn->prepare("SELECT * FROM hospitals WHERE hospital_id = ? AND status = 'pending'");
+    $stmt = $conn->prepare("SELECT * FROM hospitals WHERE hospital_id = ? AND status = 'Pending'");
     $stmt->execute([$hospital_id]);
     $hospital = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -33,6 +33,7 @@ try {
     exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,13 +43,20 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/styles.css">
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
+        .main-content {
+            margin-left: 0 !important;
+            padding: 20px;
+        }
+        
         .details-container {
             background: white;
             border-radius: 10px;
             padding: 30px;
-            margin: 20px;
+            margin: 0 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1200px;
         }
 
         .details-header {
@@ -149,26 +157,45 @@ try {
         .view-license i {
             font-size: 14px;
         }
+        
+        .swal2-popup {
+            padding: 2em;
+        }
+        .info-section {
+            margin-bottom: 1.5em;
+            text-align: center;
+        }
+        .icon-container {
+            margin-bottom: 1em;
+        }
+        .icon-container i {
+            font-size: 2em;
+            color: #3498db;
+        }
+        .modal-message {
+            margin-bottom: 1em;
+        }
+        .odml-input-container {
+            margin: 1.5em 0;
+        }
+        .odml-input-container label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        .confirmation-text, .status-update-text {
+            margin: 1em 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .confirmation-text i, .status-update-text i {
+            margin-right: 0.5em;
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><span class="logo-gradient">LifeLink</span> Admin</h2>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="admin_dashboard.php" class="nav-link">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <!-- Other sidebar items -->
-            </ul>
-        </div>
-
         <!-- Main Content -->
         <div class="main-content">
             <div class="details-container">
@@ -211,10 +238,18 @@ try {
                     <a href="admin_dashboard.php" class="back-btn">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
-                    <button class="approve-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'approved')">
+                    <button class="approve-btn" 
+                            data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
+                            data-name="<?php echo htmlspecialchars($hospital['name']); ?>"
+                            data-email="<?php echo htmlspecialchars($hospital['email']); ?>"
+                            onclick="showODMLUpdateModal('hospital', '<?php echo $hospital['hospital_id']; ?>', '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
                         <i class="fas fa-check"></i> Approve
                     </button>
-                    <button class="reject-btn" onclick="updateHospitalStatus(<?php echo $hospital['hospital_id']; ?>, 'rejected')">
+                    <button class="reject-btn" 
+                            data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
+                            data-name="<?php echo htmlspecialchars($hospital['name']); ?>"
+                            data-email="<?php echo htmlspecialchars($hospital['email']); ?>"
+                            onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Rejected')">
                         <i class="fas fa-times"></i> Reject
                     </button>
                 </div>
@@ -222,34 +257,65 @@ try {
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="js/admin_rejection.js"></script>
+    <script src="../../assets/js/odml-update.js"></script>
     <script>
-        function updateHospitalStatus(hospitalId, status) {
-            if (confirm(`Are you sure you want to ${status} this hospital?`)) {
-                fetch('../../backend/php/update_hospital_status.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        hospital_id: hospitalId,
-                        status: status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`Hospital ${status} successfully`);
-                        window.location.href = 'admin_dashboard.php';
-                    } else {
-                        alert('Failed to update hospital status: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error updating hospital status');
+    function showODMLUpdateModal(type, id, name, email) {
+        Swal.fire({
+            title: 'Update ODML ID',
+            html: `
+                <div class="info-section">
+                    <div class="icon-container">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <p class="modal-message">
+                        You are about to update the ODML ID for:<br>
+                        <strong>${name}</strong>
+                    </p>
+                </div>
+                <div class="odml-input-container">
+                    <label for="odmlId">Enter ODML ID:</label>
+                    <input type="text" id="odmlId" class="swal2-input" placeholder="Enter ODML ID" required>
+                </div>
+                <div class="confirmation-text">
+                    <i class="fas fa-envelope"></i>
+                    An email notification will be sent to <strong>${email}</strong> with the ODML ID details.
+                </div>
+                <div class="status-update-text">
+                    <i class="fas fa-check-circle"></i>
+                    This action will approve the ${type}'s registration.
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Approve & Update',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#dc3545',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                const odmlId = document.getElementById('odmlId').value;
+                if (!odmlId) {
+                    Swal.showValidationMessage('Please enter ODML ID');
+                    return false;
+                }
+                return updateODML(id, type, odmlId);
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'ODML ID updated successfully',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = 'admin_dashboard.php';
                 });
             }
-        }
+        });
+    }
     </script>
 </body>
 </html>
