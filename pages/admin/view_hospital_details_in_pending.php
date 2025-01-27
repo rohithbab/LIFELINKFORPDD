@@ -45,18 +45,22 @@ try {
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
+        /* Center the main content */
         .main-content {
             margin-left: 0 !important;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
         
         .details-container {
             background: white;
             border-radius: 10px;
             padding: 30px;
-            margin: 0 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .details-header {
