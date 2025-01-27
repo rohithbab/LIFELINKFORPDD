@@ -109,6 +109,7 @@ $notifications = getAdminNotifications($conn, 50);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             border-left: 4px solid transparent;
+            position: relative;
         }
 
         .notification-card:hover {
@@ -119,6 +120,47 @@ $notifications = getAdminNotifications($conn, 50);
         .notification-card.unread {
             background-color: #e3f2fd;
             border-left-color: #2196F3;
+        }
+
+        .notification-actions {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .delete-btn {
+            color: #dc3545;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .notification-card:not(.unread):hover .delete-btn {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .delete-btn:hover {
+            background-color: #ffebee;
+            transform: scale(1.1);
+        }
+
+        .delete-btn i {
+            font-size: 1.2rem;
         }
 
         .notification-time {
@@ -204,23 +246,27 @@ $notifications = getAdminNotifications($conn, 50);
             <?php else: ?>
                 <?php foreach ($notifications as $notification): ?>
                     <div class="notification-card <?php echo !$notification['is_read'] ? 'unread' : ''; ?>" 
-                         data-status="<?php echo !$notification['is_read'] ? 'unread' : 'read'; ?>"
-                         data-id="<?php echo $notification['notification_id']; ?>">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="notification-type type-<?php echo $notification['type']; ?>">
-                                    <?php echo ucfirst($notification['type']); ?>
-                                </span>
-                                <div class="notification-content">
-                                    <?php echo $notification['message']; ?>
-                                    <div class="notification-time">
-                                        <?php echo $notification['formatted_time']; ?>
-                                    </div>
-                                </div>
+                         data-id="<?php echo $notification['notification_id']; ?>" 
+                         data-type="<?php echo !$notification['is_read'] ? 'unread' : 'read'; ?>">
+                        <div class="notification-content">
+                            <span class="notification-type type-<?php echo strtolower($notification['type']); ?>">
+                                <?php echo ucfirst($notification['type']); ?>
+                            </span>
+                            <div class="message">
+                                <?php echo $notification['message']; ?>
                             </div>
+                            <div class="notification-time">
+                                <?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
                             <?php if (!$notification['is_read']): ?>
                                 <button class="mark-read-mini-btn" onclick="markAsRead('<?php echo $notification['notification_id']; ?>')">
                                     <i class="fas fa-check"></i>
+                                </button>
+                            <?php else: ?>
+                                <button class="delete-btn" onclick="deleteNotification('<?php echo $notification['notification_id']; ?>')">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             <?php endif; ?>
                         </div>
@@ -230,44 +276,81 @@ $notifications = getAdminNotifications($conn, 50);
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function filterNotifications(filter) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+        function filterNotifications(type) {
+            $('.filter-btn').removeClass('active');
+            $(`.filter-btn:contains('${type[0].toUpperCase() + type.slice(1)}')`).addClass('active');
+            
+            if (type === 'all') {
+                $('.notification-card').show();
+            } else {
+                $('.notification-card').hide();
+                $(`.notification-card[data-type="${type}"]`).show();
+            }
+        }
 
-            const cards = document.querySelectorAll('.notification-card');
-            cards.forEach(card => {
-                if (filter === 'all' || card.dataset.status === filter) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
+        function markAsRead(id) {
+            $.ajax({
+                url: '../../backend/php/mark_notification_read.php',
+                method: 'POST',
+                data: { notification_id: id },
+                success: function(response) {
+                    try {
+                        const result = JSON.parse(response);
+                        if (result.success) {
+                            const card = $(`.notification-card[data-id="${id}"]`);
+                            card.removeClass('unread');
+                            card.attr('data-type', 'read');
+                            card.find('.mark-read-mini-btn').replaceWith(`
+                                <button class="delete-btn" onclick="deleteNotification('${id}')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            `);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
                 }
             });
         }
 
-        function markAsRead(notificationId) {
-            fetch('../../backend/php/get_notifications.php?action=mark_read', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'notification_id=' + notificationId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
-                    if (card) {
-                        card.classList.remove('unread');
-                        card.dataset.status = 'read';
-                        const button = card.querySelector('.mark-read-mini-btn');
-                        if (button) button.remove();
+        function deleteNotification(id) {
+            if (confirm('Are you sure you want to delete this notification?')) {
+                $.ajax({
+                    url: '../../backend/php/delete_notification.php',
+                    method: 'POST',
+                    data: { notification_id: id },
+                    success: function(response) {
+                        try {
+                            const result = JSON.parse(response);
+                            if (result.success) {
+                                const card = $(`.notification-card[data-id="${id}"]`);
+                                card.fadeOut(300, function() {
+                                    $(this).remove();
+                                    if ($('.notification-card').length === 0) {
+                                        $('#notifications-list').html(`
+                                            <div class="empty-notifications">
+                                                <i class="fas fa-bell" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                                <p>No notifications yet</p>
+                                            </div>
+                                        `);
+                                    }
+                                });
+                            } else {
+                                alert(result.message || 'Failed to delete notification');
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            alert('An error occurred while deleting the notification');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Ajax error:', xhr);
+                        alert('Failed to connect to the server');
                     }
-                }
-            })
-            .catch(error => console.error('Error:', error));
+                });
+            }
         }
     </script>
 </body>
