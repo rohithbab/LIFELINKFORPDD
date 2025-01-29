@@ -80,7 +80,7 @@ function getPendingHospitals($conn) {
                 created_at,
                 updated_at
             FROM hospitals 
-            WHERE status = 'Pending'
+            WHERE status = 'pending'
             ORDER BY created_at DESC
         ");
         $stmt->execute();
