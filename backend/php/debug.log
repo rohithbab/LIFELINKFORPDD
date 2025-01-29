@@ -15316,3 +15316,109 @@ Data: []
 )
 
 2025-01-23 06:56:17: Displaying success page for hospital: ramg hospitals
+2025-01-29 04:09:03: Registration process started
+2025-01-29 04:09:03: POST data: Array
+(
+    [hospital_name] => rohith hospitals
+    [hospital_email] => rohithbabu2244@gmail.com
+    [hospital_phone] => 9150272440
+    [street] => no.40 unkown nagar
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => RohithBabu M E
+    [designation] => dean
+    [contact_phone] => 4324253890
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0002
+    [username] => rohith
+    [password] => #Rohith2244
+    [confirm_password] => #Rohith2244
+    [terms] => on
+)
+
+2025-01-29 04:09:03: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php1655.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-29 04:09:03: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-29 04:09:03: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-29 04:09:03: Success page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-29 04:09:03: Registration page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-29 04:09:03: Manage hospitals page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/manage_hospitals.php
+2025-01-29 04:09:03: Database connection successful
+2025-01-29 04:09:03: Error: This email address is already registered. Please use a different email.
+2025-01-29 04:09:03: Session error set: Array
+(
+    [error] => This email address is already registered. Please use a different email.
+)
+
+2025-01-29 04:10:26: Registration process started
+2025-01-29 04:10:26: POST data: Array
+(
+    [hospital_name] => rohith hospitals
+    [hospital_email] => myusenot1@gmail.com
+    [hospital_phone] => 9150272440
+    [street] => no.40 unkown nagar
+    [city] => chennai
+    [state] => India
+    [postal_code] => 600081
+    [country] => India
+    [specializations] => Array
+        (
+            [0] => organ_transplant
+        )
+
+    [contact_name] => RohithBabu M E
+    [designation] => dean
+    [contact_phone] => 4324253890
+    [contact_email] => gkraj4136@gmail.com
+    [license_number] => Li0002
+    [username] => rohith
+    [password] => #Rohith2244
+    [confirm_password] => #Rohith2244
+    [terms] => on
+)
+
+2025-01-29 04:10:26: FILES data: Array
+(
+    [license_document] => Array
+        (
+            [name] => hospital license.png
+            [full_path] => hospital license.png
+            [type] => image/png
+            [tmp_name] => C:\xampp\tmp\php5BE6.tmp
+            [error] => 0
+            [size] => 100405
+        )
+
+)
+
+2025-01-29 04:10:26: Base path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD
+2025-01-29 04:10:26: Upload directory path: C:\xampp\htdocs\LIFELINKFORPDD-main\LIFELINKFORPDD/uploads/hospitals/license_file/
+2025-01-29 04:10:26: Success page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration_success.php
+2025-01-29 04:10:26: Registration page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/pages/hospital_registration.php
+2025-01-29 04:10:26: Manage hospitals page URL: /LIFELINKFORPDD-main/LIFELINKFORPDD/manage_hospitals.php
+2025-01-29 04:10:26: Database connection successful
+2025-01-29 04:10:38: Error: This email address is already registered. Please use a different email.
+2025-01-29 04:10:38: Session error set: Array
+(
+    [error] => This email address is already registered. Please use a different email.
+)
+

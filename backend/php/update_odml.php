@@ -1,7 +1,10 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
+
 require_once 'connection.php';
-require_once 'helpers/email_sender.php';
+require_once __DIR__ . '/helpers/email_sender.php';
 
 try {
     // Get JSON input
@@ -15,45 +18,42 @@ try {
     $id = $input['id'];
     $odmlId = trim($input['odmlId']);
 
-    // Validate ODML ID format (you can adjust this based on your requirements)
-    if (!preg_match('/^[A-Za-z0-9-]+$/', $odmlId)) {
-        throw new Exception('Invalid ODML ID format');
+    // Only check if ODML ID is not empty
+    if (empty($odmlId)) {
+        throw new Exception('ODML ID cannot be empty');
     }
 
-    // Start transaction
-    $conn->beginTransaction();
+    $pdo = getConnection();
+    $emailSender = new EmailSender();
 
-    // Update ODML ID and status based on type
-    switch ($type) {
-        case 'hospital':
-            $sql = "UPDATE hospitals SET odml_id = ?, status = 'approved', approved_at = NOW() WHERE id = ?";
-            $table = "hospitals";
-            $email_template = "hospital_approval.php";
-            break;
-            
+    // Update ODML ID based on type
+    switch($type) {
         case 'donor':
-            $sql = "UPDATE donors SET odml_id = ?, status = 'approved', approved_at = NOW() WHERE id = ?";
-            $table = "donors";
-            $email_template = "donor_approval.php";
+            $table = 'donor';
+            $idColumn = 'donor_id';
             break;
-            
         case 'recipient':
-            $sql = "UPDATE recipients SET odml_id = ?, status = 'approved', approved_at = NOW() WHERE id = ?";
-            $table = "recipients";
-            $email_template = "recipient_approval.php";
+            $table = 'recipient_registration';
+            $idColumn = 'id';  
             break;
-            
+        case 'hospital':
+            $table = 'hospitals';
+            $idColumn = 'hospital_id';
+            break;
         default:
-            throw new Exception('Invalid type');
+            throw new Exception('Invalid type specified');
     }
 
-    // Execute update
-    $stmt = $conn->prepare($sql);
+    // Update the record
+    $stmt = $pdo->prepare("UPDATE $table SET odml_id = ?, status = 'approved' WHERE $idColumn = ?");
     $stmt->execute([$odmlId, $id]);
 
-    // Get email and name for notification
-    $select_sql = "SELECT name, email FROM $table WHERE id = ?";
-    $stmt = $conn->prepare($select_sql);
+    if ($stmt->rowCount() === 0) {
+        throw new Exception('No record found to update');
+    }
+
+    // Get user details for email
+    $stmt = $pdo->prepare("SELECT name, email FROM $table WHERE $idColumn = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -62,44 +62,15 @@ try {
     }
 
     // Send email notification
-    $emailData = [
-        'name' => $user['name'],
-        'odml_id' => $odmlId,
-        'type' => $type
-    ];
-    
-    sendEmail(
-        $user['email'],
-        "Your $type registration has been approved",
-        $email_template,
-        $emailData
-    );
-
-    // Create notification
-    $notification_sql = "INSERT INTO notifications (type, user_type, user_id, message, status) 
-                        VALUES (?, ?, ?, ?, 'unread')";
-    $stmt = $conn->prepare($notification_sql);
-    $stmt->execute([
-        'registration_approved',
-        $type,
-        $id,
-        "Your registration has been approved. Your ODML ID is: $odmlId"
-    ]);
-
-    // Commit transaction
-    $conn->commit();
+    $emailSender->sendODMLUpdateEmail($user['email'], $user['name'], $type, $odmlId);
 
     echo json_encode([
         'success' => true,
-        'message' => "ODML ID updated and notification sent successfully"
+        'message' => 'ODML ID updated successfully and notification email sent'
     ]);
 
 } catch (Exception $e) {
-    // Rollback transaction if active
-    if (isset($conn) && $conn->inTransaction()) {
-        $conn->rollback();
-    }
-
+    http_response_code(400);
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage()
