@@ -153,6 +153,26 @@ class Mailer {
         }
     }
 
+    public function sendODMLUpdateEmail($email, $name, $type, $odmlId) {
+        try {
+            $mail = $this->createMailer();
+            $mail->addAddress($email);
+            $mail->Subject = ucfirst($type) . ' Registration Approved - ODML ID Assigned';
+            
+            // Load the approval email template
+            $template = file_get_contents(__DIR__ . '/../email_templates/approval.html');
+            
+            // Replace placeholders in the template
+            $template = str_replace(['{{name}}', '{{odmlId}}'], [$name, $odmlId], $template);
+            
+            $mail->Body = $template;
+            return $mail->send();
+        } catch (Exception $e) {
+            error_log("Error sending ODML update email: " . $e->getMessage());
+            throw new Exception("Failed to send ODML update email: " . $e->getMessage());
+        }
+    }
+
     private function getTemplatePath($template) {
         return __DIR__ . '/../../../email_templates/' . $template . '.html';
     }
