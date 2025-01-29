@@ -6,6 +6,8 @@ header('Content-Type: application/json');
 require_once 'connection.php';
 require_once __DIR__ . '/helpers/email_sender.php';
 
+use LifeLink\Helpers\EmailSender;
+
 try {
     // Get JSON input
     $input = json_decode(file_get_contents('php://input'), true);
@@ -61,14 +63,33 @@ try {
         throw new Exception('User not found');
     }
 
-    // Send email notification
-    $emailSender->sendODMLUpdateEmail($user['email'], $user['name'], $type, $odmlId);
+    // Prepare email data
+    $emailData = [[
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'type' => $type,
+        'odmlId' => $odmlId
+    ]];
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'ODML ID updated successfully and notification email sent'
-    ]);
+    // Send email notification asynchronously
+    $emailSender->sendMultipleEmails($emailData)
+        ->then(
+            function($results) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'ODML ID updated successfully and notification email sent'
+                ]);
+            },
+            function($error) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Email sending failed: ' . $error->getMessage()
+                ]);
+            }
+        );
 
+    $emailSender->run(); // Start the event loop
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
