@@ -58,7 +58,11 @@ class Mailer {
             $mail->Subject = 'Hospital Registration Approved - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('hospital_approval'));
-            $template = str_replace(['{{hospitalName}}', '{{odmlId}}'], [$hospitalName, $odmlId], $template);
+            $template = str_replace(
+                ['{HOSPITAL_NAME}', '{ODML_ID}'],
+                [$hospitalName, $odmlId],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -75,7 +79,11 @@ class Mailer {
             $mail->Subject = 'Hospital Registration Status - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('hospital_rejection'));
-            $template = str_replace(['{{hospitalName}}', '{{reason}}'], [$hospitalName, $reason], $template);
+            $template = str_replace(
+                ['{HOSPITAL_NAME}', '{REASON}'],
+                [$hospitalName, $reason],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -92,7 +100,11 @@ class Mailer {
             $mail->Subject = 'Donor Registration Approved - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('donor_approval'));
-            $template = str_replace(['{{donorName}}', '{{odmlId}}'], [$donorName, $odmlId], $template);
+            $template = str_replace(
+                ['{DONOR_NAME}', '{ODML_ID}'],
+                [$donorName, $odmlId],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -109,7 +121,11 @@ class Mailer {
             $mail->Subject = 'Donor Registration Status - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('donor_rejection'));
-            $template = str_replace(['{{donorName}}', '{{reason}}'], [$donorName, $reason], $template);
+            $template = str_replace(
+                ['{DONOR_NAME}', '{REASON}'],
+                [$donorName, $reason],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -126,7 +142,12 @@ class Mailer {
             $mail->Subject = 'Recipient Registration Approved - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('recipient_approval'));
-            $template = str_replace(['{{recipientName}}', '{{odmlId}}'], [$recipientName, $odmlId], $template);
+            error_log("Template loaded, replacing: RECIPIENT_NAME=$recipientName, ODML_ID=$odmlId");
+            $template = str_replace(
+                ['{RECIPIENT_NAME}', '{ODML_ID}'],
+                [$recipientName, $odmlId],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -143,7 +164,11 @@ class Mailer {
             $mail->Subject = 'Recipient Registration Status - LifeLink';
             
             $template = file_get_contents($this->getTemplatePath('recipient_rejection'));
-            $template = str_replace(['{{recipientName}}', '{{reason}}'], [$recipientName, $reason], $template);
+            $template = str_replace(
+                ['{RECIPIENT_NAME}', '{REASON}'],
+                [$recipientName, $reason],
+                $template
+            );
             
             $mail->Body = $template;
             return $mail->send();
@@ -174,6 +199,10 @@ class Mailer {
     }
 
     private function getTemplatePath($template) {
-        return __DIR__ . '/../../../email_templates/' . $template . '.html';
+        $path = __DIR__ . '/../../email_templates/' . $template . '.html';
+        if (!file_exists($path)) {
+            throw new Exception("Email template not found: $template");
+        }
+        return $path;
     }
 }
