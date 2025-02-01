@@ -239,87 +239,243 @@ try {
                 </div>
 
                 <div class="actions-container">
+                    <button class="approve-btn" onclick="showApproveModal('<?php echo htmlspecialchars($hospital['hospital_id']); ?>', '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="reject-btn" onclick="showRejectModal('<?php echo htmlspecialchars($hospital['hospital_id']); ?>', '<?php echo htmlspecialchars($hospital['name']); ?>')">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
                     <a href="admin_dashboard.php" class="back-btn">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
-                    <button class="approve-btn" 
-                            data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
-                            data-name="<?php echo htmlspecialchars($hospital['name']); ?>"
-                            data-email="<?php echo htmlspecialchars($hospital['email']); ?>"
-                            onclick="showODMLUpdateModal('hospital', '<?php echo $hospital['hospital_id']; ?>', '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
-                        <i class="fas fa-check"></i> Approve
-                    </button>
-                    <button class="reject-btn" 
-                            data-hospital-id="<?php echo $hospital['hospital_id']; ?>"
-                            data-name="<?php echo htmlspecialchars($hospital['name']); ?>"
-                            data-email="<?php echo htmlspecialchars($hospital['email']); ?>"
-                            onclick="updateHospitalStatus('<?php echo $hospital['hospital_id']; ?>', 'Rejected')">
-                        <i class="fas fa-times"></i> Reject
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-    <script src="js/admin_rejection.js"></script>
-    <script src="../../assets/js/odml-update.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    function showODMLUpdateModal(type, id, name, email) {
-        Swal.fire({
-            title: 'Update ODML ID',
-            html: `
-                <div class="info-section">
-                    <div class="icon-container">
-                        <i class="fas fa-info-circle"></i>
+        function showApproveModal(hospitalId, hospitalName, hospitalEmail) {
+            Swal.fire({
+                title: '<h2 style="color: #2196F3;">Approve Hospital</h2>',
+                html: `
+                    <div class="modal-content">
+                        <div class="hospital-info">
+                            <div class="info-item">
+                                <i class="fas fa-hospital" style="color: #2196F3;"></i>
+                                <span><strong>Name:</strong> ${hospitalName}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-envelope" style="color: #2196F3;"></i>
+                                <span><strong>Email:</strong> ${hospitalEmail}</span>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <label for="odml_id" class="input-label">Enter ODML ID</label>
+                            <input type="text" id="odml_id" class="custom-input" placeholder="Enter ODML ID">
+                        </div>
+                        <p class="notification-text">
+                            <i class="fas fa-bell" style="color: #666;"></i>
+                            An email notification will be sent to the hospital with their ODML ID.
+                        </p>
                     </div>
-                    <p class="modal-message">
-                        You are about to update the ODML ID for:<br>
-                        <strong>${name}</strong>
-                    </p>
-                </div>
-                <div class="odml-input-container">
-                    <label for="odmlId">Enter ODML ID:</label>
-                    <input type="text" id="odmlId" class="swal2-input" placeholder="Enter ODML ID" required>
-                </div>
-                <div class="confirmation-text">
-                    <i class="fas fa-envelope"></i>
-                    An email notification will be sent to <strong>${email}</strong> with the ODML ID details.
-                </div>
-                <div class="status-update-text">
-                    <i class="fas fa-check-circle"></i>
-                    This action will approve the ${type}'s registration.
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Approve & Update',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#dc3545',
-            showLoaderOnConfirm: true,
-            preConfirm: () => {
-                const odmlId = document.getElementById('odmlId').value;
-                if (!odmlId) {
-                    Swal.showValidationMessage('Please enter ODML ID');
-                    return false;
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check"></i> Approve',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                confirmButtonColor: '#2196F3',
+                cancelButtonColor: '#666',
+                customClass: {
+                    popup: 'custom-modal',
+                    confirmButton: 'custom-confirm-button',
+                    cancelButton: 'custom-cancel-button'
+                },
+                width: '500px',
+                backdrop: 'rgba(0,0,0,0.6)',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
+                preConfirm: () => {
+                    const odmlId = document.getElementById('odml_id').value;
+                    if (!odmlId) {
+                        Swal.showValidationMessage('Please enter ODML ID');
+                        return false;
+                    }
+                    return odmlId;
                 }
-                return updateODML(id, type, odmlId);
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'ODML ID updated successfully',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = 'admin_dashboard.php';
-                });
-            }
-        });
-    }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const confirmButton = Swal.getConfirmButton();
+                    if (confirmButton) {
+                        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        confirmButton.disabled = true;
+                    }
+                    updateHospitalWithODML(hospitalId, result.value);
+                }
+            });
+        }
+
+        function updateHospitalWithODML(hospitalId, odmlId) {
+            const data = {
+                hospital_id: hospitalId,
+                odml_id: odmlId,
+                action: 'approve'
+            };
+            
+            $.ajax({
+                url: '../../backend/php/update_hospital_odml.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    try {
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Hospital has been approved successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            console.error('Server returned error:', result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to approve hospital.'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
+        }
+
+        function showRejectModal(hospitalId, hospitalName) {
+            Swal.fire({
+                title: '<h2 style="color: #dc3545;">Reject Hospital</h2>',
+                html: `
+                    <div class="modal-content">
+                        <div class="hospital-info">
+                            <div class="info-item">
+                                <i class="fas fa-hospital" style="color: #dc3545;"></i>
+                                <span><strong>Name:</strong> ${hospitalName}</span>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <label for="rejection_reason" class="input-label">Reason for Rejection</label>
+                            <textarea id="rejection_reason" class="custom-textarea" placeholder="Enter detailed reason for rejection"></textarea>
+                        </div>
+                        <p class="notification-text">
+                            <i class="fas fa-bell" style="color: #666;"></i>
+                            An email notification with the rejection reason will be sent to the hospital.
+                        </p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-times"></i> Reject',
+                cancelButtonText: '<i class="fas fa-arrow-left"></i> Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#666',
+                customClass: {
+                    popup: 'custom-modal',
+                    confirmButton: 'custom-confirm-button',
+                    cancelButton: 'custom-cancel-button'
+                },
+                width: '500px',
+                backdrop: 'rgba(0,0,0,0.6)',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('rejection_reason').value;
+                    if (!reason) {
+                        Swal.showValidationMessage('Please enter rejection reason');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    rejectHospital(hospitalId, result.value);
+                }
+            });
+        }
+
+        function rejectHospital(hospitalId, reason) {
+            $.ajax({
+                url: '../../backend/php/update_hospital_status.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    hospital_id: hospitalId,
+                    status: 'rejected',
+                    reason: reason,
+                    action: 'reject'
+                }),
+                success: function(response) {
+                    try {
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Hospital Rejected',
+                                text: 'The hospital has been rejected and notified.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to reject hospital.'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
+                }
+            });
+        }
     </script>
 </body>
 </html>

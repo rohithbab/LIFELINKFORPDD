@@ -267,15 +267,15 @@ try {
                 <div class="details-header">
                     <h2>Donor Details</h2>
                     <div class="action-buttons">
+                        <button class="approve-btn" onclick="showApproveModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>', '<?php echo htmlspecialchars($donor['email']); ?>')">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="reject-btn" onclick="showRejectModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>')">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
                         <a href="admin_dashboard.php" class="back-btn">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
-                        <button class="action-button approve-button" onclick="showApproveModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>', '<?php echo htmlspecialchars($donor['email']); ?>')">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <button class="action-button reject-button" onclick="showRejectModal('<?php echo htmlspecialchars($donor['donor_id']); ?>', '<?php echo htmlspecialchars($donor['name']); ?>')">
-                            <i class="fas fa-times"></i> Reject
-                        </button>
                     </div>
                 </div>
 
@@ -400,18 +400,18 @@ try {
                         </div>
                         <div class="input-container">
                             <label for="odml_id" class="input-label">Enter ODML ID</label>
-                            <input type="text" id="odml_id" class="custom-input" placeholder="ODML ID">
+                            <input type="text" id="odml_id" class="custom-input" placeholder="Enter ODML ID">
                         </div>
                         <p class="notification-text">
                             <i class="fas fa-bell" style="color: #666;"></i>
-                            An email notification will be sent to the donor upon approval.
+                            An email notification will be sent to the donor with their ODML ID.
                         </p>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-check"></i> Approve & Update',
+                confirmButtonText: '<i class="fas fa-check"></i> Approve',
                 cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                confirmButtonColor: '#4CAF50',
+                confirmButtonColor: '#2196F3',
                 cancelButtonColor: '#666',
                 customClass: {
                     popup: 'custom-modal',
@@ -436,7 +436,65 @@ try {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    const confirmButton = Swal.getConfirmButton();
+                    if (confirmButton) {
+                        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        confirmButton.disabled = true;
+                    }
                     updateDonorWithODML(donorId, result.value);
+                }
+            });
+        }
+
+        function updateDonorWithODML(donorId, odmlId) {
+            const data = {
+                donor_id: donorId,
+                odml_id: odmlId,
+                action: 'approve'
+            };
+            
+            $.ajax({
+                url: '../../backend/php/update_donor_odml.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    try {
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Donor has been approved successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            console.error('Server returned error:', result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to approve donor.'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred.'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to the server.'
+                    });
                 }
             });
         }
@@ -495,70 +553,25 @@ try {
             });
         }
 
-        function updateDonorWithODML(donorId, odmlId) {
-            $.ajax({
-                url: '../../backend/php/update_donor_odml.php',
-                method: 'POST',
-                data: {
-                    donor_id: donorId,
-                    odml_id: odmlId,
-                    action: 'approve'
-                },
-                success: function(response) {
-                    try {
-                        const result = JSON.parse(response);
-                        if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Donor has been approved successfully.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.href = 'admin_dashboard.php';
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Failed to approve donor.'
-                            });
-                        }
-                    } catch (e) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred.'
-                        });
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to connect to the server.'
-                    });
-                }
-            });
-        }
-
         function rejectDonor(donorId, reason) {
             $.ajax({
                 url: '../../backend/php/update_donor_status.php',
                 method: 'POST',
-                data: {
+                contentType: 'application/json',
+                data: JSON.stringify({
                     donor_id: donorId,
                     status: 'rejected',
-                    reason: reason
-                },
+                    reason: reason,
+                    action: 'reject'
+                }),
                 success: function(response) {
                     try {
-                        const result = JSON.parse(response);
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
                         if (result.success) {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Success!',
-                                text: 'Donor has been rejected successfully.',
+                                title: 'Donor Rejected',
+                                text: 'The donor has been rejected and notified.',
                                 showConfirmButton: false,
                                 timer: 1500
                             }).then(() => {
@@ -572,6 +585,7 @@ try {
                             });
                         }
                     } catch (e) {
+                        console.error('Error parsing response:', e);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
