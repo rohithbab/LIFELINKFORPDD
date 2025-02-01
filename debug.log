@@ -641,3 +641,43 @@ Data: Array
 )
 
 --------------------------------------------------------------------------------
+[2025-02-01 05:13:41] Attempting to fetch ID proof
+Data: Array
+(
+    [donor_id] => 6
+    [type] => guardian
+)
+
+--------------------------------------------------------------------------------
+[2025-02-01 05:13:41] Querying guardian ID proof
+--------------------------------------------------------------------------------
+[2025-02-01 05:13:41] Database query result
+Data: Array
+(
+    [proof_path] => 6791f78b8f912.png
+)
+
+--------------------------------------------------------------------------------
+[2025-02-01 05:13:41] Constructed file path
+Data: Array
+(
+    [base_path] => C:\xampp\htdocs\LIFELINKFORPDD\pages\admin/../../uploads/
+    [full_path] => C:\xampp\htdocs\LIFELINKFORPDD\pages\admin/../../uploads/donors/guardian_id_proof_path/6791f78b8f912.png
+    [file_exists] => 1
+)
+
+--------------------------------------------------------------------------------
+[2025-02-01 05:13:41] File extension
+Data: Array
+(
+    [extension] => png
+)
+
+--------------------------------------------------------------------------------
+[2025-02-01 05:13:41] Attempting to output file
+Data: Array
+(
+    [path] => C:\xampp\htdocs\LIFELINKFORPDD\pages\admin/../../uploads/donors/guardian_id_proof_path/6791f78b8f912.png
+)
+
+--------------------------------------------------------------------------------

@@ -128,11 +128,10 @@ function getPendingRecipients($conn) {
                 id,
                 full_name as name,
                 email,
-                blood_type as blood_type,
+                blood_type,
                 organ_required as needed_organ,
                 urgency_level as urgency,
-                DATE_FORMAT(CURRENT_TIMESTAMP, '%Y-%m-%d') as registration_date,
-                request_status as status
+                request_status
             FROM 
                 recipient_registration 
             WHERE 
@@ -151,6 +150,35 @@ function getPendingRecipients($conn) {
         return $result;
     } catch (PDOException $e) {
         error_log("Error getting pending recipients: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Get urgent recipients with details
+function getUrgentRecipients($conn) {
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                full_name as name,
+                email,
+                blood_type,
+                organ_required,
+                urgency_level,
+                request_status,
+                ODML_ID as odml_id
+            FROM 
+                recipient_registration
+            WHERE 
+                urgency_level = 'High'
+                AND request_status = 'accepted'
+            ORDER BY 
+                id DESC
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting urgent recipients: " . $e->getMessage());
         return [];
     }
 }
@@ -195,35 +223,6 @@ function getDonors($conn, $filters = []) {
     $stmt = $conn->prepare($query);
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Get urgent recipients with details
-function getUrgentRecipients($conn) {
-    try {
-        $stmt = $conn->prepare("
-            SELECT 
-                r.*,
-                COALESCE(om.match_count, 0) as potential_matches
-            FROM 
-                recipient_registration r
-                LEFT JOIN (
-                    SELECT recipient_id, COUNT(*) as match_count 
-                    FROM organ_matches 
-                    WHERE status = 'Pending'
-                    GROUP BY recipient_id
-                ) om ON r.id = om.recipient_id
-            WHERE 
-                r.urgency_level = 'High'
-                AND r.request_status = 'active'
-            ORDER BY 
-                r.registration_date DESC
-        ");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error getting urgent recipients: " . $e->getMessage());
-        return [];
-    }
 }
 
 // Match donors with recipients
@@ -327,31 +326,8 @@ function updateDonorStatus($conn, $donor_id, $status) {
 // Update recipient status
 function updateRecipientStatus($conn, $recipient_id, $status) {
     try {
-        // First get the recipient's email
-        $stmt = $conn->prepare("SELECT email FROM recipient_registration WHERE id = ?");
-        $stmt->execute([$recipient_id]);
-        $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
-        $recipient_email = $recipient ? $recipient['email'] : 'Unknown';
-
-        // Update the status
-        $stmt = $conn->prepare("
-            UPDATE recipient_registration 
-            SET request_status = :status 
-            WHERE id = :recipient_id
-        ");
-        
-        $result = $stmt->execute([
-            ':status' => $status,
-            ':recipient_id' => $recipient_id
-        ]);
-
-        if ($result) {
-            // Add notification with email
-            $message = "Recipient ($recipient_email) registration has been " . $status;
-            addSystemNotification($conn, 'recipient_status', $message);
-            return true;
-        }
-        return false;
+        $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ?, updated_at = NOW() WHERE id = ?");
+        return $stmt->execute([$status, $recipient_id]);
     } catch (PDOException $e) {
         error_log("Error updating recipient status: " . $e->getMessage());
         return false;
@@ -507,7 +483,7 @@ function updateDonorODMLID($conn, $donor_id, $odml_id) {
 // Function to update recipient ODML ID
 function updateRecipientODMLID($conn, $recipient_id, $odml_id) {
     try {
-        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ?, request_status = 'accepted', updated_at = NOW() WHERE id = ?");
         return $stmt->execute([$odml_id, $recipient_id]);
     } catch (PDOException $e) {
         error_log("Error updating recipient ODML ID: " . $e->getMessage());

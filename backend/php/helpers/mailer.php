@@ -159,8 +159,8 @@ class Mailer {
             $mail->addAddress($email);
             $mail->Subject = ucfirst($type) . ' Registration Approved - ODML ID Assigned';
             
-            // Load the approval email template
-            $template = file_get_contents(__DIR__ . '/../email_templates/approval.html');
+            // Load the approval email template using the common template path method
+            $template = file_get_contents($this->getTemplatePath('odml_assignment'));
             
             // Replace placeholders in the template
             $template = str_replace(['{{name}}', '{{odmlId}}'], [$name, $odmlId], $template);

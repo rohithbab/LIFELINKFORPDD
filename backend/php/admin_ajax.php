@@ -86,14 +86,13 @@ switch ($action) {
         break;
 
     case 'update_recipient_status':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['recipient_id']) && isset($_POST['status'])) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['recipient_id']) && isset($_POST['request_status'])) {
             $recipient_id = $_POST['recipient_id'];
-            $status = $_POST['status'];
-            $result = updateRecipientStatus($conn, $recipient_id, $status);
-            echo json_encode(['success' => $result]);
+            $request_status = $_POST['request_status'];
+            $result = updateRecipientStatus($conn, $recipient_id, $request_status);
+            echo json_encode($result);
         } else {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid request']);
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
         }
         break;
 

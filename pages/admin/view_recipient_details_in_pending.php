@@ -384,18 +384,18 @@ try {
                         </div>
                         <div class="input-container">
                             <label for="odml_id" class="input-label">Enter ODML ID</label>
-                            <input type="text" id="odml_id" class="custom-input" placeholder="ODML ID">
+                            <input type="text" id="odml_id" class="custom-input" placeholder="Enter ODML ID">
                         </div>
                         <p class="notification-text">
                             <i class="fas fa-bell" style="color: #666;"></i>
-                            An email notification will be sent to the recipient upon approval.
+                            An email notification will be sent to the recipient with their ODML ID.
                         </p>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-check"></i> Approve & Update',
+                confirmButtonText: '<i class="fas fa-check"></i> Approve',
                 cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                confirmButtonColor: '#4CAF50',
+                confirmButtonColor: '#2196F3',
                 cancelButtonColor: '#666',
                 customClass: {
                     popup: 'custom-modal',
@@ -420,7 +420,93 @@ try {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    const confirmButton = Swal.getConfirmButton();
+                    if (confirmButton) {
+                        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        confirmButton.disabled = true;
+                    }
                     updateRecipientWithODML(recipientId, result.value);
+                }
+            });
+        }
+
+        function updateRecipientWithODML(recipientId, odmlId) {
+            const data = {
+                recipient_id: recipientId,
+                odml_id: odmlId,
+                action: 'approve'
+            };
+            
+            console.log('Sending request to update recipient:', {
+                url: '../../backend/php/update_recipient_odml.php',
+                method: 'POST',
+                data: data
+            });
+            
+            $.ajax({
+                url: '../../backend/php/update_recipient_odml.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    console.log('Server response:', response);
+                    try {
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Recipient has been approved successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'admin_dashboard.php';
+                            });
+                        } else {
+                            console.error('Server returned error:', result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Failed to approve recipient.'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e, 'Raw response:', response);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Check console for details.'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        responseText: xhr.responseText
+                    });
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Failed to connect to the server.'
+                        });
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to connect to the server.'
+                        });
+                    }
+                },
+                complete: function() {
+                    // Reset button state in case the modal is still open
+                    const confirmButton = Swal.getConfirmButton();
+                    if (confirmButton) {
+                        confirmButton.innerHTML = '<i class="fas fa-check"></i> Approve';
+                        confirmButton.disabled = false;
+                    }
                 }
             });
         }
@@ -479,65 +565,19 @@ try {
             });
         }
 
-        function updateRecipientWithODML(recipientId, odmlId) {
-            $.ajax({
-                url: '../../backend/php/update_recipient_odml.php',
-                method: 'POST',
-                data: {
-                    recipient_id: recipientId,
-                    odml_id: odmlId,
-                    action: 'approve'
-                },
-                success: function(response) {
-                    try {
-                        const result = JSON.parse(response);
-                        if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Recipient has been approved successfully.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.href = 'admin_dashboard.php';
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Failed to approve recipient.'
-                            });
-                        }
-                    } catch (e) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred.'
-                        });
-                    }
-                },
-                error: function() {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to connect to the server.'
-                    });
-                }
-            });
-        }
-
         function rejectRecipient(recipientId, reason) {
             $.ajax({
                 url: '../../backend/php/update_recipient_status.php',
                 method: 'POST',
-                data: {
+                contentType: 'application/json',
+                data: JSON.stringify({
                     recipient_id: recipientId,
-                    status: 'rejected',
+                    request_status: 'rejected',
                     reason: reason
-                },
+                }),
                 success: function(response) {
                     try {
-                        const result = JSON.parse(response);
+                        const result = typeof response === 'string' ? JSON.parse(response) : response;
                         if (result.success) {
                             Swal.fire({
                                 icon: 'success',
@@ -556,6 +596,7 @@ try {
                             });
                         }
                     } catch (e) {
+                        console.error('Error parsing response:', e);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
@@ -563,7 +604,8 @@ try {
                         });
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',

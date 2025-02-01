@@ -1,5 +1,7 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'connection.php';
 require_once 'helpers/mailer.php';
 
@@ -15,7 +17,9 @@ if (!isset($_SESSION['admin_id'])) {
 // Get POST data
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
 if ($contentType === 'application/json') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $content = file_get_contents('php://input');
+    error_log("Received data: " . $content);
+    $data = json_decode($content, true);
 } else {
     $data = $_POST;
 }
@@ -23,7 +27,11 @@ if ($contentType === 'application/json') {
 // Validate required fields
 if (!isset($data['recipient_id']) || !isset($data['odml_id']) || !isset($data['action'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+    $missing = [];
+    if (!isset($data['recipient_id'])) $missing[] = 'recipient_id';
+    if (!isset($data['odml_id'])) $missing[] = 'odml_id';
+    if (!isset($data['action'])) $missing[] = 'action';
+    echo json_encode(['success' => false, 'message' => 'Missing required fields: ' . implode(', ', $missing)]);
     exit();
 }
 
@@ -35,13 +43,17 @@ try {
     $odml_id = $data['odml_id'];
     $action = $data['action'];
     
+    error_log("Updating recipient: ID=$recipient_id, ODML=$odml_id, Action=$action");
+    
     // Update recipient ODML ID and status if approving
     if ($action === 'approve') {
-        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ?, request_status = 'approved', updated_at = NOW() WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ?, request_status = 'accepted' WHERE id = ?");
         $stmt->execute([$odml_id, $recipient_id]);
+        error_log("Rows affected: " . $stmt->rowCount());
     } else {
-        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ?, updated_at = NOW() WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE recipient_registration SET odml_id = ? WHERE id = ?");
         $stmt->execute([$odml_id, $recipient_id]);
+        error_log("Rows affected: " . $stmt->rowCount());
     }
     
     // Get recipient details
@@ -53,13 +65,12 @@ try {
         throw new Exception('Recipient not found');
     }
     
-    // Send ODML ID assignment email
+    // Send approval email with ODML ID
     $mailer = new Mailer();
-    $mailer->sendODMLAssignment(
+    $mailer->sendRecipientApproval(
         $recipient['email'],
         $recipient['name'],
-        $odml_id,
-        'recipient'
+        $odml_id
     );
     
     // Commit transaction
@@ -75,6 +86,5 @@ try {
     
     error_log("Error updating recipient ODML ID: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Failed to update ODML ID']);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>

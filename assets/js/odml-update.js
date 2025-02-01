@@ -230,57 +230,70 @@ function closeODMLModal() {
 
 // Function to update ODML ID
 function updateODMLId(type, id) {
-    const odmlId = document.getElementById('odmlId').value.trim();
-    
+    const odmlId = document.getElementById('odmlId').value;
     if (!odmlId) {
-        alert('Please enter an ODML ID');
+        showError('Please enter an ODML ID');
         return;
     }
 
-    // Show loading state
     const approveBtn = document.querySelector('.approve-btn');
     const originalBtnHtml = approveBtn.innerHTML;
     approveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     approveBtn.disabled = true;
 
+    console.log('Updating ODML ID:', { type, id, odmlId });
+
     // Make API call to update ODML ID
-    fetch(`/LIFELINKFORPDD-main/LIFELINKFORPDD/backend/php/update_odml.php`, {
+    let endpoint = '../../backend/php/update_recipient_odml.php';
+    const data = {
+        recipient_id: id,
+        odml_id: odmlId,
+        action: 'approve'
+    };
+
+    if (type !== 'recipient') {
+        endpoint = '../../backend/php/update_odml.php';
+        data = {
+            type: type,
+            id: id,
+            odmlId: odmlId
+        };
+    }
+
+    console.log('Sending request to:', endpoint, 'with data:', data);
+
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            type: type,
-            id: id,
-            odmlId: odmlId
-        })
+        body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('Server response:', data);
         if (data.success) {
             // Show success message
             Swal.fire({
                 icon: 'success',
                 title: 'Success!',
-                text: `ODML ID updated successfully. An email has been sent to the ${type}.`,
+                text: 'ODML ID updated successfully.',
                 showConfirmButton: false,
-                timer: 2000
+                timer: 1500
             }).then(() => {
-                // Refresh the page or update the table
-                location.reload();
+                // Reload the page or update UI
+                window.location.reload();
             });
         } else {
             throw new Error(data.message || 'Failed to update ODML ID');
         }
     })
     .catch(error => {
-        // Show error message
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.message
-        });
-        // Reset button state
+        console.error('Error:', error);
+        showError(error.message || 'An error occurred while updating ODML ID');
         approveBtn.innerHTML = originalBtnHtml;
         approveBtn.disabled = false;
     });

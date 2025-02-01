@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS organ_matches (
     completion_date TIMESTAMP NULL,
     notes TEXT,
     FOREIGN KEY (donor_id) REFERENCES donors(id),
-    FOREIGN KEY (recipient_id) REFERENCES recipients(id),
+    FOREIGN KEY (recipient_id) REFERENCES recipient_registration(id),
     FOREIGN KEY (hospital_id) REFERENCES hospitals(id),
     FOREIGN KEY (matched_by_admin) REFERENCES admins(id)
 );

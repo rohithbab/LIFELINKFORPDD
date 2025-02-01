@@ -21,15 +21,15 @@ if ($contentType === 'application/json') {
 }
 
 // Validate required fields
-if (!isset($data['recipient_id']) || !isset($data['status'])) {
+if (!isset($data['recipient_id']) || !isset($data['request_status'])) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit();
 }
 
 // Validate status
-$allowed_statuses = ['pending', 'approved', 'rejected'];
-if (!in_array(strtolower($data['status']), $allowed_statuses)) {
+$allowed_statuses = ['pending', 'accepted', 'rejected'];
+if (!in_array(strtolower($data['request_status']), $allowed_statuses)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid status']);
     exit();
@@ -49,17 +49,17 @@ try {
     }
 
     // Update recipient status
-    if ($data['status'] === 'rejected' && isset($data['reason'])) {
+    if ($data['request_status'] === 'rejected' && isset($data['reason'])) {
         $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ?, rejection_reason = ?, updated_at = NOW() WHERE id = ?");
-        $stmt->execute([$data['status'], $data['reason'], $data['recipient_id']]);
+        $stmt->execute([$data['request_status'], $data['reason'], $data['recipient_id']]);
     } else {
         $stmt = $conn->prepare("UPDATE recipient_registration SET request_status = ?, updated_at = NOW() WHERE id = ?");
-        $stmt->execute([$data['status'], $data['recipient_id']]);
+        $stmt->execute([$data['request_status'], $data['recipient_id']]);
     }
 
     // Send email notification
     $mailer = new Mailer();
-    if ($data['status'] === 'rejected') {
+    if ($data['request_status'] === 'rejected') {
         $mailer->sendRejectionNotification(
             $recipient['email'],
             $recipient['name'],

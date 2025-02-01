@@ -59,7 +59,7 @@ try {
     
     // Update recipient status
     $stmt = $conn->prepare("
-        UPDATE recipients
+        UPDATE recipient_registration
         SET status = 'matched',
             matched_at = NOW()
         WHERE id = :id
@@ -70,15 +70,14 @@ try {
     $stmt = $conn->prepare("
         SELECT 
             d.name as donor_name,
-            d.hospital_id as donor_hospital,
-            r.name as recipient_name,
-            r.hospital_id as recipient_hospital,
-            dh.email as donor_hospital_email,
-            rh.email as recipient_hospital_email
+            d.email as donor_email,
+            r.full_name as recipient_name,
+            r.email as recipient_email,
+            h.name as hospital_name,
+            h.email as hospital_email
         FROM donors d
-        JOIN hospitals dh ON d.hospital_id = dh.id
-        JOIN recipients r ON r.id = :recipient_id
-        JOIN hospitals rh ON r.hospital_id = rh.id
+        JOIN recipient_registration r ON r.id = :recipient_id
+        JOIN hospitals h ON h.id = d.hospital_id
         WHERE d.id = :donor_id
     ");
     $stmt->execute([
@@ -91,8 +90,8 @@ try {
     $donorNotification = "Donor {$matchDetails['donor_name']} has been matched with recipient {$matchDetails['recipient_name']}";
     $recipientNotification = "Recipient {$matchDetails['recipient_name']} has been matched with donor {$matchDetails['donor_name']}";
     
-    addNotification($conn, 'match_created', $donorNotification, $matchDetails['donor_hospital']);
-    addNotification($conn, 'match_created', $recipientNotification, $matchDetails['recipient_hospital']);
+    addNotification($conn, 'match_created', $donorNotification, $matchDetails['hospital_email']);
+    addNotification($conn, 'match_created', $recipientNotification, $matchDetails['hospital_email']);
     
     // Send email notifications
     require_once "../emails/match-email.php";

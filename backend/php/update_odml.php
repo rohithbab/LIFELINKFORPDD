@@ -33,29 +33,38 @@ try {
         case 'donor':
             $table = 'donor';
             $idColumn = 'donor_id';
+            $nameField = 'name';
+            $statusField = 'status';
+            $statusValue = 'approved';
             break;
         case 'recipient':
             $table = 'recipient_registration';
-            $idColumn = 'id';  
+            $idColumn = 'id';
+            $nameField = 'full_name';
+            $statusField = 'request_status';
+            $statusValue = 'accepted';
             break;
         case 'hospital':
             $table = 'hospitals';
             $idColumn = 'hospital_id';
+            $nameField = 'name';
+            $statusField = 'status';
+            $statusValue = 'approved';
             break;
         default:
             throw new Exception('Invalid type specified');
     }
 
     // Update the record
-    $stmt = $pdo->prepare("UPDATE $table SET odml_id = ?, status = 'approved' WHERE $idColumn = ?");
-    $stmt->execute([$odmlId, $id]);
+    $stmt = $pdo->prepare("UPDATE $table SET odml_id = ?, $statusField = ? WHERE $idColumn = ?");
+    $stmt->execute([$odmlId, $statusValue, $id]);
 
     if ($stmt->rowCount() === 0) {
         throw new Exception('No record found to update');
     }
 
     // Get user details for email
-    $stmt = $pdo->prepare("SELECT name, email FROM $table WHERE $idColumn = ?");
+    $stmt = $pdo->prepare("SELECT $nameField as name, email FROM $table WHERE $idColumn = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -63,33 +72,30 @@ try {
         throw new Exception('User not found');
     }
 
-    // Prepare email data
-    $emailData = [[
+    // Send email notification asynchronously
+    $emailSender->sendMultipleEmails([[
         'email' => $user['email'],
         'name' => $user['name'],
         'type' => $type,
         'odmlId' => $odmlId
-    ]];
-
-    // Send email notification asynchronously
-    $emailSender->sendMultipleEmails($emailData)
-        ->then(
-            function($results) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'ODML ID updated successfully and notification email sent'
-                ]);
-            },
-            function($error) {
-                http_response_code(400);
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Email sending failed: ' . $error->getMessage()
-                ]);
-            }
-        );
+    ]])->then(
+        function($results) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'ODML ID updated successfully and notification email sent'
+            ]);
+        },
+        function($error) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Email sending failed: ' . $error->getMessage()
+            ]);
+        }
+    );
 
     $emailSender->run(); // Start the event loop
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
