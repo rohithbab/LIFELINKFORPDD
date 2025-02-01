@@ -77,6 +77,15 @@ try {
             padding: 0;
             box-sizing: border-box;
         }
+        
+        .header-left h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #28a745, #4a90e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
     </style>
     <link rel="stylesheet" href="../../assets/css/hospital-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

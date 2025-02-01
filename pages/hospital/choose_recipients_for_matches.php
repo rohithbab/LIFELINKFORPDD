@@ -82,6 +82,27 @@ try {
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin: 2rem;
+            min-height: 200px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #28a745, #4a90e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
         }
 
         .search-container {
@@ -115,20 +136,19 @@ try {
 
         .filter-buttons {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.5rem;
             border: none;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #f0f0f0;
             color: #666;
-            font-size: 0.9rem;
         }
 
         .filter-btn.active {
@@ -136,26 +156,44 @@ try {
             color: white;
         }
 
+        .search-results {
+            margin-top: 2rem;
+        }
+
         .recipients-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
             background: white;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .recipients-table th,
-        .recipients-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
         .recipients-table th {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .recipients-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .recipients-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .blood-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            background: var(--primary-blue);
+            color: white;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
@@ -174,6 +212,24 @@ try {
             font-weight: bold;
         }
 
+        .type-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .type-own {
+            background: #e3f2fd;
+            color: var(--primary-blue);
+        }
+
+        .type-shared {
+            background: #f3e5f5;
+            color: #9c27b0;
+        }
+
         .action-btn {
             padding: 0.5rem 1rem;
             border: none;
@@ -182,19 +238,20 @@ try {
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none !important;
-            display: inline-block;
+            font-size: 0.9rem;
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .empty-state {
             text-align: center;
             padding: 3rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 2rem 0;
         }
 
         .empty-state i {
@@ -204,105 +261,28 @@ try {
         }
 
         .empty-state h3 {
-            color: #666;
+            color: #333;
             margin-bottom: 0.5rem;
         }
 
         .empty-state p {
-            color: #999;
-        }
-
-        .shared-badge {
-            display: inline-block;
-            background: var(--primary-blue);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.85em;
-            margin-top: 0.5rem;
-        }
-
-        .shared-badge i {
-            margin-right: 0.3rem;
-        }
-
-        .shared-info {
-            font-size: 0.9em;
             color: #666;
-            font-style: italic;
-            margin-top: 0.2rem;
         }
 
-        tr.shared-recipient {
-            background-color: rgba(33, 150, 243, 0.05);
-            border-left: 4px solid var(--primary-blue);
-        }
-
-        .search-results {
-            display: none;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            margin: 2rem;
-            padding: 1rem;
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .results-table th,
-        .results-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        .results-table th {
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            font-weight: 500;
-        }
-
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+        .shared-from {
             color: #666;
+            font-size: 0.9rem;
         }
 
         .recipient-info {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
 
-        .recipient-count {
-            font-weight: bold;
-            color: var(--primary-blue);
-        }
-
-        .recipient-details {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .view-btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .view-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .recipient-info strong {
+            color: #333;
+            font-size: 1rem;
         }
 
         .header-right {
@@ -312,23 +292,24 @@ try {
         }
 
         .switch-list-btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 5px;
+            padding: 0.5rem 1.5rem;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
+            border: none;
+            border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .switch-list-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            color: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .switch-list-btn i {
@@ -341,31 +322,31 @@ try {
         <?php include '../../includes/hospital_sidebar.php'; ?>
         
         <main class="main-content">
-            <div class="search-section">
-                <div class="dashboard-header" style="margin-bottom: 2rem;">
-                    <div class="header-left">
-                        <h2>Choose Recipients for Matching</h2>
-                    </div>
-                    <div class="header-right">
-                        <a href="choose_donors_for_matches.php" class="switch-list-btn">
-                            <i class="fas fa-user-plus"></i>
-                            Donors List
-                        </a>
-                    </div>
+            <div class="dashboard-header" style="margin: 2rem;">
+                <div class="header-left">
+                    <h2>Choose Recipients</h2>
                 </div>
+                <div class="header-right">
+                    <a href="choose_donors_for_matches.php" class="switch-list-btn">
+                        <i class="fas fa-exchange-alt"></i>
+                        Donors List
+                    </a>
+                </div>
+            </div>
 
+            <div class="search-section">
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search recipients...">
+                    <input type="text" 
+                           id="searchInput" 
+                           class="search-input" 
+                           placeholder="Search recipients by name, blood group, or required organ...">
                 </div>
 
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="blood_group">
-                        <i class="fas fa-tint"></i> Blood Group
-                    </button>
-                    <button class="filter-btn" data-filter="organs">
-                        <i class="fas fa-heart"></i> Organs
-                    </button>
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="own">Own Recipients</button>
+                    <button class="filter-btn" data-filter="shared">Shared Recipients</button>
                 </div>
 
                 <?php if (empty($recipients)): ?>
@@ -420,17 +401,61 @@ try {
             </div>
 
             <div id="searchResults" class="search-results">
-                <table class="results-table">
+                <table class="recipients-table">
                     <thead>
                         <tr>
-                            <th>Hospital Name</th>
-                            <th>Contact Details</th>
-                            <th>Available Recipients</th>
-                            <th>Actions</th>
+                            <th>Recipient Name</th>
+                            <th>Blood Group</th>
+                            <th>Required Organ</th>
+                            <th>Priority Level</th>
+                            <th>Type</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="resultsBody">
-                        <!-- Results will be populated here -->
+                    <tbody>
+                        <?php if (empty($recipients)): ?>
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fas fa-user-slash"></i>
+                                        <h3>No Recipients Found</h3>
+                                        <p>There are no recipients available for matching at this time.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($recipients as $recipient): ?>
+                                <tr>
+                                    <td>
+                                        <div class="recipient-info">
+                                            <strong><?php echo htmlspecialchars($recipient['full_name']); ?></strong>
+                                            <?php if ($recipient['recipient_type'] === 'Shared'): ?>
+                                                <small class="shared-from">Shared from: <?php echo htmlspecialchars($recipient['shared_from_hospital']); ?></small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="blood-badge"><?php echo htmlspecialchars($recipient['blood_group']); ?></span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($recipient['required_organ']); ?></td>
+                                    <td>
+                                        <span class="priority-<?php echo strtolower($recipient['priority_level']); ?>">
+                                            <?php echo htmlspecialchars($recipient['priority_level']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="type-badge type-<?php echo strtolower($recipient['recipient_type']); ?>">
+                                            <?php echo htmlspecialchars($recipient['recipient_type']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn" onclick="selectRecipient(<?php echo $recipient['id']; ?>)">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -442,7 +467,7 @@ try {
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
         const filterButtons = document.querySelectorAll('.filter-btn');
-        let currentFilter = 'blood_group';
+        let currentFilter = 'all';
 
         // Filter button click handling
         filterButtons.forEach(button => {

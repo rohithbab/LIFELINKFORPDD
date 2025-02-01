@@ -267,41 +267,34 @@ try {
                 </header>
 
                 <div class="table-container">
-                    <?php if (empty($approved_donors)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <h3>No Approved Donors</h3>
-                            <p>There are no approved donor requests at this time.</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="section-header">
-                            <h2>Approved Donors</h2>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="modern-table">
-                                <thead>
+                    <div class="section-header">
+                        <h2>Approved Donors</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Donor Name</th>
+                                    <th>Blood Group</th>
+                                    <th>Phone</th>
+                                    <th>Request Date</th>
+                                    <th>Approval Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($approved_donors)): ?>
                                     <tr>
-                                        <th>Donor Name</th>
-                                        <th>Blood Group</th>
-                                        <th>Phone</th>
-                                        <th>Request Date</th>
-                                        <th>Approval Date</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <td colspan="7">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <h3>No Approved Donors</h3>
+                                                <p>There are no approved donor requests at this time.</p>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($approved_donors)): ?>
-                                        <tr>
-                                            <td colspan="7">
-                                                <div class="empty-state">
-                                                    <i class="fas fa-inbox"></i>
-                                                    <h3>No Approved Donors</h3>
-                                                    <p>There are no approved donor requests at this time.</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php else: ?>
+                                <?php else: ?>
                                     <?php foreach ($approved_donors as $donor): ?>
                                         <tr>
                                             <td><?php echo htmlspecialchars($donor['donor_name']); ?></td>
@@ -325,11 +318,10 @@ try {
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>

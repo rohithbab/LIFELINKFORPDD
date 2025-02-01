@@ -126,7 +126,7 @@ try {
         .search-results {
             margin-top: 2rem;
         }
-        
+
         .results-table {
             width: 100%;
             border-collapse: collapse;
@@ -135,68 +135,146 @@ try {
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        
+
         .results-table th {
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
             padding: 1rem;
             text-align: left;
+            font-weight: 500;
         }
-        
+
         .results-table td {
             padding: 1rem;
             border-bottom: 1px solid #eee;
-            vertical-align: top;
+            vertical-align: middle;
         }
-        
+
         .results-table tr:hover {
             background: #f8f9fa;
         }
-        
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+
+        .blood-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            background: var(--primary-blue);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
-        
-        .contact-info span {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #666;
+
+        .type-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
-        
-        .donor-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .donor-count {
-            font-weight: bold;
+
+        .type-own {
+            background: #e3f2fd;
             color: var(--primary-blue);
         }
-        
-        .donor-details {
-            color: #666;
+
+        .type-shared {
+            background: #f3e5f5;
+            color: #9c27b0;
         }
-        
-        .view-btn {
+
+        .action-btn {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 5px;
             background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
             color: white;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
-        
-        .view-btn:hover {
+
+        .action-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #666;
+        }
+
+        .shared-from {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .donor-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .donor-info strong {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #28a745, #4a90e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .switch-list-btn {
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .switch-list-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .switch-list-btn i {
+            font-size: 0.9em;
         }
 
         .donors-table {
@@ -238,12 +316,6 @@ try {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-
         .shared-donor {
             background-color: rgba(33, 150, 243, 0.05);
             border-left: 4px solid var(--primary-blue);
@@ -261,51 +333,6 @@ try {
 
         .shared-badge i {
             margin-right: 0.3rem;
-        }
-
-        .action-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .switch-list-btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 5px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .switch-list-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            color: white;
-        }
-
-        .switch-list-btn i {
-            font-size: 0.9em;
         }
     </style>
 </head>
@@ -344,7 +371,7 @@ try {
                 <?php if (empty($donors)): ?>
                     <div class="empty-state">
                         <i class="fas fa-user-plus fa-3x mb-3"></i>
-                        <h2>No Donors Found</h2>
+                        <h3>No Donors Found</h3>
                         <p>There are no approved donors in your hospital at the moment.</p>
                     </div>
                 <?php else: ?>
@@ -386,14 +413,52 @@ try {
                 <table class="results-table">
                     <thead>
                         <tr>
-                            <th>Hospital Name</th>
-                            <th>Contact Details</th>
-                            <th>Available Donors</th>
-                            <th>Actions</th>
+                            <th>Donor Name</th>
+                            <th>Blood Group</th>
+                            <th>Organ Type</th>
+                            <th>Type</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="resultsBody">
-                        <!-- Results will be populated here -->
+                    <tbody>
+                        <?php if (empty($donors)): ?>
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-user-slash"></i>
+                                        <h3>No Donors Found</h3>
+                                        <p>There are no donors available for matching at this time.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($donors as $donor): ?>
+                                <tr>
+                                    <td>
+                                        <div class="donor-info">
+                                            <strong><?php echo htmlspecialchars($donor['name']); ?></strong>
+                                            <?php if ($donor['donor_type'] === 'Shared'): ?>
+                                                <small class="shared-from">Shared from: <?php echo htmlspecialchars($donor['shared_from_hospital']); ?></small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="blood-badge"><?php echo htmlspecialchars($donor['blood_group']); ?></span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($donor['organ_type']); ?></td>
+                                    <td>
+                                        <span class="type-badge type-<?php echo strtolower($donor['donor_type']); ?>">
+                                            <?php echo htmlspecialchars($donor['donor_type']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn" onclick="selectDonor(<?php echo $donor['donor_id']; ?>)">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>

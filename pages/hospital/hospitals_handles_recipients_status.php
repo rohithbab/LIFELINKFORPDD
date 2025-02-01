@@ -70,6 +70,40 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* Dashboard Header Styling */
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            background: linear-gradient(45deg, #28a745, #4a90e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Section Header Styling */
+        .section-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .section-header h2 {
+            color: #2C3E50;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            background: linear-gradient(45deg, #28a745, #4a90e2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         /* Modern Table Styling */
         .table-container {
             background: white;
@@ -279,9 +313,13 @@ try {
         <?php include '../../includes/hospital_sidebar.php'; ?>
         <main class="main-content">
             <div class="container mt-4">
+                <header class="dashboard-header">
+                    <h1>Manage Recipients</h1>
+                </header>
+
                 <div class="table-container">
-                    <div class="card-header">
-                        <h2>Recipient Requests Status</h2>
+                    <div class="section-header">
+                        <h2>Approved Recipients</h2>
                     </div>
                     <div class="table-responsive">
                         <table class="modern-table">
