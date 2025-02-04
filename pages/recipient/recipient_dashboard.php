@@ -264,6 +264,164 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+
+        .notification-icon {
+            position: relative;
+            margin-right: 10px;
+        }
+
+        .notification-dropdown {
+            position: relative;
+            padding: 0 0px 0 5px;
+        }
+
+        .notification-dropdown::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            right: -10px;
+            left: -10px;
+            height: 25px;
+            background: transparent;
+        }
+
+        .notification-dropdown:hover .notification-menu {
+            display: block;
+        }
+
+        .notification-menu {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            width: 350px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            padding: 0;
+        }
+
+        .notification-menu::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            right: -10px;
+            left: -10px;
+            height: 25px;
+            background: transparent;
+        }
+
+        .notification-menu:hover {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .unread-count {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-item i {
+            color: #2196F3;
+            font-size: 1.2rem;
+            padding-top: 4px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-content p {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .notification-content .time {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .view-all {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            color: #2196F3;
+            text-decoration: none;
+            border-top: 1px solid #eee;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .view-all:hover {
+            background-color: #f8f9fa;
+        }
+
+        .no-notifications {
+            padding: 30px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .no-notifications i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #adb5bd;
+        }
+
+        .no-notifications p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .notification-trigger {
+            background: none;
+            border: none;
+            cursor: default;
+            padding: 10px;
+            position: relative;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -286,15 +444,54 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 WHERE recipient_id = ? AND is_read = 0
                             ");
                             $stmt->execute([$recipient_id]);
-                            $result = $stmt->fetch();
-                            $unread_count = $result['unread_count'];
+                            $unread = $stmt->fetch(PDO::FETCH_ASSOC);
+                            
+                            // Get 3 most recent notifications
+                            $stmt = $conn->prepare("
+                                SELECT * FROM recipient_notifications 
+                                WHERE recipient_id = ? 
+                                ORDER BY created_at DESC 
+                                LIMIT 3
+                            ");
+                            $stmt->execute([$recipient_id]);
+                            $recent_notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             ?>
-                            <a href="recipients_notifications.php" class="notification-link">
-                                <i class="fas fa-bell"></i>
-                                <?php if ($unread_count > 0): ?>
-                                    <span class="notification-badge"><?php echo $unread_count; ?></span>
-                                <?php endif; ?>
-                            </a>
+                            
+                            <div class="notification-dropdown">
+                                <button class="notification-trigger">
+                                    <i class="fas fa-bell"></i>
+                                    <?php if ($unread['unread_count'] > 0): ?>
+                                        <span class="badge"><?php echo $unread['unread_count']; ?></span>
+                                    <?php endif; ?>
+                                </button>
+                                <div class="notification-menu">
+                                    <div class="notification-header">
+                                        <h3>Notifications</h3>
+                                        <?php if ($unread['unread_count'] > 0): ?>
+                                            <span class="unread-count"><?php echo $unread['unread_count']; ?> unread</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="notification-list">
+                                        <?php if (empty($recent_notifications)): ?>
+                                            <div class="no-notifications">
+                                                <i class="fas fa-bell-slash"></i>
+                                                <p>No notifications yet</p>
+                                            </div>
+                                        <?php else: ?>
+                                            <?php foreach ($recent_notifications as $notif): ?>
+                                                <div class="notification-item <?php echo !$notif['is_read'] ? 'unread' : ''; ?>">
+                                                    <i class="fas <?php echo $notif['type'] === 'request_status' ? 'fa-file-medical' : 'fa-handshake'; ?>"></i>
+                                                    <div class="notification-content">
+                                                        <p><?php echo htmlspecialchars($notif['message']); ?></p>
+                                                        <span class="time"><?php echo date('M d, Y h:i A', strtotime($notif['created_at'])); ?></span>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <a href="recipients_notifications.php" class="view-all">View All Notifications</a>
+                                </div>
+                            </div>
                         </div>
                         <div class="profile-section">
                             <button class="profile-trigger" onclick="toggleProfile()">
@@ -373,7 +570,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <h2><i class="fas fa-hospital"></i> Hospital Requests</h2>
                         <div class="table-actions">
                             <div class="search-box">
-                                <input type="text" id="searchInput" placeholder="Search requests...">
+                                <input type="text" id="searchInput" placeholder="     Search requests...">
                                 <i class="fas fa-search"></i>
                             </div>
                         </div>
@@ -470,24 +667,20 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const notificationIcon = document.getElementById('notificationIcon');
-            const notificationDropdown = document.getElementById('notificationDropdown');
+            const profileTrigger = document.querySelector('.profile-trigger');
+            const profileCard = document.querySelector('.profile-card');
+            let isProfileOpen = false;
 
-            notificationIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                notificationDropdown.classList.toggle('show');
+            profileTrigger.addEventListener('click', function() {
+                isProfileOpen = !isProfileOpen;
+                profileCard.style.display = isProfileOpen ? 'block' : 'none';
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
-                if (!notificationIcon.contains(e.target)) {
-                    notificationDropdown.classList.remove('show');
+                if (!profileCard.contains(e.target) && !profileTrigger.contains(e.target)) {
+                    isProfileOpen = false;
+                    profileCard.style.display = 'none';
                 }
-            });
-
-            // Prevent dropdown from closing when clicking inside it
-            notificationDropdown.addEventListener('click', function(e) {
-                e.stopPropagation();
             });
         });
 
