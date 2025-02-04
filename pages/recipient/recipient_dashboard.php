@@ -88,18 +88,55 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
+            background: white;
+            border-radius: 15px 15px 0 0;
         }
 
         .table-header h2 {
+            margin: 0;
             color: #333;
             font-size: 1.5rem;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-header h2 i {
+            color: #28a745;
+        }
+
+        .search-box {
+            position: relative;
+            width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 35px 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .search-box input::placeholder {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+            font-size: 0.9rem;
         }
 
         .modern-table {
@@ -112,45 +149,48 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .modern-table th {
-            background: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            padding: 12px 15px;
+            background: linear-gradient(135deg, #28a745, #2196F3);
+            padding: 15px 20px;
             text-align: left;
-            border-bottom: 2px solid #dee2e6;
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+
+        .modern-table th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        .modern-table th:last-child {
+            border-top-right-radius: 8px;
         }
 
         .modern-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #dee2e6;
-            color: #6c757d;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            color: #666;
         }
 
-        .modern-table tr:hover {
-            background-color: #f8f9fa;
+        .blood-type-badge {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            color: #495057;
         }
 
         .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
+            padding: 5px 10px;
+            border-radius: 6px;
             font-weight: 500;
-            text-transform: capitalize;
+            text-align: center;
+            display: inline-block;
+            min-width: 100px;
         }
 
-        .status-pending {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-        }
-
-        .status-approved {
-            background: rgba(40, 167, 69, 0.2);
-            color: #28a745;
-        }
-
-        .status-rejected {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
         }
 
         .action-buttons {
@@ -159,260 +199,70 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .action-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-
-        .reject-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .reject-btn:hover {
-            background: #c82333;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #dee2e6;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 0.5rem;
-            color: #495057;
-        }
-
-        .empty-state p {
-            color: #6c757d;
-        }
-
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: #f8f9fa;
-            border-radius: 4px;
-            padding: 8px 12px;
-            border: 1px solid #dee2e6;
-        }
-
-        .search-box input {
-            border: none;
-            background: none;
-            padding: 5px;
-            outline: none;
-            color: #495057;
-        }
-
-        .search-box i {
-            color: #6c757d;
-            margin-right: 8px;
-        }
-
-        /* Notification Dropdown Styles */
-        .notification-icon {
-            position: relative;
-            cursor: pointer;
-            margin-right: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .notification-icon i {
-            font-size: 20px;
-            color: #666;
-            transition: color 0.3s ease;
-        }
-
-        .notification-icon:hover i {
-            color: #2196F3;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #ff4444;
-            color: white;
-            border-radius: 50%;
-            padding: 4px 8px;
-            font-size: 12px;
-            min-width: 20px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 350px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            margin-top: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .notification-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-header {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dropdown-header h3 {
-            margin: 0;
-            color: #333;
-            font-size: 16px;
-        }
-
-        .notification-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            transition: background-color 0.2s;
-        }
-
-        .notification-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .notification-item.unread {
-            background-color: #e3f2fd;
-        }
-
-        .notification-item.unread:hover {
-            background-color: #bbdefb;
-        }
-
-        .notification-icon-small {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
-            background: rgba(33, 150, 243, 0.1);
+            border: none;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #2196F3;
-            font-size: 14px;
-            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .notification-content {
-            flex: 1;
+        .action-btn:hover {
+            transform: translateY(-2px);
         }
 
-        .notification-message {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            color: #333;
-            line-height: 1.4;
+        .view-btn {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
         }
 
-        .notification-time {
-            font-size: 12px;
-            color: #666;
+        .message-btn {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
         }
 
-        .dropdown-footer {
-            padding: 12px;
+        .no-data {
             text-align: center;
-            border-top: 1px solid #eee;
+            padding: 40px !important;
         }
 
-        .view-all-link {
-            color: #2196F3;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .view-all-link:hover {
-            color: #1976D2;
-        }
-
-        /* Custom Scrollbar */
-        .notification-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .notification-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .notification-list::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .notification-list::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Update header-right styles */
-        .header-right {
+        .no-data-content {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
-        /* Add gradient text styles */
-        .gradient-text {
-            background: linear-gradient(120deg, #28a745, #2196F3);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            font-family: 'Poppins', sans-serif;
+        .no-data-content i {
+            font-size: 48px;
+            color: #ddd;
         }
 
-        .header-left h1 {
-            font-size: 28px;
+        .no-data-content p {
+            color: #666;
             margin: 0;
-            padding: 10px 0;
-            font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
-        .table-header h2 {
-            font-size: 24px;
-            margin: 0;
-            font-weight: 700;
-            letter-spacing: 0.3px;
+        .modern-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .modern-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -424,83 +274,34 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="main-section">
                 <header class="dashboard-header">
                     <div class="header-left">
-                        <h1 class="gradient-text">Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?>!</h1>
+                        <h1>Welcome, <?php echo htmlspecialchars($recipient['full_name']); ?></h1>
                     </div>
                     <div class="header-right">
-                        <div class="notification-icon" id="notificationIcon">
-                            <i class="fas fa-bell"></i>
+                        <div class="notification-icon">
                             <?php
-                            // Get unread count
+                            // Get unread notification count
                             $stmt = $conn->prepare("
                                 SELECT COUNT(*) as unread_count 
                                 FROM recipient_notifications 
                                 WHERE recipient_id = ? AND is_read = 0
                             ");
-                            $stmt->execute([$_SESSION['recipient_id']]);
-                            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                            $stmt->execute([$recipient_id]);
+                            $result = $stmt->fetch();
                             $unread_count = $result['unread_count'];
-                            
-                            if ($unread_count > 0): ?>
-                                <span class="notification-badge"><?php echo $unread_count; ?></span>
-                            <?php endif; ?>
-
-                            <!-- Notification Dropdown -->
-                            <div class="notification-dropdown" id="notificationDropdown">
-                                <div class="dropdown-header">
-                                    <h3>Notifications</h3>
-                                </div>
-                                <div class="notification-list">
-                                    <?php
-                                    // Get recent notifications
-                                    $stmt = $conn->prepare("
-                                        SELECT * FROM recipient_notifications 
-                                        WHERE recipient_id = ? 
-                                        ORDER BY created_at DESC 
-                                        LIMIT 3
-                                    ");
-                                    $stmt->execute([$_SESSION['recipient_id']]);
-                                    $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                    if (!empty($notifications)):
-                                        foreach ($notifications as $notification): ?>
-                                            <div class="notification-item <?php echo !$notification['is_read'] ? 'unread' : ''; ?>">
-                                                <div class="notification-icon-small">
-                                                    <i class="fas <?php echo $notification['type'] === 'request_status' ? 'fa-file-medical' : 'fa-handshake'; ?>"></i>
-                                                </div>
-                                                <div class="notification-content">
-                                                    <p class="notification-message"><?php echo htmlspecialchars($notification['message']); ?></p>
-                                                    <span class="notification-time">
-                                                        <?php 
-                                                        $date = new DateTime($notification['created_at']);
-                                                        echo $date->format('M d, h:i A'); 
-                                                        ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        <?php endforeach;
-                                    else: ?>
-                                        <div class="notification-item">
-                                            <p class="notification-message" style="text-align: center; width: 100%;">No notifications</p>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="dropdown-footer">
-                                    <a href="recipients_notifications.php" class="view-all-link">View All Notifications</a>
-                                </div>
-                            </div>
+                            ?>
+                            <a href="recipients_notifications.php" class="notification-link">
+                                <i class="fas fa-bell"></i>
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="notification-badge"><?php echo $unread_count; ?></span>
+                                <?php endif; ?>
+                            </a>
                         </div>
                         <div class="profile-section">
                             <button class="profile-trigger" onclick="toggleProfile()">
                                 <div class="profile-icon">
-                                    <?php if($recipient['gender'] === 'Male'): ?>
-                                        <i class="fas fa-male"></i>
-                                    <?php else: ?>
-                                        <i class="fas fa-female"></i>
-                                    <?php endif; ?>
+                                    <i class="fas fa-user-circle"></i>
                                 </div>
-                                <span class="profile-name"><?php echo htmlspecialchars($recipient['full_name']); ?></span>
                             </button>
-                            
                             <div class="profile-card modern">
                                 <div class="profile-header">
                                     <div class="header-overlay"></div>
@@ -511,9 +312,8 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <i class="fas fa-female"></i>
                                         <?php endif; ?>
                                     </div>
-                                    <h2><?php echo htmlspecialchars($recipient['full_name']); ?></h2>
+                                    <h3><?php echo htmlspecialchars($recipient['full_name']); ?></h3>
                                 </div>
-                                
                                 <div class="profile-content">
                                     <div class="info-grid">
                                         <div class="info-item">
@@ -525,7 +325,6 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <span><?php echo htmlspecialchars($recipient['email']); ?></span>
                                             </div>
                                         </div>
-                                        
                                         <div class="info-item">
                                             <div class="info-icon">
                                                 <i class="fas fa-phone"></i>
@@ -535,7 +334,6 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <span><?php echo htmlspecialchars($recipient['phone_number']); ?></span>
                                             </div>
                                         </div>
-                                        
                                         <div class="info-item">
                                             <div class="info-icon">
                                                 <i class="fas fa-tint"></i>
@@ -545,7 +343,6 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <span><?php echo htmlspecialchars($recipient['blood_type']); ?></span>
                                             </div>
                                         </div>
-                                        
                                         <div class="info-item">
                                             <div class="info-icon">
                                                 <i class="fas fa-heartbeat"></i>
@@ -556,6 +353,14 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="profile-actions">
+                                        <a href="recipient_personal_details.php" class="modern-btn">
+                                            <i class="fas fa-user-edit"></i> Edit Profile
+                                        </a>
+                                        <a href="../recipient_login.php" class="modern-btn danger">
+                                            <i class="fas fa-sign-out-alt"></i> Logout
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -565,64 +370,68 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Modern Table Section -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="gradient-text"><i class="fas fa-clock"></i>Pending Requests</h2>
+                        <h2><i class="fas fa-hospital"></i> Hospital Requests</h2>
                         <div class="table-actions">
                             <div class="search-box">
-                                <i class="fas fa-search"></i>
                                 <input type="text" id="searchInput" placeholder="Search requests...">
+                                <i class="fas fa-search"></i>
                             </div>
                         </div>
                     </div>
-
                     <div class="table-responsive">
-                        <?php if (empty($requests)): ?>
-                            <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <h3>No Pending Requests</h3>
-                                <p>You don't have any pending requests at the moment.</p>
-                            </div>
-                        <?php else: ?>
-                            <table class="modern-table">
-                                <thead>
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Hospital Name</th>
+                                    <th>Blood Type</th>
+                                    <th>Organ Required</th>
+                                    <th>Status</th>
+                                    <th>Request Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($requests)): ?>
                                     <tr>
-                                        <th>Recipient Name</th>
-                                        <th>Blood Type</th>
-                                        <th>Organ Type</th>
-                                        <th>Hospital Name</th>
-                                        <th>Hospital Email</th>
-                                        <th>Hospital Address</th>
-                                        <th>Hospital Number</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <td colspan="6" class="no-data">
+                                            <div class="no-data-content">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>No pending requests found</p>
+                                                <a href="search_hospitals_for_recipient.php" class="modern-btn">Search Hospitals</a>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
+                                <?php else: ?>
                                     <?php foreach ($requests as $request): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($request['full_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['blood_type']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
                                             <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
-                                            <td><?php echo htmlspecialchars($request['hospital_number']); ?></td>
                                             <td>
-                                                <span class="status-badge status-<?php echo strtolower($request['status']); ?>">
-                                                    <?php echo htmlspecialchars($request['status']); ?>
+                                                <span class="blood-type-badge">
+                                                    <?php echo htmlspecialchars($request['blood_type']); ?>
                                                 </span>
                                             </td>
+                                            <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
+                                            <td>
+                                                <span class="status-badge <?php echo strtolower($request['status']); ?>">
+                                                    <?php echo ucfirst($request['status']); ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button class="action-btn reject-btn" onclick="rejectRequest(<?php echo $request['request_id']; ?>)">
-                                                        <i class="fas fa-times"></i> Reject
+                                                    <button class="action-btn view-btn" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="action-btn message-btn" title="Send Message">
+                                                        <i class="fas fa-envelope"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        <?php endif; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -679,6 +488,17 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             // Prevent dropdown from closing when clicking inside it
             notificationDropdown.addEventListener('click', function(e) {
                 e.stopPropagation();
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('.modern-table tbody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? '' : 'none';
             });
         });
     </script>
