@@ -39,10 +39,30 @@ try {
     <link rel="stylesheet" href="../../assets/css/donor-details.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f6f9;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            background: #f4f6f9;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <?php require_once 'includes/sidebar_for_recipients_dashboard.php'; ?>
+        <?php include '../../includes/recipient_sidebar.php'; ?>
 
         <main class="main-content">
             <div class="details-container">

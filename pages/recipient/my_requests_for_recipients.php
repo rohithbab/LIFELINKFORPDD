@@ -34,6 +34,25 @@ try {
     <link rel="stylesheet" href="../../assets/css/donor-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f6f9;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            background: #f4f6f9;
+        }
+
         .status-badge {
             padding: 6px 12px;
             border-radius: 4px;
@@ -120,7 +139,7 @@ try {
 </head>
 <body>
     <div class="dashboard-container">
-        <?php require_once 'includes/sidebar_for_recipients_dashboard.php'; ?>
+        <?php include '../../includes/recipient_sidebar.php'; ?>
 
         <main class="main-content">
             <div class="main-section">

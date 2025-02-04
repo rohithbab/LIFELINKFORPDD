@@ -64,17 +64,21 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f6f9;
         }
 
         .dashboard-container {
             display: flex;
             min-height: 100vh;
-            background: #f4f6f9;
         }
 
         .main-content {
             flex: 1;
+            margin-left: 260px;
             padding: 2rem;
+            background: #f4f6f9;
         }
 
         .table-container {
@@ -416,7 +420,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
     <div class="dashboard-container">
-        <?php require_once 'includes/sidebar_for_recipients_dashboard.php'; ?>
+        <?php include '../../includes/recipient_sidebar.php'; ?>
 
         <main class="main-content">
             <div class="main-section">
