@@ -10,10 +10,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <aside class="sidebar">
     <div class="sidebar-header">
-        <div class="logo-container">
-            <i class="fas fa-heartbeat heart-icon"></i>
-            <h2 class="logo-text">LifeLink</h2>
-        </div>
+        <i class="fas fa-heartbeat"></i>
+        <span>LifeLink</span>
     </div>
     <nav class="sidebar-nav">
         <ul>
@@ -62,133 +60,113 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <style>
 :root {
-    --primary-green: #28a745;
-    --primary-blue: #4a90e2;
-    --hover-gradient: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
-    --hover-color: rgba(255, 255, 255, 0.1);
-    --active-color: rgba(255, 255, 255, 0.2);
-    --sidebar-width: 260px;
+    --primary-color: #28a745;
+    --secondary-color: #2196F3;
+    --accent-color: #20c997;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-light: #ffffff;
+    --background-light: #f5f5f5;
+    --sidebar-width: 250px;
 }
 
 .sidebar {
     width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
     height: 100vh;
-    background: white;
-    color: #333;
-    padding: 1.5rem 1rem;
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 1000;
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    background: var(--text-light);
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
     overflow-y: auto;
+    z-index: 1000;
 }
 
 .sidebar-header {
-    padding: 1rem;
-    text-align: center;
-    margin-bottom: 2rem;
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.logo-container {
+    padding: 25px 20px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    gap: 15px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-light);
+    height: 80px;
 }
 
-.heart-icon {
-    font-size: 1.4rem;
-    color: white;
-    animation: pulse 1.5s ease-in-out infinite;
+.sidebar-header i {
+    font-size: 28px;
 }
 
-.logo-text {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0;
-    color: white;
+.sidebar-header span {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-nav ul {
     list-style: none;
-    padding: 0;
+    padding: 15px 0;
     margin: 0;
 }
 
 .sidebar-nav li {
-    margin-bottom: 0.5rem;
-    width: 100%;
+    margin: 5px 15px;
 }
 
 .sidebar-nav a {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    color: #333;
+    padding: 12px 20px;
+    color: var(--text-primary);
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 12px;
     transition: all 0.3s ease;
-    background: white;
-    border-left: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-nav a:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(33, 150, 243, 0.1));
+    transition: width 0.3s ease;
+}
+
+.sidebar-nav a:hover:before,
+.sidebar-nav a.active:before {
     width: 100%;
 }
 
-.sidebar-nav a:hover {
-    background: #f0f9f2;
-    color: var(--primary-green);
-    transform: translateX(5px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border-left: 4px solid var(--primary-green);
-}
-
+.sidebar-nav a:hover,
 .sidebar-nav a.active {
-    background: #f0f9f2;
-    color: var(--primary-green);
-    font-weight: 500;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border-left: 4px solid var(--primary-green);
+    color: var(--primary-color);
+    transform: translateX(5px);
 }
 
 .sidebar-nav i {
     width: 24px;
-    margin-right: 10px;
-    text-align: center;
-    font-size: 1.1rem;
-    color: #666;
-    transition: color 0.3s ease;
+    margin-right: 12px;
+    font-size: 18px;
+    position: relative;
+    z-index: 1;
 }
 
-.sidebar-nav a:hover i {
-    color: var(--primary-green);
-}
-
-.sidebar-nav a.active i {
-    color: var(--primary-green);
+.sidebar-nav span {
+    position: relative;
+    z-index: 1;
 }
 
 .notification-badge {
-    background: #ff4444;
+    background: var(--accent-color);
     color: white;
-    border-radius: 50%;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
     margin-left: auto;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
+    position: relative;
+    z-index: 1;
 }
 </style>

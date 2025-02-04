@@ -78,8 +78,8 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Hospitals - LifeLink</title>
-    <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/donor-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -95,7 +95,7 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
 
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
         }

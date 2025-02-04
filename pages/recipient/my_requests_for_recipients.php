@@ -48,7 +48,7 @@ try {
 
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
         }

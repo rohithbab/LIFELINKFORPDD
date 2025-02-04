@@ -48,7 +48,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - LifeLink</title>
-    <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
+    <link rel="stylesheet" href="../../assets/css/donor-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
@@ -65,12 +65,12 @@ try {
 
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
         }
 
-        .notifications-container {
+        .requests-container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
@@ -121,7 +121,7 @@ try {
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        .notification-card {
+        .request-card {
             background: white;
             border-radius: 8px;
             padding: 20px;
@@ -134,17 +134,12 @@ try {
             gap: 15px;
         }
 
-        .notification-card:hover {
+        .request-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
-        .notification-card.unread {
-            background-color: #e3f2fd;
-            border-left-color: #2196F3;
-        }
-
-        .notification-icon {
+        .request-icon {
             font-size: 24px;
             color: #2196F3;
             background: rgba(33, 150, 243, 0.1);
@@ -157,18 +152,18 @@ try {
             flex-shrink: 0;
         }
 
-        .notification-content {
+        .request-content {
             flex: 1;
         }
 
-        .notification-message {
+        .request-message {
             margin: 0 0 10px 0;
             color: #333;
             font-size: 1.1rem;
             line-height: 1.5;
         }
 
-        .notification-time {
+        .request-time {
             color: #666;
             font-size: 0.9em;
             display: flex;
@@ -176,7 +171,7 @@ try {
             gap: 5px;
         }
 
-        .notification-type {
+        .request-type {
             display: inline-block;
             padding: 3px 8px;
             border-radius: 12px;
@@ -258,7 +253,7 @@ try {
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .notifications-container {
+            .requests-container {
                 padding: 10px;
             }
 
@@ -274,19 +269,19 @@ try {
                 width: 100%;
             }
 
-            .notification-card {
+            .request-card {
                 flex-direction: column;
             }
 
-            .notification-icon {
+            .request-icon {
                 margin: 0 auto 10px;
             }
 
-            .notification-message {
+            .request-message {
                 text-align: center;
             }
 
-            .notification-time {
+            .request-time {
                 justify-content: center;
             }
 
@@ -305,7 +300,7 @@ try {
         <?php include '../../includes/recipient_sidebar.php'; ?>
 
         <main class="main-content">
-            <div class="notifications-container">
+            <div class="requests-container">
                 <div class="page-header">
                     <h1 class="page-title">Notifications</h1>
                 </div>
@@ -330,17 +325,17 @@ try {
                     </div>
                 <?php else: ?>
                     <?php foreach ($notifications as $notification): ?>
-                        <div class="notification-card <?php echo !$notification['is_read'] ? 'unread' : ''; ?>" 
+                        <div class="request-card <?php echo !$notification['is_read'] ? 'unread' : ''; ?>" 
                              data-id="<?php echo $notification['notification_id']; ?>">
-                            <div class="notification-icon">
+                            <div class="request-icon">
                                 <i class="fas <?php echo $notification['type'] === 'request_status' ? 'fa-file-medical' : 'fa-handshake'; ?>"></i>
                             </div>
-                            <div class="notification-content">
-                                <span class="notification-type <?php echo $notification['type'] === 'request_status' ? 'type-request' : 'type-match'; ?>">
+                            <div class="request-content">
+                                <span class="request-type <?php echo $notification['type'] === 'request_status' ? 'type-request' : 'type-match'; ?>">
                                     <?php echo $notification['type'] === 'request_status' ? 'Request Update' : 'Match Found'; ?>
                                 </span>
-                                <p class="notification-message"><?php echo htmlspecialchars($notification['message']); ?></p>
-                                <span class="notification-time">
+                                <p class="request-message"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                <span class="request-time">
                                     <i class="far fa-clock"></i>
                                     <?php echo date('M d, Y h:i A', strtotime($notification['created_at'])); ?>
                                 </span>
@@ -389,7 +384,7 @@ try {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const card = button.closest('.notification-card');
+                const card = button.closest('.request-card');
                 card.classList.remove('unread');
                 
                 // Replace the toggle button with static indicator and delete button
@@ -442,11 +437,11 @@ try {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const card = button.closest('.notification-card');
+                const card = button.closest('.request-card');
                 card.style.opacity = '0';
                 setTimeout(() => {
                     card.remove();
-                    if (document.querySelectorAll('.notification-card').length === 0) {
+                    if (document.querySelectorAll('.request-card').length === 0) {
                         location.reload(); // Reload to show empty state
                     }
                 }, 300);

@@ -34,11 +34,9 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Details - LifeLink</title>
-    <link rel="stylesheet" href="../../assets/css/recipient-dashboard.css">
-    <link rel="stylesheet" href="../../assets/css/donor-details.css">
+    <title>Profile Details - LifeLink</title>
+    <link rel="stylesheet" href="../../assets/css/donor-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -54,7 +52,7 @@ try {
 
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
         }
