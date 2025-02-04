@@ -16,6 +16,23 @@ $stmt = $conn->prepare("SELECT full_name, blood_type, organ_required FROM recipi
 $stmt->execute([$recipient_id]);
 $recipient = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Fetch all hospitals by default
+$defaultQuery = "SELECT DISTINCT h.*, 
+              (SELECT COUNT(*) FROM hospital_donor_approvals hda 
+               JOIN donor d ON hda.donor_id = d.donor_id 
+               WHERE hda.hospital_id = h.hospital_id 
+               AND hda.status = 'approved' 
+               AND d.organs_to_donate = ?) as organ_count
+              FROM hospitals h
+              LEFT JOIN hospital_donor_approvals hda ON h.hospital_id = hda.hospital_id
+              LEFT JOIN donor d ON hda.donor_id = d.donor_id
+              GROUP BY h.hospital_id 
+              ORDER BY organ_count DESC";
+
+$stmt = $conn->prepare($defaultQuery);
+$stmt->execute([$recipient['organ_required']]);
+$allHospitals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Handle AJAX search request
 if (isset($_GET['search']) && isset($_GET['filter'])) {
     $search = '%' . $_GET['search'] . '%';
@@ -27,9 +44,10 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
                    JOIN donor d ON hda.donor_id = d.donor_id 
                    WHERE hda.hospital_id = h.hospital_id 
                    AND hda.status = 'approved' 
-                   AND hda.organ_type = ?) as organ_count
+                   AND d.organs_to_donate = ?) as organ_count
                   FROM hospitals h
                   LEFT JOIN hospital_donor_approvals hda ON h.hospital_id = hda.hospital_id
+                  LEFT JOIN donor d ON hda.donor_id = d.donor_id
                   WHERE 1=1";
 
     $params = [$recipient['organ_required']];
@@ -54,7 +72,7 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
                 JOIN donor d2 ON hda2.donor_id = d2.donor_id
                 WHERE hda2.hospital_id = h.hospital_id 
                 AND hda2.status = 'approved' 
-                AND hda2.organ_type = ?)";
+                AND d2.organs_to_donate = ?)";
             $params[] = $recipient['organ_required'];
             break;
     }
@@ -98,6 +116,8 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
             margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
+            width: calc(100% - var(--sidebar-width));
+            box-sizing: border-box;
         }
 
         .search-container {
@@ -106,6 +126,8 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
             padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             margin-bottom: 30px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .search-header {
@@ -305,7 +327,41 @@ if (isset($_GET['search']) && isset($_GET['filter'])) {
                     <button class="filter-btn" data-filter="organ">Organ Availability</button>
                 </div>
                 <div class="hospitals-grid" id="hospitalsGrid">
-                    <!-- Hospital cards will be dynamically added here -->
+                    <?php if (empty($allHospitals)): ?>
+                        <div class="no-results">
+                            <i class="fas fa-hospital" style="font-size: 48px; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3>No Hospitals Available</h3>
+                            <p>There are currently no hospitals registered in the system.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($allHospitals as $hospital): ?>
+                            <div class="hospital-card">
+                                <div class="hospital-header">
+                                    <div class="hospital-icon">
+                                        <i class="fas fa-hospital"></i>
+                                    </div>
+                                    <h3 class="hospital-name"><?php echo htmlspecialchars($hospital['name']); ?></h3>
+                                </div>
+                                <div class="hospital-info">
+                                    <div class="info-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span><?php echo htmlspecialchars($hospital['address']); ?></span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span><?php echo htmlspecialchars($hospital['phone']); ?></span>
+                                    </div>
+                                </div>
+                                <div class="organ-availability">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span><?php echo $hospital['organ_count']; ?> potential <?php echo $hospital['organ_count'] === 1 ? 'donor' : 'donors'; ?> available</span>
+                                </div>
+                                <button class="request-btn" onclick="confirmRequest('<?php echo $hospital['hospital_id']; ?>', '<?php echo htmlspecialchars($hospital['name']); ?>'); return false;">
+                                    Make Request
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </main>

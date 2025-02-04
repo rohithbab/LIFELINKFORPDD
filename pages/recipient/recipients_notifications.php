@@ -68,27 +68,22 @@ try {
             margin-left: var(--sidebar-width);
             padding: 2rem;
             background: #f4f6f9;
+            width: calc(100% - var(--sidebar-width));
+            box-sizing: border-box;
         }
 
         .requests-container {
-            max-width: 1000px;
+            width: 85%;
             margin: 0 auto;
             padding: 20px;
+            max-width: 1400px;
         }
 
         .page-header {
             text-align: center;
             margin-bottom: 30px;
             position: relative;
-        }
-
-        .page-title {
-            font-size: 36px;
-            margin: 0;
-            background: linear-gradient(135deg, #4CAF50, #2196F3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
+            padding: 0 20px;
         }
 
         .filter-buttons {
@@ -123,28 +118,30 @@ try {
 
         .request-card {
             background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             border-left: 4px solid transparent;
             position: relative;
             display: flex;
-            gap: 15px;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .request-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .request-icon {
             font-size: 24px;
             color: #2196F3;
             background: rgba(33, 150, 243, 0.1);
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -154,13 +151,14 @@ try {
 
         .request-content {
             flex: 1;
+            padding-right: 20px;
         }
 
         .request-message {
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0;
             color: #333;
             font-size: 1.1rem;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .request-time {
@@ -252,9 +250,27 @@ try {
         }
 
         /* Responsive Design */
+        @media (max-width: 1200px) {
+            .requests-container {
+                width: 90%;
+            }
+        }
+
         @media (max-width: 768px) {
             .requests-container {
-                padding: 10px;
+                width: 95%;
+                padding: 15px;
+            }
+
+            .request-card {
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .request-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
             }
 
             .page-title {
