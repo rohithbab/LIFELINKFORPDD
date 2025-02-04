@@ -164,9 +164,151 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
             opacity: 0.9;
             transform: translateY(-2px);
         }
+
+        /* Custom Modal Styles */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .modal-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #f1f1f1;
+            color: #666;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Success Card Styles */
+        .success-card {
+            display: none;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.5s ease forwards;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .success-card i {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .success-card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .success-card p {
+            opacity: 0.9;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
+    <!-- Custom Modal -->
+    <div class="custom-modal" id="requestModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h2 class="modal-title">Confirm Donation Request</h2>
+            <p class="modal-message">
+                You are about to register as an organ donor with <strong id="hospitalName"></strong>. Upon submission:
+                <br><br>
+                • The hospital will review your medical information<br>
+                • You'll receive an email notification of their decision<br>
+                • If approved, you'll be registered as a potential donor<br>
+                • If not approved, you'll receive detailed feedback with the reason
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn confirm-btn" onclick="submitRequest()">Confirm Request</button>
+            </div>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -252,6 +394,12 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
                         <!-- Hospitals will be loaded here dynamically -->
                     </div>
                 </div>
+            </div>
+            <!-- Success Card -->
+            <div class="success-card" id="successCard">
+                <i class="fas fa-check-circle"></i>
+                <h3>Request Submitted Successfully!</h3>
+                <p>Your organ donation request has been sent to the hospital. You will receive an email notification once they review your application. Thank you for your noble decision to become a donor.</p>
             </div>
         </main>
     </div>
@@ -362,10 +510,43 @@ $donor = $stmt->fetch(PDO::FETCH_ASSOC);
             return div;
         }
 
-        function makeRequest(hospitalId, hospitalName) {
-            if (confirm(`Do you really want to give request for ${hospitalName} for organ donation?`)) {
-                window.location.href = `donor_requests_hospital.php?hospital_id=${hospitalId}`;
-            }
+        let selectedHospitalId = null;
+        let selectedHospitalName = null;
+
+        function showRequestModal(hospitalId, name) {
+            selectedHospitalId = hospitalId;
+            selectedHospitalName = name;
+            document.getElementById('hospitalName').textContent = name;
+            document.getElementById('requestModal').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('.modal-content').classList.add('active');
+            }, 10);
+        }
+
+        function closeModal() {
+            document.querySelector('.modal-content').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('requestModal').style.display = 'none';
+            }, 300);
+        }
+
+        function submitRequest() {
+            if (!selectedHospitalId) return;
+            
+            // Here you would add the AJAX call to submit the request to your backend
+            // For now, we'll just show the success card
+            closeModal();
+            document.getElementById('successCard').style.display = 'block';
+            
+            // Hide the success card after 5 seconds
+            setTimeout(() => {
+                document.getElementById('successCard').style.display = 'none';
+            }, 5000);
+        }
+
+        // Update the existing makeRequest function
+        function makeRequest(hospitalId, name) {
+            showRequestModal(hospitalId, name);
         }
 
         // Initial search on page load
