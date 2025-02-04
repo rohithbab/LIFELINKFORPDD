@@ -191,39 +191,45 @@ try {
                                     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                     if (empty($requests)) {
-                                        echo '<tr><td colspan="9">';
+                                        echo '<tr><td colspan="9" class="empty-state">';
                                         echo '<div class="empty-state">';
-                                        echo '<i class="fas fa-inbox"></i>';
-                                        echo '<h3>No Requests Found</h3>';
-                                        echo '<p>You don\'t have any approved or rejected requests yet.</p>';
+                                        echo '<i class="fas fa-file-medical"></i>';
+                                        echo '<h3>No Requests Yet</h3>';
+                                        echo '<p>You haven\'t made any requests to hospitals yet. Start by searching for hospitals and making a request!</p>';
+                                        echo '<a href="search_hospitals_for_recipient.php" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: linear-gradient(45deg, #20bf55, #01baef); color: white; text-decoration: none; border-radius: 5px; transition: all 0.3s ease;">Search Hospitals</a>';
                                         echo '</div>';
                                         echo '</td></tr>';
                                     } else {
                                         foreach ($requests as $request) {
-                                            $status_class = strtolower($request['status']);
+                                            $priorityClass = '';
+                                            switch (strtolower($request['priority_level'] ?? 'medium')) {
+                                                case 'high':
+                                                    $priorityClass = 'priority-high';
+                                                    break;
+                                                case 'medium':
+                                                    $priorityClass = 'priority-medium';
+                                                    break;
+                                                case 'low':
+                                                    $priorityClass = 'priority-low';
+                                                    break;
+                                            }
                                             ?>
                                             <tr>
                                                 <td><?php echo htmlspecialchars($request['full_name']); ?></td>
-                                                <td>
-                                                    <span class="blood-type"><?php echo htmlspecialchars($request['blood_type']); ?></span>
-                                                </td>
+                                                <td><span class="blood-type"><?php echo htmlspecialchars($request['blood_type']); ?></span></td>
                                                 <td><?php echo htmlspecialchars($request['organ_required']); ?></td>
-                                                <td>
-                                                    <span class="priority-badge priority-<?php echo strtolower($request['priority_level']); ?>">
-                                                        <?php echo htmlspecialchars($request['priority_level']); ?>
-                                                    </span>
-                                                </td>
+                                                <td><span class="priority-badge <?php echo $priorityClass; ?>"><?php echo htmlspecialchars($request['priority_level'] ?? 'N/A'); ?></span></td>
                                                 <td><?php echo htmlspecialchars($request['hospital_name']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['hospital_email']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['hospital_address']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['hospital_phone']); ?></td>
                                                 <td>
-                                                    <span class="status-badge <?php echo $status_class; ?>">
+                                                    <span class="status-badge <?php echo strtolower($request['status']); ?>">
                                                         <?php echo htmlspecialchars($request['status']); ?>
                                                     </span>
                                                 </td>
                                                 <?php if (isset($_GET['show_reason'])): ?>
-                                                <td><?php echo htmlspecialchars($request['reason'] ?? '-'); ?></td>
+                                                <td><?php echo htmlspecialchars($request['reason'] ?? 'No reason provided'); ?></td>
                                                 <?php endif; ?>
                                             </tr>
                                             <?php
@@ -231,7 +237,14 @@ try {
                                     }
                                 } catch(PDOException $e) {
                                     error_log("Error fetching requests: " . $e->getMessage());
-                                    echo '<tr><td colspan="9">An error occurred while fetching your requests.</td></tr>';
+                                    echo '<tr><td colspan="9" class="empty-state">';
+                                    echo '<div class="empty-state">';
+                                    echo '<i class="fas fa-exclamation-circle"></i>';
+                                    echo '<h3>No Requests Found</h3>';
+                                    echo '<p>You haven\'t made any requests to hospitals yet. Start by searching for hospitals and making a request!</p>';
+                                    echo '<a href="search_hospitals_for_recipient.php" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: linear-gradient(45deg, #20bf55, #01baef); color: white; text-decoration: none; border-radius: 5px; transition: all 0.3s ease;">Search Hospitals</a>';
+                                    echo '</div>';
+                                    echo '</td></tr>';
                                 }
                                 ?>
                             </tbody>
