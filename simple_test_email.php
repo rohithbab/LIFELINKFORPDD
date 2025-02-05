@@ -74,6 +74,64 @@ try {
     echo "</div>";
 }
 
+echo "<h3>SMTP Testing:</h3>";
+
+require_once 'backend/php/PHPMailer/PHPMailer.php';
+require_once 'backend/php/PHPMailer/SMTP.php';
+require_once 'backend/php/PHPMailer/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+try {
+    $mail = new PHPMailer(true);
+
+    // Enable verbose debug output
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+    $mail->Debugoutput = 'html';
+
+    // Server settings
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->Port = 587;
+    $mail->SMTPAuth = true;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+
+    // Gmail credentials
+    $mail->Username = 'yourlifelink.org@gmail.com';
+    $mail->Password = 'wxhj ppdl ebsh wing'; // Your App Password
+
+    // Recipients
+    $mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink Admin');
+    $mail->addAddress('rohithbabu2244@gmail.com'); // Your test email
+
+    // Content
+    $mail->isHTML(false);
+    $mail->Subject = 'Simple Test Email';
+    $mail->Body = 'This is a simple test email to verify SMTP connection.';
+
+    echo "<h2>Testing SMTP Connection...</h2>";
+    
+    // Test SMTP connection first
+    if ($mail->smtpConnect()) {
+        echo "<p style='color: green'>✅ SMTP Connection successful!</p>";
+        $mail->smtpClose();
+        
+        echo "<h2>Sending Test Email...</h2>";
+        if ($mail->send()) {
+            echo "<p style='color: green'>✅ Test email sent successfully!</p>";
+        }
+    } else {
+        echo "<p style='color: red'>❌ SMTP Connection failed</p>";
+    }
+
+} catch (Exception $e) {
+    echo "<h2>Error</h2>";
+    echo "<p style='color: red'>Message could not be sent. Mailer Error: {$mail->ErrorInfo}</p>";
+    echo "<p>Error details: " . $e->getMessage() . "</p>";
+}
+
 // Check PHP version and extensions
 echo "<h3>System Information:</h3>";
 echo "PHP Version: " . phpversion() . "<br>";

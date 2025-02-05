@@ -45,7 +45,6 @@ try {
     <link rel="stylesheet" href="../../assets/css/admin-dashboard.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
-        /* Center the main content */
         .main-content {
             margin-left: 0 !important;
             padding: 20px;
@@ -99,112 +98,105 @@ try {
             color: #333;
         }
 
-        .actions-container {
-            margin-top: 30px;
+        .action-buttons {
             display: flex;
             gap: 15px;
             justify-content: flex-end;
+            margin-top: 30px;
         }
 
-        .back-btn {
-            background: linear-gradient(135deg, #4CAF50, #2196F3);
+        .btn-approve {
+            background: #4CAF50;
             color: white;
-            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .approve-btn {
-            background: #2ecc71;
-            color: white;
             padding: 10px 20px;
-            border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            transition: background 0.3s;
         }
 
-        .reject-btn {
-            background: #e74c3c;
+        .btn-reject {
+            background: #f44336;
             color: white;
-            padding: 10px 20px;
             border: none;
+            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            transition: background 0.3s;
         }
 
-        .approve-btn:hover { background: #27ae60; }
-        .reject-btn:hover { background: #c0392b; }
-        .back-btn:hover { opacity: 0.9; }
+        .btn-approve:hover { background: #43A047; }
+        .btn-reject:hover { background: #E53935; }
 
-        .view-license {
-            color: #2196F3;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: color 0.3s ease;
-        }
-        
-        .view-license:hover {
-            color: #1976D2;
-        }
-        
-        .view-license i {
-            font-size: 14px;
-        }
-        
-        .swal2-popup {
-            padding: 2em;
-        }
-        .info-section {
-            margin-bottom: 1.5em;
+        .success-card {
+            display: none;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             text-align: center;
         }
-        .icon-container {
-            margin-bottom: 1em;
+
+        .success-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
         }
-        .icon-container i {
-            font-size: 2em;
-            color: #3498db;
+
+        .success-card p {
+            margin: 0;
+            font-size: 1.1rem;
         }
-        .modal-message {
-            margin-bottom: 1em;
+
+        .success-card.rejection {
+            background: linear-gradient(135deg, #f44336, #e53935);
         }
-        .odml-input-container {
-            margin: 1.5em 0;
+
+        .odml-display {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
         }
-        .odml-input-container label {
-            display: block;
-            margin-bottom: 0.5em;
+
+        .odml-display h4 {
+            color: #2e7d32;
+            margin: 0 0 5px 0;
+        }
+
+        .odml-display p {
+            color: #1b5e20;
+            font-size: 1.2rem;
             font-weight: bold;
-        }
-        .confirmation-text, .status-update-text {
-            margin: 1em 0;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .confirmation-text i, .status-update-text i {
-            margin-right: 0.5em;
-            color: #3498db;
+            margin: 0;
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <!-- Main Content -->
         <div class="main-content">
             <div class="details-container">
+                <!-- Success Cards -->
+                <div id="approvalSuccess" class="success-card">
+                    <h3><i class="fas fa-check-circle"></i> Hospital Approved</h3>
+                    <p>The hospital has been successfully approved and notified via email.</p>
+                    <div class="odml-display">
+                        <h4>Assigned ODML ID</h4>
+                        <p id="assignedOdmlId"></p>
+                    </div>
+                </div>
+                
+                <div id="rejectionSuccess" class="success-card rejection">
+                    <h3><i class="fas fa-times-circle"></i> Hospital Rejected</h3>
+                    <p>The hospital has been rejected and notified of the decision via email.</p>
+                </div>
+
+                <!-- Hospital Details -->
                 <div class="details-header">
-                    <h2>Hospital Details</h2>
+                    <h2>Hospital Details Review</h2>
                 </div>
 
                 <div class="details-grid">
@@ -238,11 +230,11 @@ try {
                     </div>
                 </div>
 
-                <div class="actions-container">
-                    <button class="approve-btn" onclick="showApproveModal('<?php echo htmlspecialchars($hospital['hospital_id']); ?>', '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
+                <div class="action-buttons">
+                    <button class="btn-approve" onclick="showApproveModal(<?php echo $hospital_id; ?>, '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
                         <i class="fas fa-check"></i> Approve
                     </button>
-                    <button class="reject-btn" onclick="showRejectModal('<?php echo htmlspecialchars($hospital['hospital_id']); ?>', '<?php echo htmlspecialchars($hospital['name']); ?>')">
+                    <button class="btn-reject" onclick="showRejectModal(<?php echo $hospital_id; ?>, '<?php echo htmlspecialchars($hospital['name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
                         <i class="fas fa-times"></i> Reject
                     </button>
                     <a href="admin_dashboard.php" class="back-btn">
@@ -253,176 +245,100 @@ try {
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
         function showApproveModal(hospitalId, hospitalName, hospitalEmail) {
             Swal.fire({
                 title: '<h2 style="color: #2196F3;">Approve Hospital</h2>',
                 html: `
-                    <div class="modal-content">
-                        <div class="hospital-info">
-                            <div class="info-item">
-                                <i class="fas fa-hospital" style="color: #2196F3;"></i>
-                                <span><strong>Name:</strong> ${hospitalName}</span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-envelope" style="color: #2196F3;"></i>
-                                <span><strong>Email:</strong> ${hospitalEmail}</span>
-                            </div>
-                        </div>
-                        <div class="input-container">
-                            <label for="odml_id" class="input-label">Enter ODML ID</label>
-                            <input type="text" id="odml_id" class="custom-input" placeholder="Enter ODML ID">
-                        </div>
-                        <p class="notification-text">
-                            <i class="fas fa-bell" style="color: #666;"></i>
-                            An email notification will be sent to the hospital with their ODML ID.
-                        </p>
+                    <p>You are about to approve <strong>${hospitalName}</strong></p>
+                    <div style="margin: 20px 0;">
+                        <label for="odmlId" style="display: block; margin-bottom: 5px; text-align: left;">ODML ID:</label>
+                        <input type="text" id="odmlId" class="swal2-input" placeholder="Enter ODML ID">
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-check"></i> Approve',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                confirmButtonColor: '#2196F3',
-                cancelButtonColor: '#666',
-                customClass: {
-                    popup: 'custom-modal',
-                    confirmButton: 'custom-confirm-button',
-                    cancelButton: 'custom-cancel-button'
-                },
-                width: '500px',
-                backdrop: 'rgba(0,0,0,0.6)',
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                },
+                confirmButtonText: 'Approve',
+                confirmButtonColor: '#4CAF50',
+                cancelButtonText: 'Cancel',
                 preConfirm: () => {
-                    const odmlId = document.getElementById('odml_id').value;
+                    const odmlId = document.getElementById('odmlId').value;
                     if (!odmlId) {
-                        Swal.showValidationMessage('Please enter ODML ID');
+                        Swal.showValidationMessage('Please enter an ODML ID');
                         return false;
                     }
                     return odmlId;
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const confirmButton = Swal.getConfirmButton();
-                    if (confirmButton) {
-                        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                        confirmButton.disabled = true;
-                    }
-                    updateHospitalWithODML(hospitalId, result.value);
+                    const odmlId = result.value;
+                    approveHospital(hospitalId, odmlId);
                 }
             });
         }
 
-        function updateHospitalWithODML(hospitalId, odmlId) {
-            const data = {
-                hospital_id: hospitalId,
-                odml_id: odmlId,
-                action: 'approve'
-            };
-            
+        function approveHospital(hospitalId, odmlId) {
             $.ajax({
-                url: '../../backend/php/update_hospital_odml.php',
+                url: '../../backend/php/update_hospital_status.php',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(data),
+                data: JSON.stringify({
+                    hospital_id: hospitalId,
+                    action: 'approve',
+                    odml_id: odmlId
+                }),
                 success: function(response) {
-                    try {
-                        const result = typeof response === 'string' ? JSON.parse(response) : response;
-                        if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Hospital has been approved successfully.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.href = 'admin_dashboard.php';
-                            });
-                        } else {
-                            console.error('Server returned error:', result);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Failed to approve hospital.'
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred.'
-                        });
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        // Hide the details and action buttons
+                        $('.details-grid, .action-buttons').hide();
+                        
+                        // Show the success card with ODML ID
+                        $('#assignedOdmlId').text(odmlId);
+                        $('#approvalSuccess').show();
+                        $('.odml-display').show();
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = 'admin_dashboard.php';
+                        }, 3000);
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', xhr.responseText);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to connect to the server.'
-                    });
+                error: function() {
+                    Swal.fire('Error', 'Failed to update hospital status', 'error');
                 }
             });
         }
 
-        function showRejectModal(hospitalId, hospitalName) {
+        function showRejectModal(hospitalId, hospitalName, hospitalEmail) {
             Swal.fire({
-                title: '<h2 style="color: #dc3545;">Reject Hospital</h2>',
+                title: '<h2 style="color: #f44336;">Reject Hospital</h2>',
                 html: `
-                    <div class="modal-content">
-                        <div class="hospital-info">
-                            <div class="info-item">
-                                <i class="fas fa-hospital" style="color: #dc3545;"></i>
-                                <span><strong>Name:</strong> ${hospitalName}</span>
-                            </div>
-                        </div>
-                        <div class="input-container">
-                            <label for="rejection_reason" class="input-label">Reason for Rejection</label>
-                            <textarea id="rejection_reason" class="custom-textarea" placeholder="Enter detailed reason for rejection"></textarea>
-                        </div>
-                        <p class="notification-text">
-                            <i class="fas fa-bell" style="color: #666;"></i>
-                            An email notification with the rejection reason will be sent to the hospital.
-                        </p>
+                    <p>You are about to reject <strong>${hospitalName}</strong></p>
+                    <div style="margin: 20px 0;">
+                        <label for="rejectReason" style="display: block; margin-bottom: 5px; text-align: left;">Reason for Rejection:</label>
+                        <textarea id="rejectReason" class="swal2-textarea" placeholder="Enter reason for rejection"></textarea>
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-times"></i> Reject',
-                cancelButtonText: '<i class="fas fa-arrow-left"></i> Cancel',
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#666',
-                customClass: {
-                    popup: 'custom-modal',
-                    confirmButton: 'custom-confirm-button',
-                    cancelButton: 'custom-cancel-button'
-                },
-                width: '500px',
-                backdrop: 'rgba(0,0,0,0.6)',
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                },
+                confirmButtonText: 'Reject',
+                confirmButtonColor: '#f44336',
+                cancelButtonText: 'Cancel',
                 preConfirm: () => {
-                    const reason = document.getElementById('rejection_reason').value;
+                    const reason = document.getElementById('rejectReason').value;
                     if (!reason) {
-                        Swal.showValidationMessage('Please enter rejection reason');
+                        Swal.showValidationMessage('Please enter a reason for rejection');
                         return false;
                     }
                     return reason;
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    rejectHospital(hospitalId, result.value);
+                    const reason = result.value;
+                    rejectHospital(hospitalId, reason);
                 }
             });
         }
@@ -434,45 +350,28 @@ try {
                 contentType: 'application/json',
                 data: JSON.stringify({
                     hospital_id: hospitalId,
-                    status: 'rejected',
-                    reason: reason,
-                    action: 'reject'
+                    action: 'reject',
+                    reason: reason
                 }),
                 success: function(response) {
-                    try {
-                        const result = typeof response === 'string' ? JSON.parse(response) : response;
-                        if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Hospital Rejected',
-                                text: 'The hospital has been rejected and notified.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.href = 'admin_dashboard.php';
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.message || 'Failed to reject hospital.'
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred.'
-                        });
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        // Hide the details and action buttons
+                        $('.details-grid, .action-buttons').hide();
+                        
+                        // Show the rejection success card
+                        $('#rejectionSuccess').show();
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = 'admin_dashboard.php';
+                        }, 3000);
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
                     }
                 },
                 error: function() {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to connect to the server.'
-                    });
+                    Swal.fire('Error', 'Failed to update hospital status', 'error');
                 }
             });
         }

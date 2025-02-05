@@ -10,77 +10,69 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-echo "<h2>SMTP Connection Test</h2>";
+echo "<h1>SMTP Connection Test</h1>";
 
-function testSMTP($port, $secure) {
-    echo "<hr><h3>Testing {$secure} on port {$port}</h3>";
-    
-    try {
-        $mail = new PHPMailer();
-        $mail->isSMTP();
-        
-        // Server settings
-        $mail->Host = 'smtp.gmail.com';
-        $mail->Port = $port;
-        $mail->SMTPAuth = true;
-        $mail->SMTPSecure = $secure;
-        
-        // Authentication
-        $mail->Username = 'yourlifelink.org@gmail.com';
-        $mail->Password = 'rnda lowl zgel ddim';
-        
-        // Enable debug output
-        $mail->SMTPDebug = SMTP::DEBUG_CONNECTION;
-        
-        // Try to connect
-        echo "Attempting connection...<br>";
-        if ($mail->smtpConnect()) {
-            echo "<p style='color: green'>✅ Connection successful!</p>";
-            $mail->smtpClose();
-            return true;
-        } else {
-            echo "<p style='color: red'>❌ Connection failed</p>";
-            return false;
-        }
-    } catch (Exception $e) {
-        echo "<p style='color: red'>❌ Error: " . $e->getMessage() . "</p>";
-        return false;
+try {
+    echo "<h2>Step 1: Creating PHPMailer Instance</h2>";
+    $mail = new PHPMailer(true);
+    echo "✅ PHPMailer instance created<br>";
+
+    echo "<h2>Step 2: Setting up SMTP</h2>";
+    $mail->isSMTP();
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+    $mail->Debugoutput = function($str, $level) {
+        echo "Debug ($level): $str<br>";
+    };
+    echo "✅ SMTP debugging enabled<br>";
+
+    echo "<h2>Step 3: Configuring Server Settings</h2>";
+    $mail->Host = 'smtp.gmail.com';
+    $mail->Port = 587;
+    $mail->SMTPAuth = true;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    echo "✅ Server settings configured<br>";
+
+    echo "<h2>Step 4: Setting Credentials</h2>";
+    $mail->Username = 'yourlifelink.org@gmail.com';
+    $mail->Password = 'wxhj ppdl ebsh wing';
+    echo "✅ Credentials set<br>";
+
+    echo "<h2>Step 5: Testing SMTP Connection</h2>";
+    if (!$mail->smtpConnect()) {
+        throw new Exception("SMTP connection failed");
     }
-}
+    echo "✅ SMTP connection successful!<br>";
+    $mail->smtpClose();
 
-// Test SSL connection
-$ssl_result = testSMTP(465, 'ssl');
+    echo "<h2>Step 6: Testing Email Send</h2>";
+    // Set up email parameters
+    $mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink Admin');
+    $mail->addAddress('rohithbabu2244@gmail.com'); // Your test email
+    $mail->Subject = 'SMTP Test Email';
+    $mail->Body = 'This is a test email to verify SMTP configuration.';
 
-// Test TLS connection
-$tls_result = testSMTP(587, 'tls');
-
-// If both failed, show additional information
-if (!$ssl_result && !$tls_result) {
-    echo "<hr><h3>Troubleshooting Information:</h3>";
-    echo "<pre>";
-    
-    // Check OpenSSL
-    echo "\nOpenSSL installed: " . (extension_loaded('openssl') ? 'Yes' : 'No');
-    echo "\nOpenSSL version: " . OPENSSL_VERSION_TEXT;
-    
-    // Check if we can reach Gmail
-    $fp = fsockopen('smtp.gmail.com', 80, $errno, $errstr, 5);
-    echo "\nCan reach Gmail: " . ($fp ? 'Yes' : 'No');
-    if ($fp) {
-        fclose($fp);
+    // Try to send
+    if(!$mail->send()) {
+        throw new Exception("Email send failed: " . $mail->ErrorInfo);
     }
+    echo "✅ Test email sent successfully!<br>";
+
+    echo "<h2>✅ All Tests Passed!</h2>";
+    echo "Your email configuration is working correctly.";
+
+} catch (Exception $e) {
+    echo "<h2>❌ Test Failed</h2>";
+    echo "<div style='color: red; margin: 10px 0; padding: 10px; border: 1px solid red;'>";
+    echo "Error: " . htmlspecialchars($e->getMessage()) . "<br>";
+    echo "</div>";
     
-    // Show PHP version
-    echo "\nPHP version: " . phpversion();
-    
-    echo "</pre>";
-    
-    echo "<h3>Suggested Solutions:</h3>";
+    echo "<h3>Troubleshooting Steps:</h3>";
     echo "<ol>";
-    echo "<li>Check if your antivirus or firewall is blocking SMTP connections</li>";
-    echo "<li>Try connecting using a mobile hotspot (some ISPs block SMTP)</li>";
-    echo "<li>Verify that the Gmail account settings allow less secure app access</li>";
-    echo "<li>Double-check the app password</li>";
+    echo "<li>Verify that your Gmail account has 2-Step Verification enabled</li>";
+    echo "<li>Confirm that you've generated an App Password correctly</li>";
+    echo "<li>Make sure you're using the correct Gmail address</li>";
+    echo "<li>Check if your Gmail account has any security alerts</li>";
+    echo "<li>Try generating a new App Password</li>";
     echo "</ol>";
 }
 ?>
