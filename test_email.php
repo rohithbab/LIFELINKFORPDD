@@ -3,75 +3,88 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'backend/php/EmailValidator.php';
 require_once 'vendor/autoload.php';
-require_once 'backend/php/helpers/mailer.php';
+require_once 'config/email_config.php';
 
-// Test email validation
-$validator = new EmailValidator();
-
-// Test cases
-$emails = [
-    'test@gmail.com',
-    'invalid-email',
-    'disposable@temp-mail.org',
-    'yourlifelink.org@gmail.com'
-];
-
-echo "Testing Email Validation:\n";
-foreach ($emails as $email) {
-    $result = $validator->validateEmail($email);
-    echo "\nTesting email: " . $email . "\n";
-    echo "Result: " . ($result['valid'] ? 'Valid' : 'Invalid') . "\n";
-    echo "Message: " . $result['message'] . "\n";
-}
-
-// Test email sending
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-$config = require 'config/email_config.php';
+// Test configuration
+$testEmail = 'rohithbabu2244@gmail.com';
+$testHospitalName = 'Test Hospital';
+$testODMLID = 'ODML' . rand(1000, 9999); // Random ODML ID for testing
+$testRejectionReason = 'Documentation incomplete. Please provide updated medical license.'; // Sample rejection reason
 
-echo "\n\nTesting Email Sending:\n";
+function sendTestEmail($mail, $subject, $body) {
+    try {
+        $mail->clearAddresses();
+        $mail->clearAttachments();
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+        $mail->addAddress('rohithbabu2244@gmail.com');
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        echo "Error sending email: " . $e->getMessage() . "\n";
+        return false;
+    }
+}
+
+echo "Starting Email Tests...\n\n";
+
 try {
+    // Initialize PHPMailer
     $mail = new PHPMailer(true);
     
-    //Server settings
+    // Server settings with debug output
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
     $mail->isSMTP();
-    $mail->Host       = $config['smtp']['host'];
-    $mail->SMTPAuth   = true;
-    $mail->Username   = $config['smtp']['username'];
-    $mail->Password   = $config['smtp']['password'];
-    $mail->SMTPSecure = $config['smtp']['encryption'];
-    $mail->Port       = $config['smtp']['port'];
-
-    //Recipients
-    $mail->setFrom($config['smtp']['username'], 'LifeLink System');
-    $mail->addAddress($config['smtp']['username']); // Sending to self for testing
-
-    //Content
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 'yourlifelink.org@gmail.com';
+    $mail->Password = 'gfnb wnxc pmgj eikm';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
     $mail->isHTML(true);
-    $mail->Subject = 'LifeLink Email Test';
-    $mail->Body    = 'This is a test email from LifeLink system. If you receive this, the email configuration is working correctly.';
-
-    $mail->send();
-    echo "Test email sent successfully!\n";
-} catch (Exception $e) {
-    echo "Error sending test email: {$mail->ErrorInfo}\n";
-}
-
-try {
-    $mailer = new Mailer();
-    // Change this to your email address
-    $result = $mailer->sendTestEmail('yourlifelink.org@gmail.com');
-    if ($result) {
-        echo "<h2 style='color: green;'>Test email sent successfully!</h2>";
-        echo "<p>Please check your email inbox (and spam folder).</p>";
-    } else {
-        echo "<h2 style='color: red;'>Failed to send email.</h2>";
+    $mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink Admin');
+    
+    echo "Testing Hospital Approval Email (Dashboard)...\n";
+    $approvalSubject = "LifeLink - Hospital Registration Approved";
+    $approvalBody = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #2196F3;'>Hospital Registration Approved</h2>
+            <p>Dear {$testHospitalName},</p>
+            <p>We are pleased to inform you that your hospital registration has been approved.</p>
+            <p>Your ODML ID is: <strong>{$testODMLID}</strong></p>
+            <p>You can now access all features of the LifeLink platform.</p>
+            <p>Best regards,<br>LifeLink Admin Team</p>
+        </div>";
+    
+    if(sendTestEmail($mail, $approvalSubject, $approvalBody)) {
+        echo "✓ Hospital Approval Email sent successfully\n\n";
     }
+    
+    echo "Testing Hospital Rejection Email...\n";
+    $rejectionSubject = "LifeLink - Hospital Registration Status Update";
+    $rejectionBody = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #f44336;'>Registration Update</h2>
+            <p>Dear {$testHospitalName},</p>
+            <p>We regret to inform you that your hospital registration could not be approved at this time.</p>
+            <p><strong>Reason:</strong> {$testRejectionReason}</p>
+            <p>You may address these concerns and submit a new application.</p>
+            <p>Best regards,<br>LifeLink Admin Team</p>
+        </div>";
+    
+    if(sendTestEmail($mail, $rejectionSubject, $rejectionBody)) {
+        echo "✓ Hospital Rejection Email sent successfully\n\n";
+    }
+    
 } catch (Exception $e) {
-    echo "<h2 style='color: red;'>Error sending email:</h2>";
-    echo "<pre>" . $e->getMessage() . "</pre>";
+    echo "Mailer Error: " . $e->getMessage() . "\n";
 }
-?>
+
+echo "\nEmail testing completed. Check your inbox at {$testEmail}\n";
+echo "Test ODML ID used: {$testODMLID}\n";
+echo "Test Rejection Reason used: {$testRejectionReason}\n";
