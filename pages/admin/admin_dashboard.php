@@ -540,74 +540,6 @@ $urgentRecipients = getUrgentRecipients($conn);
         }
     </style>
     <style>
-        .input-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .odml-input {
-            flex: 1;
-            min-width: 120px;
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .odml-input:focus {
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
-            outline: none;
-        }
-
-        .update-btn {
-            padding: 8px 16px;
-            background: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .update-btn:hover {
-            background: #1976D2;
-            transform: translateY(-1px);
-        }
-
-        .update-btn:active {
-            transform: translateY(0);
-        }
-
-        .update-btn i {
-            font-size: 12px;
-        }
-
-        .update-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* Make table cells have enough space */
-        #pending-hospitals-table td {
-            padding: 12px;
-            vertical-align: middle;
-        }
-
-        /* Ensure the input group cell has enough width */
-        #pending-hospitals-table td:nth-child(4) {
-            min-width: 250px;
-        }
-    </style>
-
-    <style>
     .update-odml-btn {
         background: linear-gradient(45deg, #3498db, #2ecc71);
         border: none;
@@ -802,19 +734,15 @@ $urgentRecipients = getUrgentRecipients($conn);
                         </thead>
                         <tbody>
                             <?php foreach ($pendingHospitals as $hospital): ?>
-                            <tr id="hospital_row_<?php echo $hospital['hospital_id']; ?>">
+                            <tr>
                                 <td><?php echo htmlspecialchars($hospital['hospital_name']); ?></td>
                                 <td><?php echo htmlspecialchars($hospital['email']); ?></td>
                                 <td><?php echo htmlspecialchars($hospital['phone'] ?? 'Not Available'); ?></td>
                                 <td>
-                                    <div class="input-group">
-                                        <input type="text" id="odml_id_<?php echo $hospital['hospital_id']; ?>" 
-                                               class="odml-input" placeholder="Enter ODML ID">
-                                        <button class="btn btn-primary update-btn" 
-                                                onclick="updateHospitalODMLID(<?php echo $hospital['hospital_id']; ?>)">
-                                            <i class="fas fa-check"></i> Update
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm update-odml-btn" 
+                                            onclick="showODMLUpdateModal('hospital', <?php echo $hospital['hospital_id']; ?>, '<?php echo htmlspecialchars($hospital['hospital_name']); ?>', '<?php echo htmlspecialchars($hospital['email']); ?>')">
+                                        <i class="fas fa-plus-circle"></i> Update ODML ID
+                                    </button>
                                 </td>
                                 <td>
                                     <button class="reject-btn" 
@@ -1104,106 +1032,35 @@ $urgentRecipients = getUrgentRecipients($conn);
 
             function updateHospitalODMLID(hospitalId) {
                 const odmlId = $(`#odml_id_${hospitalId}`).val();
-                const hospitalName = $(`#hospital_row_${hospitalId}`).find('td:first').text();
-                const hospitalEmail = $(`#hospital_row_${hospitalId}`).find('td:eq(1)').text();
-
-                if (!odmlId) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Please enter an ODML ID',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    });
-                    return;
-                }
-
-                // Show confirmation dialog
-                Swal.fire({
-                    title: 'Confirm Update',
-                    html: `
-                        <p>You are about to update ODML ID for:</p>
-                        <p><strong>${hospitalName}</strong></p>
-                        <p>Email: ${hospitalEmail}</p>
-                        <p>ODML ID: ${odmlId}</p>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, update it!',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Show loading state
-                        Swal.fire({
-                            title: 'Processing...',
-                            html: 'Sending approval email and updating status...',
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        // Make the AJAX call
-                        $.ajax({
-                            url: '../../backend/php/update_odml_id.php',
-                            method: 'POST',
-                            data: {
-                                type: 'hospital',
-                                id: hospitalId,
-                                odml_id: odmlId
-                            },
-                            success: function(response) {
-                                try {
-                                    const data = typeof response === 'string' ? JSON.parse(response) : response;
-                                    if (data.success) {
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'Success!',
-                                            text: 'Hospital approved successfully',
-                                            allowOutsideClick: false,
-                                            allowEscapeKey: false
-                                        }).then((result) => {
-                                            window.location.reload();
-                                        });
-                                    } else {
-                                        console.error('Server error:', data.message);
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Error!',
-                                            text: data.message || 'Failed to update ODML ID',
-                                            allowOutsideClick: false,
-                                            allowEscapeKey: false
-                                        });
-                                    }
-                                } catch (e) {
-                                    console.error('Error parsing response:', e);
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        text: 'An unexpected error occurred while processing the response',
-                                        allowOutsideClick: false,
-                                        allowEscapeKey: false
-                                    });
+                
+                if (confirm('Are you sure you want to update the ODML ID?')) {
+                    $.ajax({
+                        url: '../../backend/php/update_odml_id.php',
+                        method: 'POST',
+                        data: {
+                            type: 'hospital',
+                            id: hospitalId,
+                            odml_id: odmlId
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'string' ? JSON.parse(response) : response;
+                                if (data.success) {
+                                    showSuccessBox(hospitalName, 'hospital', odmlId);
+                                } else {
+                                    alert('Failed to update ODML ID: ' + (data.message || 'Unknown error'));
                                 }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('AJAX error:', status, error);
-                                console.error('Response:', xhr.responseText);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Connection Error!',
-                                    text: 'Failed to connect to server. Please try again.',
-                                    allowOutsideClick: false,
-                                    allowEscapeKey: false
-                                });
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                                showSuccessBox(hospitalName, 'hospital', odmlId);
                             }
-                        });
-                    }
-                });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            alert('Error updating ODML ID');
+                        }
+                    });
+                }
             }
 
             function updateHospitalStatus(hospitalId, status) {

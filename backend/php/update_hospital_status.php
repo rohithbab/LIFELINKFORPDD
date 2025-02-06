@@ -31,8 +31,6 @@ if (!isset($data['hospital_id'])) {
 
 $hospital_id = $data['hospital_id'];
 $action = $data['action'] ?? '';
-$testMode = isset($data['test_mode']) ? (bool)$data['test_mode'] : false;
-$shouldFail = isset($data['should_fail']) ? (bool)$data['should_fail'] : false;
 
 try {
     // Get hospital details first
@@ -45,10 +43,6 @@ try {
     }
 
     $mailer = new Mailer();
-    
-    if ($testMode) {
-        $mailer->setTestMode(true, $shouldFail);
-    }
     
     if ($action === 'approve') {
         if (!isset($data['odml_id']) || empty($data['odml_id'])) {
@@ -158,5 +152,4 @@ try {
         'message' => $e->getMessage()
     ]);
 }
-$conn->close();
 ?>
