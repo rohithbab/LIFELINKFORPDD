@@ -241,60 +241,81 @@ function updateODMLId(type, id) {
     approveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     approveBtn.disabled = true;
 
-    console.log('Updating ODML ID:', { type, id, odmlId });
+    // Show loading state
+    Swal.fire({
+        title: 'Processing...',
+        html: 'Sending approval email and updating status...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
-    // Make API call to update ODML ID
-    let endpoint = '../../backend/php/update_recipient_odml.php';
+    // Always use update_odml_id.php
+    const endpoint = '../../backend/php/update_odml_id.php';
     const data = {
-        recipient_id: id,
-        odml_id: odmlId,
-        action: 'approve'
+        type: type,
+        id: id,
+        odml_id: odmlId
     };
-
-    if (type !== 'recipient') {
-        endpoint = '../../backend/php/update_odml.php';
-        data = {
-            type: type,
-            id: id,
-            odmlId: odmlId
-        };
-    }
 
     console.log('Sending request to:', endpoint, 'with data:', data);
 
-    fetch(endpoint, {
+    // Use jQuery AJAX for consistency
+    $.ajax({
+        url: endpoint,
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+        data: data,
+        success: function(response) {
+            console.log('Server response:', response);
+            try {
+                const data = typeof response === 'string' ? JSON.parse(response) : response;
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'ODML ID updated successfully',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'Failed to update ODML ID',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                    approveBtn.innerHTML = originalBtnHtml;
+                    approveBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An unexpected error occurred',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                });
+                approveBtn.innerHTML = originalBtnHtml;
+                approveBtn.disabled = false;
+            }
         },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Server response:', data);
-        if (data.success) {
-            // Show success message
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
             Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'ODML ID updated successfully.',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                // Reload the page or update UI
-                window.location.reload();
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to connect to server',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
-        } else {
-            throw new Error(data.message || 'Failed to update ODML ID');
+            approveBtn.innerHTML = originalBtnHtml;
+            approveBtn.disabled = false;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError(error.message || 'An error occurred while updating ODML ID');
-        approveBtn.innerHTML = originalBtnHtml;
-        approveBtn.disabled = false;
     });
 }

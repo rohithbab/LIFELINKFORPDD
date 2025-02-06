@@ -8,14 +8,64 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 class Mailer {
+    private $testMode = false;
+    private $shouldFail = false;
+    private $mailer = null;
+    private $lastError = null;
+
+    public function setTestMode($enabled, $shouldFail = false) {
+        $this->testMode = $enabled;
+        $this->shouldFail = $shouldFail;
+    }
+
+    public function getLastError() {
+        return $this->lastError;
+    }
+
+    public function testConnection() {
+        try {
+            error_log("Testing SMTP connection...");
+            $mail = $this->createMailer();
+            
+            if (!$mail->smtpConnect()) {
+                $this->lastError = "Failed to connect to SMTP server";
+                error_log($this->lastError);
+                return false;
+            }
+            
+            error_log("SMTP connection test successful");
+            return true;
+            
+        } catch (Exception $e) {
+            $this->lastError = "SMTP Connection Error: " . $e->getMessage();
+            error_log($this->lastError);
+            return false;
+        }
+    }
+
     private function createMailer() {
         try {
+            error_log("Creating new mailer instance");
+            
+            if ($this->testMode && $this->shouldFail) {
+                throw new Exception("Test mode: Simulating email failure");
+            }
+
+            // Close existing connection if any
+            if ($this->mailer !== null) {
+                try {
+                    $this->mailer->smtpClose();
+                } catch (Exception $e) {
+                    error_log("Warning: Failed to close existing SMTP connection: " . $e->getMessage());
+                }
+            }
+
             $mail = new PHPMailer(true);
             
-            // Server settings with debugging
+            // Enable verbose debug output
             $mail->SMTPDebug = SMTP::DEBUG_SERVER;
             $mail->Debugoutput = function($str, $level) {
-                error_log("PHPMailer Debug ($level): $str");
+                error_log("PHPMailer ($level): $str");
             };
             
             $mail->isSMTP();
@@ -26,317 +76,137 @@ class Mailer {
             
             // Gmail credentials
             $mail->Username = 'yourlifelink.org@gmail.com';
-            // Replace this with your new App Password
-            $mail->Password = 'wxhj ppdl ebsh wing';
+            $mail->Password = 'abiy ulmu umbf owhn';
+            
+            // Add extra debugging and SSL options
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
             
             // Default settings
             $mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink Admin');
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';
             
-            // Test SMTP connection before proceeding
-            if (!$mail->smtpConnect()) {
-                error_log("SMTP Connection Failed: Unable to connect to SMTP server");
-                throw new Exception("Failed to connect to SMTP server. Please check your email settings.");
-            }
-            $mail->smtpClose();
+            // Store the mailer instance
+            $this->mailer = $mail;
             
+            error_log("Mailer instance created successfully");
             return $mail;
+            
         } catch (Exception $e) {
-            error_log("Mailer creation error: " . $e->getMessage());
-            throw new Exception("Email configuration error: " . $e->getMessage());
+            $this->lastError = "Email Configuration Error: " . $e->getMessage();
+            error_log($this->lastError);
+            throw new Exception($this->lastError);
         }
     }
 
-    private function getEmailTemplate($templateName) {
-        $templatePath = __DIR__ . '/../../../email_templates/' . $templateName;
-        if (!file_exists($templatePath)) {
-            error_log("Template not found: " . $templatePath);
-            throw new Exception("Email template not found: " . $templateName);
-        }
-        $content = file_get_contents($templatePath);
-        if ($content === false) {
-            error_log("Failed to read template: " . $templatePath);
-            throw new Exception("Failed to read email template: " . $templateName);
-        }
-        return $content;
-    }
-
-    public function testConnection() {
+    private function sendEmail($to, $subject, $body) {
+        error_log("Attempting to send email to: " . $to);
+        error_log("Subject: " . $subject);
+        
         try {
-            error_log("Starting SMTP connection test...");
             $mail = $this->createMailer();
             
-            // Try to connect to SMTP server
-            if(!$mail->smtpConnect()) {
-                error_log("SMTP connection failed");
-                throw new Exception("Failed to connect to SMTP server");
-            }
+            // Clear all recipients first
+            $mail->clearAllRecipients();
             
-            // If we got here, connection successful
-            $mail->smtpClose();
-            error_log("SMTP connection successful");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in testConnection: " . $e->getMessage());
-            throw new Exception("SMTP Connection test failed: " . $e->getMessage());
-        }
-    }
-
-    public function sendTestEmail($to) {
-        try {
-            error_log("Starting test email send to: $to");
-            
-            $mail = $this->createMailer();
-            $mail->clearAddresses();
+            // Set the recipient
             $mail->addAddress($to);
-            $mail->Subject = 'LifeLink Test Email';
-            $mail->Body = '<h2>LifeLink Email Test</h2>
-                          <p>This is a test email from the LifeLink system.</p>
-                          <p>If you received this email, it means your email configuration is working correctly!</p>';
+            error_log("Added recipient: " . $to);
+            
+            // Set subject and body
+            $mail->Subject = $subject;
+            $mail->Body = $body;
             
             error_log("Attempting to send email...");
+            
+            // Try to send
             if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
+                $this->lastError = "Email Send Failed: " . $mail->ErrorInfo;
+                error_log($this->lastError);
+                throw new Exception($this->lastError);
             }
             
-            error_log("Email sent successfully to: $to");
+            error_log("Email sent successfully to: " . $to);
             return true;
+            
         } catch (Exception $e) {
-            error_log("Error in sendTestEmail: " . $e->getMessage());
-            throw new Exception("Failed to send test email: " . $e->getMessage());
+            $this->lastError = "Send Email Failed: " . $e->getMessage();
+            error_log($this->lastError);
+            throw $e;
+            
+        } finally {
+            // Always try to close the connection
+            if ($this->mailer !== null) {
+                try {
+                    $this->mailer->smtpClose();
+                    error_log("SMTP connection closed");
+                } catch (Exception $e) {
+                    error_log("Warning: Failed to close SMTP connection: " . $e->getMessage());
+                }
+            }
         }
     }
 
-    public function sendHospitalApprovalEmail($to, $hospitalName, $odmlId) {
-        try {
-            error_log("Starting hospital approval email send to: $to");
-            
-            $mail = $this->createMailer();
-            $mail->clearAddresses();
-            $mail->addAddress($to);
-            $mail->Subject = 'LifeLink - Hospital Registration Approved';
-            
-            error_log("Loading approval template...");
-            $template = $this->getEmailTemplate('hospital_approval.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{HOSPITAL_NAME}', $hospitalName, $template);
-            $template = str_replace('{ODML_ID}', $odmlId, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception("Failed to send email: " . $mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $to");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendHospitalApprovalEmail: " . $e->getMessage());
-            throw new Exception("Failed to send approval email: " . $e->getMessage());
-        }
+    public function sendHospitalApprovalEmail($email, $hospitalName, $odmlId) {
+        error_log("Preparing hospital approval email for: " . $hospitalName);
+        
+        $subject = "Hospital Registration Approved - LifeLink";
+        
+        $body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #2c3e50;'>Hospital Registration Approved</h2>
+            <p>Dear {$hospitalName},</p>
+            <p>We are pleased to inform you that your hospital registration with LifeLink has been approved.</p>
+            <p><strong>Your ODML ID is: {$odmlId}</strong></p>
+            <p>Please keep this ID for your records. You will need it for future interactions with the LifeLink system.</p>
+            <p>You can now log in to your account and start using our services.</p>
+            <p>Best regards,<br>The LifeLink Team</p>
+        </div>";
+        
+        return $this->sendEmail($email, $subject, $body);
     }
 
-    public function sendHospitalRejectionEmail($to, $hospitalName, $reason) {
-        try {
-            error_log("Starting hospital rejection email send to: $to");
-            
-            $mail = $this->createMailer();
-            $mail->clearAddresses();
-            $mail->addAddress($to);
-            $mail->Subject = 'LifeLink - Hospital Registration Status Update';
-            
-            error_log("Loading rejection template...");
-            $template = $this->getEmailTemplate('hospital_rejection.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{HOSPITAL_NAME}', $hospitalName, $template);
-            $template = str_replace('{REASON}', $reason, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $to");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendHospitalRejectionEmail: " . $e->getMessage());
-            throw new Exception("Failed to send rejection email: " . $e->getMessage());
-        }
+    public function sendDonorApprovalEmail($email, $donorName, $odmlId) {
+        error_log("Preparing donor approval email for: " . $donorName);
+        
+        $subject = "Donor Registration Approved - LifeLink";
+        
+        $body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #2c3e50;'>Donor Registration Approved</h2>
+            <p>Dear {$donorName},</p>
+            <p>We are pleased to inform you that your donor registration with LifeLink has been approved.</p>
+            <p><strong>Your ODML ID is: {$odmlId}</strong></p>
+            <p>Please keep this ID for your records. You will need it for future interactions with the LifeLink system.</p>
+            <p>Thank you for your noble decision to become an organ donor.</p>
+            <p>Best regards,<br>The LifeLink Team</p>
+        </div>";
+        
+        return $this->sendEmail($email, $subject, $body);
     }
 
-    public function sendRejectionNotification($email, $name, $reason, $type) {
-        try {
-            error_log("Starting rejection notification email send to: $email");
-            
-            $mail = $this->createMailer();
-            $mail->addAddress($email);
-            $mail->Subject = ucfirst($type) . ' Registration Status - LifeLink';
-            
-            error_log("Loading rejection notification template...");
-            $template = $this->getEmailTemplate('rejection_notification.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{NAME}', $name, $template);
-            $template = str_replace('{USER_TYPE}', ucfirst($type), $template);
-            $template = str_replace('{REASON}', $reason, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $email");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendRejectionNotification: " . $e->getMessage());
-            throw new Exception("Failed to send rejection notification email: " . $e->getMessage());
-        }
-    }
-
-    public function sendDonorApproval($email, $donorName, $odmlId) {
-        try {
-            error_log("Starting donor approval email send to: $email");
-            
-            $mail = $this->createMailer();
-            $mail->addAddress($email);
-            $mail->Subject = 'Donor Registration Approved - LifeLink';
-            
-            error_log("Loading approval template...");
-            $template = $this->getEmailTemplate('approval_notification.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{NAME}', $donorName, $template);
-            $template = str_replace('{USER_TYPE}', 'Donor', $template);
-            $template = str_replace('{ODML_ID}', $odmlId, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $email");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendDonorApproval: " . $e->getMessage());
-            throw new Exception("Failed to send donor approval email: " . $e->getMessage());
-        }
-    }
-
-    public function sendRecipientApproval($email, $recipientName, $odmlId) {
-        try {
-            error_log("Starting recipient approval email send to: $email");
-            
-            $mail = $this->createMailer();
-            $mail->addAddress($email);
-            $mail->Subject = 'Recipient Registration Approved - LifeLink';
-            
-            error_log("Loading approval template...");
-            $template = $this->getEmailTemplate('approval_notification.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{NAME}', $recipientName, $template);
-            $template = str_replace('{USER_TYPE}', 'Recipient', $template);
-            $template = str_replace('{ODML_ID}', $odmlId, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $email");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendRecipientApproval: " . $e->getMessage());
-            throw new Exception("Failed to send recipient approval email: " . $e->getMessage());
-        }
-    }
-
-    public function sendODMLUpdateEmail($email, $name, $type, $odmlId) {
-        try {
-            error_log("Starting ODML update email send to: $email");
-            
-            $mail = $this->createMailer();
-            $mail->addAddress($email);
-            $mail->Subject = ucfirst($type) . ' Registration Approved - ODML ID Assigned';
-            
-            error_log("Loading ODML update template...");
-            $template = $this->getEmailTemplate('odml_assignment.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{NAME}', $name, $template);
-            $template = str_replace('{USER_TYPE}', ucfirst($type), $template);
-            $template = str_replace('{ODML_ID}', $odmlId, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $email");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendODMLUpdateEmail: " . $e->getMessage());
-            throw new Exception("Failed to send ODML update email: " . $e->getMessage());
-        }
-    }
-
-    public function sendHospitalApproval($email, $hospitalName, $odmlId) {
-        try {
-            error_log("Starting hospital approval email send to: $email");
-            
-            $mail = $this->createMailer();
-            $mail->addAddress($email);
-            $mail->Subject = 'Hospital Registration Approved - LifeLink';
-            
-            error_log("Loading approval template...");
-            $template = $this->getEmailTemplate('approval_notification.html');
-            error_log("Template loaded successfully");
-            
-            error_log("Replacing template variables...");
-            $template = str_replace('{NAME}', $hospitalName, $template);
-            $template = str_replace('{USER_TYPE}', 'Hospital', $template);
-            $template = str_replace('{ODML_ID}', $odmlId, $template);
-            
-            $mail->Body = $template;
-            error_log("Attempting to send email...");
-            
-            if (!$mail->send()) {
-                error_log("Email send failed: " . $mail->ErrorInfo);
-                throw new Exception($mail->ErrorInfo);
-            }
-            
-            error_log("Email sent successfully to: $email");
-            return true;
-        } catch (Exception $e) {
-            error_log("Error in sendHospitalApproval: " . $e->getMessage());
-            throw new Exception("Failed to send hospital approval email: " . $e->getMessage());
-        }
+    public function sendRecipientApprovalEmail($email, $recipientName, $odmlId) {
+        error_log("Preparing recipient approval email for: " . $recipientName);
+        
+        $subject = "Recipient Registration Approved - LifeLink";
+        
+        $body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #2c3e50;'>Recipient Registration Approved</h2>
+            <p>Dear {$recipientName},</p>
+            <p>We are pleased to inform you that your recipient registration with LifeLink has been approved.</p>
+            <p><strong>Your ODML ID is: {$odmlId}</strong></p>
+            <p>Please keep this ID for your records. You will need it for future interactions with the LifeLink system.</p>
+            <p>We will notify you when a suitable organ match becomes available.</p>
+            <p>Best regards,<br>The LifeLink Team</p>
+        </div>";
+        
+        return $this->sendEmail($email, $subject, $body);
     }
 }
