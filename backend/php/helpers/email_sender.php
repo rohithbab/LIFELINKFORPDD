@@ -94,8 +94,12 @@ class EmailSender {
                 throw new Exception("No email template found for type: $type. Checked paths: " . implode(', ', $templatePaths));
             }
 
-            // Replace placeholders in the template
-            $templateContent = str_replace(['{{name}}', '{{odmlId}}'], [$name, $odmlId], $templateContent);
+            // Replace placeholders in the template with correct format
+            $templateContent = str_replace(
+                ['{DONOR_NAME}', '{ODML_ID}'], 
+                [$name, $odmlId], 
+                $templateContent
+            );
             error_log("Template content prepared with replacements");
 
             $this->mail->isHTML(true);
