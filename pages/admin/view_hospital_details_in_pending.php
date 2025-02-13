@@ -253,20 +253,19 @@ try {
                 title: '<h2 style="color: #2196F3;">Approve Hospital</h2>',
                 html: `
                     <p>You are about to approve <strong>${hospitalName}</strong></p>
-                    <p>An approval email will be sent to: <strong>${hospitalEmail}</strong></p>
-                    <div class="form-group mt-4">
-                        <label for="odml_id">Enter ODML ID:</label>
-                        <input type="text" id="odml_id" class="swal2-input" placeholder="Enter ODML ID">
+                    <div style="margin: 20px 0;">
+                        <label for="odmlId" style="display: block; margin-bottom: 5px; text-align: left;">ODML ID:</label>
+                        <input type="text" id="odmlId" class="swal2-input" placeholder="Enter ODML ID">
                     </div>
                 `,
                 showCancelButton: true,
-                confirmButtonText: 'Approve & Update',
+                confirmButtonText: 'Approve',
                 confirmButtonColor: '#4CAF50',
                 cancelButtonText: 'Cancel',
                 preConfirm: () => {
-                    const odmlId = document.getElementById('odml_id').value;
+                    const odmlId = document.getElementById('odmlId').value;
                     if (!odmlId) {
-                        Swal.showValidationMessage('Please enter ODML ID');
+                        Swal.showValidationMessage('Please enter an ODML ID');
                         return false;
                     }
                     return odmlId;
@@ -274,73 +273,42 @@ try {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const odmlId = result.value;
-                    
-                    // Show loading state
-                    Swal.fire({
-                        title: 'Processing...',
-                        html: 'Sending approval email and updating status...',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+                    approveHospital(hospitalId, odmlId);
+                }
+            });
+        }
 
-                    // Make the AJAX call
-                    $.ajax({
-                        url: '../../backend/php/update_odml_id.php',
-                        method: 'POST',
-                        data: {
-                            type: 'hospital',
-                            id: hospitalId,
-                            odml_id: odmlId
-                        },
-                        success: function(response) {
-                            try {
-                                const data = typeof response === 'string' ? JSON.parse(response) : response;
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success!',
-                                        text: 'Hospital approved successfully',
-                                        allowOutsideClick: false,
-                                        allowEscapeKey: false
-                                    }).then((result) => {
-                                        window.location.reload();
-                                    });
-                                } else {
-                                    console.error('Server error:', data.message);
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        text: data.message || 'Failed to approve hospital',
-                                        allowOutsideClick: false,
-                                        allowEscapeKey: false
-                                    });
-                                }
-                            } catch (e) {
-                                console.error('Parse error:', e);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: 'An unexpected error occurred while processing the response',
-                                    allowOutsideClick: false,
-                                    allowEscapeKey: false
-                                });
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('AJAX error:', status, error);
-                            console.error('Response:', xhr.responseText);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Connection Error!',
-                                text: 'Failed to connect to server. Please try again.',
-                                allowOutsideClick: false,
-                                allowEscapeKey: false
-                            });
-                        }
-                    });
+        function approveHospital(hospitalId, odmlId) {
+            $.ajax({
+                url: '../../backend/php/update_hospital_status.php',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    hospital_id: hospitalId,
+                    action: 'approve',
+                    odml_id: odmlId
+                }),
+                success: function(response) {
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        // Hide the details and action buttons
+                        $('.details-grid, .action-buttons').hide();
+                        
+                        // Show the success card with ODML ID
+                        $('#assignedOdmlId').text(odmlId);
+                        $('#approvalSuccess').show();
+                        $('.odml-display').show();
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = 'admin_dashboard.php';
+                        }, 3000);
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Failed to update hospital status', 'error');
                 }
             });
         }
