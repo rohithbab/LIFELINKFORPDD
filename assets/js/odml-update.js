@@ -245,7 +245,7 @@ function updateODMLId(type, id) {
 
     // Make API call to update ODML ID
     let endpoint = '../../backend/php/update_recipient_odml.php';
-    const data = {
+    let data = {
         recipient_id: id,
         odml_id: odmlId,
         action: 'approve'
@@ -260,7 +260,14 @@ function updateODMLId(type, id) {
         };
     }
 
-    console.log('Sending request to:', endpoint, 'with data:', data);
+    console.log('Request details:', {
+        endpoint,
+        data,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
 
     fetch(endpoint, {
         method: 'POST',

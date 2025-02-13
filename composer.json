@@ -1,8 +1,6 @@
 {
     "require": {
-        "phpmailer/phpmailer": "^6.9",
-        "react/event-loop": "^1.5",
-        "react/promise": "^3.2"
+        "phpmailer/phpmailer": "*"
     },
     "config": {
         "disable-tls": true,

@@ -1,25 +1,24 @@
 <?php
 namespace LifeLink\Helpers;
 
+// Direct includes instead of using composer autoloader
+require_once __DIR__ . '/../../../vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../../../vendor/phpmailer/phpmailer/src/SMTP.php';
+require_once __DIR__ . '/../../../vendor/phpmailer/phpmailer/src/Exception.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
-use React\EventLoop\Factory;
-use React\Promise\Promise;
-use React\Promise\Deferred;
-
-require __DIR__ . '/../../../vendor/autoload.php';
 
 class EmailSender {
     private $mail;
-    private $loop;
 
     public function __construct() {
-        $this->mail = new PHPMailer(true);
-        $this->loop = Factory::create();
-
         try {
-            // SMTP configuration with extensive debugging
+            error_log("Initializing PHPMailer...");
+            $this->mail = new PHPMailer(true);
+
+            // Server settings
             $this->mail->SMTPDebug = SMTP::DEBUG_SERVER;  // Enable verbose debug output
             $this->mail->Debugoutput = function($str, $level) {
                 error_log("PHPMailer Debug ($level): $str");
@@ -28,38 +27,50 @@ class EmailSender {
             $this->mail->isSMTP();
             $this->mail->Host = 'smtp.gmail.com';
             $this->mail->SMTPAuth = true;
+            $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Use SSL instead of TLS
+            $this->mail->Port = 465; // SSL port
+            
+            // Gmail credentials
             $this->mail->Username = 'yourlifelink.org@gmail.com';
+            $this->mail->Password = 'raeorxsahiysbkxd'; // App password without spaces
             
-            // Use App Password instead of regular password
-            $this->mail->Password = 'rnda lowl zgel ddim';
-            
-            $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $this->mail->Port = 587;
-
-            // Additional SMTP configuration
-            $this->mail->SMTPOptions = [
-                'ssl' => [
+            // Additional SMTP settings for reliability
+            $this->mail->Timeout = 60;
+            $this->mail->SMTPKeepAlive = true;
+            $this->mail->SMTPOptions = array(
+                'ssl' => array(
                     'verify_peer' => false,
                     'verify_peer_name' => false,
                     'allow_self_signed' => true
-                ]
-            ];
+                )
+            );
+
+            $this->mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink');
+            error_log("PHPMailer initialized successfully");
         } catch (Exception $e) {
             error_log("SMTP Configuration Error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            throw $e;
         }
     }
 
     public function sendODMLUpdateEmail($email, $name, $type, $odmlId) {
-        $deferred = new Deferred();
-
         try {
-            // Reset previous configurations
+            error_log("Starting email send process for $type to $email");
+            
+            if (!$this->mail) {
+                throw new Exception("PHPMailer not properly initialized");
+            }
+            
+            // Reset previous settings
             $this->mail->clearAddresses();
             $this->mail->clearAttachments();
-
-            $this->mail->setFrom('yourlifelink.org@gmail.com', 'LifeLink');
+            
+            // Set recipient
             $this->mail->addAddress($email, $name);
             $this->mail->Subject = ucfirst($type) . ' Registration Approved - ODML ID Assigned';
+
+            error_log("Email basic setup complete. Looking for template...");
 
             // Select appropriate email template
             $templatePaths = [
@@ -67,55 +78,61 @@ class EmailSender {
                 __DIR__ . '/../../../email_templates/approval.html'
             ];
 
+            error_log("Checking template paths: " . json_encode($templatePaths));
+
             $templateContent = null;
             foreach ($templatePaths as $path) {
+                error_log("Checking template path: $path");
                 if (file_exists($path)) {
+                    error_log("Found template at: $path");
                     $templateContent = file_get_contents($path);
                     break;
                 }
             }
 
             if ($templateContent === null) {
-                throw new Exception("No email template found for type: $type");
+                throw new Exception("No email template found for type: $type. Checked paths: " . implode(', ', $templatePaths));
             }
 
             // Replace placeholders in the template
             $templateContent = str_replace(['{{name}}', '{{odmlId}}'], [$name, $odmlId], $templateContent);
+            error_log("Template content prepared with replacements");
 
-            $this->mail->Body = $templateContent;
             $this->mail->isHTML(true);
+            $this->mail->Body = $templateContent;
 
-            // Asynchronous email sending
-            $this->loop->addTimer(0, function() use ($deferred, $email, $type) {
-                try {
-                    $result = $this->mail->send();
-                    
-                    if (!$result) {
-                        $errorMessage = "Email sending failed for $type to $email: " . $this->mail->ErrorInfo;
-                        error_log($errorMessage);
-                        $deferred->reject(new Exception($errorMessage));
-                    } else {
-                        error_log("ODML Update Email sent successfully to $email for $type");
-                        $deferred->resolve(true);
-                    }
-                } catch (Exception $e) {
-                    $errorMessage = "ODML Update Email Error for $type: " . $e->getMessage();
+            error_log("Attempting to send email...");
+            
+            try {
+                $result = $this->mail->send();
+                error_log("Email send attempt completed");
+                
+                if (!$result) {
+                    $errorMessage = "Email sending failed for $type to $email: " . $this->mail->ErrorInfo;
                     error_log($errorMessage);
-                    $deferred->reject($e);
+                    return false;
                 }
-            });
-        } catch (Exception $e) {
-            $deferred->reject($e);
-        }
+                
+                error_log("ODML Update Email sent successfully to $email for $type");
+                return true;
+            } catch (Exception $e) {
+                error_log("SMTP Send Error: " . $e->getMessage());
+                error_log("SMTP Debug Info: " . $this->mail->ErrorInfo);
+                throw $e;
+            }
 
-        return $deferred->promise();
+        } catch (Exception $e) {
+            error_log("Error in sendODMLUpdateEmail: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            return false;
+        }
     }
 
     public function sendMultipleEmails($emailData) {
-        $promises = [];
+        $results = [];
         
         foreach ($emailData as $data) {
-            $promises[] = $this->sendODMLUpdateEmail(
+            $results[] = $this->sendODMLUpdateEmail(
                 $data['email'], 
                 $data['name'], 
                 $data['type'], 
@@ -123,10 +140,6 @@ class EmailSender {
             );
         }
 
-        return \React\Promise\all($promises);
-    }
-
-    public function run() {
-        $this->loop->run();
+        return $results;
     }
 }
